@@ -2,7 +2,7 @@ from typing import Union
 
 import torch
 from torch import nn, Tensor
-from torch.nn.functional import normalize, softmax
+from torch.nn.functional import normalize
 
 from auxiliary.settings import USE_CONFIDENCE_WEIGHTED_POOLING
 from classes.fc4.squeezenet.SqueezeNetLoader import SqueezeNetLoader
