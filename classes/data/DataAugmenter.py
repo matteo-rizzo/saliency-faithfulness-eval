@@ -4,8 +4,15 @@ import random
 import cv2
 import numpy as np
 
-from auxiliary.settings import TRAIN_IMG_H, TRAIN_IMG_W, TEST_IMG_H, TEST_IMG_W
 from auxiliary.utils import rgb_to_bgr
+
+# ------------------------------------------------------------------------------------------
+
+TRAIN_IMG_W, TRAIN_IMG_H = 512, 512
+TEST_IMG_W, TEST_IMG_H = 0, 0
+
+
+# ------------------------------------------------------------------------------------------
 
 
 class DataAugmenter:

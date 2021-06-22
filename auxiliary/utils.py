@@ -120,4 +120,3 @@ def jsd(p: List, q: List) -> float:
     - https://stackoverflow.com/questions/15880133/jensen-shannon-divergence
     """
     return jensenshannon(p, q) ** 2
-

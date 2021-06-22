@@ -865,3 +865,7 @@ FodyWeavers.xsd
 /test/results/
 /assets/
 /trained_models/
+/dataset/color_checker/
+/dataset/color_checker/coordinates/
+/dataset/color_checker/images/
+/train/logs/

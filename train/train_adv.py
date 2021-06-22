@@ -12,6 +12,8 @@ from classes.core.Evaluator import Evaluator
 from classes.core.LossTracker import LossTracker
 from classes.data.ColorChecker import ColorChecker
 
+# ----------------------------------------------------------------------------------------------------------
+
 RANDOM_SEED = 0
 EPOCHS = 1000
 BATCH_SIZE = 1
@@ -19,33 +21,28 @@ LEARNING_RATE = 0.0003
 FOLD_NUM = 0
 ADV_LAMBDA = 0.05
 
-PATH_TO_BASE_MODEL = os.path.join("trained_models", "adv", "base", "fold_{}".format(FOLD_NUM))
+PATH_TO_BASE_MODEL = os.path.join("trained_models", "baseline", "fc4_cwp", "fold_{}".format(FOLD_NUM))
 
+
+# ----------------------------------------------------------------------------------------------------------
 
 def main(opt):
     fold_num, epochs, batch_size, lr, adv_lambda = opt.fold_num, opt.epochs, opt.batch_size, opt.lr, opt.adv_lambda
     path_to_base_model = opt.path_to_base_model
 
-    # Path to log resulting metrics and models
-    path_to_log = os.path.join("logs", "adv_{}_fold_{}_{}".format(adv_lambda, fold_num, time.time()))
+    path_to_log = os.path.join("train", "logs", "adv_{}_fold_{}_{}".format(adv_lambda, fold_num, time.time()))
     os.makedirs(path_to_log, exist_ok=True)
 
-    # Path to store attention visualizations
     path_to_vis = os.path.join(path_to_log, "vis")
     os.makedirs(path_to_vis, exist_ok=True)
 
     path_to_metrics = os.path.join(path_to_log, "metrics.csv")
 
-    # Load base model and save it to log folder
-    model = AdvModelConfFC4(adv_lambda)
-    print("\n Loading base model at: {} \n".format(path_to_base_model))
-    model.load(path_to_base_model)
-    print("\n Saving base model at: {} \n".format(path_to_log))
-    model.save(path_to_log)
+    adv_model = AdvModelConfFC4(adv_lambda)
 
-    model.print_network()
-    model.log_network(path_to_log)
-    model.set_optimizer(lr)
+    adv_model.print_network()
+    adv_model.log_network(path_to_log)
+    adv_model.set_optimizer(lr)
 
     path_to_pred = os.path.join(path_to_base_model, "pred")
     path_to_att = os.path.join(path_to_base_model, "att")
@@ -60,7 +57,7 @@ def main(opt):
     print("\t Test set size ....... : {}\n".format(len(test_set)))
 
     print("\n**************************************************************")
-    print("\t\t\t Training Adversary FC4 - Fold {}".format(fold_num))
+    print("\t\t\t Training Adversary Model - Fold {}".format(fold_num))
     print("**************************************************************\n")
 
     evaluator_base, evaluator_adv = Evaluator(), Evaluator()
@@ -70,30 +67,31 @@ def main(opt):
 
     for epoch in range(epochs):
 
-        model.train_mode()
+        adv_model.train_mode()
         train_loss.reset()
         start = time.time()
 
-        for i, (img, label, filename, pred, att) in enumerate(training_loader):
-            img, label, pred, att = img.to(DEVICE), label.to(DEVICE), pred.to(DEVICE), att.to(DEVICE)
-            pred_base, pred_adv, att_base, att_adv = model.predict(img)
-            loss, losses = model.optimize(pred_base, pred_adv, att_base, att_adv)
-            train_loss.update(loss)
+        for i, (img, label, filename, pred_base, att_base) in enumerate(training_loader):
+            img, label = img.to(DEVICE), label.to(DEVICE)
+            pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
+            pred_adv, att_adv = adv_model.predict(img)
+            tl, losses = adv_model.optimize(pred_base, pred_adv, att_base, att_adv)
+            train_loss.update(tl)
 
-            err_base = model.get_loss(pred_base, label).item()
-            err_adv = model.get_loss(pred_adv, label).item()
+            err_base = adv_model.get_loss(pred_base, label).item()
+            err_adv = adv_model.get_loss(pred_adv, label).item()
 
             if i % 5 == 0:
                 loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
                 print("[ Epoch: {}/{} - Batch: {} ] "
                       "| Loss: [ train: {:.4f} - {} ] "
                       "| Error: [ base: {:.4f} - adv: {:.4f} ]"
-                      .format(epoch + 1, epochs, i, loss, loss_log, err_base, err_adv))
+                      .format(epoch + 1, epochs, i, tl, loss_log, err_base, err_adv))
 
         if epoch % 50 == 0:
             path_to_save = os.path.join(path_to_vis, "epoch_{}".format(epoch))
             print("\n Saving vis at: {} \n".format(path_to_save))
-            model.save_vis(img, att_base, att_adv, path_to_save)
+            adv_model.save_vis(img, att_base, att_adv, path_to_save)
 
         train_time = time.time() - start
 
@@ -103,22 +101,23 @@ def main(opt):
         if epoch % 5 == 0:
             evaluator_base.reset_errors()
             evaluator_adv.reset_errors()
-            model.evaluation_mode()
+            adv_model.evaluation_mode()
 
             print("\n--------------------------------------------------------------")
             print("\t\t\t Validation")
             print("--------------------------------------------------------------\n")
 
             with torch.no_grad():
-                for i, (img, label, _, pred, conf) in enumerate(test_loader):
-                    img, label, pred, att = img.to(DEVICE), label.to(DEVICE), pred.to(DEVICE), att.to(DEVICE)
-                    pred_base, pred_adv, att_base, att_adv = model.predict(img)
-                    loss, losses = model.get_losses(att_base, att_adv, pred_base, pred_adv)
-                    loss = loss.item()
-                    val_loss.update(loss)
+                for i, (img, label, _, pred_base, conf_base) in enumerate(test_loader):
+                    img, label = img.to(DEVICE), label.to(DEVICE)
+                    pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
+                    pred_adv, att_adv = adv_model.predict(img)
+                    vl, losses = adv_model.get_losses(att_base, att_adv, pred_base, pred_adv)
+                    vl = vl.item()
+                    val_loss.update(vl)
 
-                    err_base = model.get_loss(pred_base, label).item()
-                    err_adv = model.get_loss(pred_adv, label).item()
+                    err_base = adv_model.get_loss(pred_base, label).item()
+                    err_adv = adv_model.get_loss(pred_adv, label).item()
 
                     evaluator_base.add_error(err_base)
                     evaluator_adv.add_error(err_adv)
@@ -128,7 +127,7 @@ def main(opt):
                         print("[ Epoch: {}/{} - Batch: {} ] "
                               "| Loss: [ val: {:.4f} - {} ] "
                               "| Error: [ base: {:.4f} - adv: {:.4f} ]"
-                              .format(epoch + 1, epochs, i, loss, loss_log, err_base, err_adv))
+                              .format(epoch + 1, epochs, i, vl, loss_log, err_base, err_adv))
 
             print("\n--------------------------------------------------------------\n")
 
@@ -161,7 +160,7 @@ def main(opt):
             best_val_loss = val_loss.avg
             best_metrics = evaluator_adv.update_best_metrics()
             print("Saving new best models... \n")
-            model.save_adv(path_to_log)
+            adv_model.save_adv(path_to_log)
 
         log_metrics(train_loss.avg, val_loss.avg, metrics_adv, best_metrics, path_to_metrics)
 
@@ -178,7 +177,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     make_deterministic(opt.random_seed)
 
-    print("\n *** Training configuration ***")
+    print("\n *** Training configuration *** \n")
     print("\t Fold num ............. : {}".format(opt.fold_num))
     print("\t Epochs ............... : {}".format(opt.epochs))
     print("\t Batch size ........... : {}".format(opt.batch_size))

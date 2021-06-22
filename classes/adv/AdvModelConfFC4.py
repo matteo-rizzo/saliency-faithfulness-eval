@@ -6,14 +6,14 @@ from torchvision.transforms import transforms
 
 from auxiliary.utils import rescale
 from classes.adv.AdvModel import AdvModel
-from classes.modules.fc4.FC4 import FC4
+from classes.modules.singleframe.FC4 import FC4
 
 
 class AdvModelConfFC4(AdvModel):
 
     def __init__(self, adv_lambda: float = 0.00005):
         super().__init__(adv_lambda)
-        self._network, self._network_adv = FC4().to(self._device), FC4().to(self._device)
+        self._network_adv = FC4().to(self._device)
 
     def predict(self, img: Tensor) -> Tuple:
         """
@@ -22,8 +22,8 @@ class AdvModelConfFC4(AdvModel):
         @return: the colour estimate as a Tensor. If "return_steps" is set to true, the per-path colour estimates and
         the confidence weights are also returned (used for visualizations)
         """
-        (pred_base, _, conf_base), (pred_adv, _, conf_adv) = self._network(img), self._network_adv(img)
-        return pred_base, pred_adv, conf_base, conf_adv
+        (pred_adv, _, conf_adv) = self._network_adv(img)
+        return pred_adv, conf_adv
 
     @staticmethod
     def save_vis(img: Tensor, conf_base: Tensor, conf_adv: Tensor, path_to_save: str):

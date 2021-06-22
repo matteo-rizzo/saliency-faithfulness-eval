@@ -4,15 +4,19 @@ import torch
 from torch import nn, Tensor
 from torch.nn.functional import normalize
 
-from auxiliary.settings import USE_CONFIDENCE_WEIGHTED_POOLING
-from classes.modules.fc4.squeezenet.SqueezeNetLoader import SqueezeNetLoader
+from classes.modules.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
 
 """
 FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling
 * Original code: https://github.com/yuanming-hu/fc4
 * Paper: https://www.microsoft.com/en-us/research/publication/fully-convolutional-color-constancy-confidence-weighted-pooling/
 """
+# ------------------------------------------------------
 
+USE_CONFIDENCE_WEIGHTED_POOLING = True
+
+
+# ------------------------------------------------------
 
 class FC4(torch.nn.Module):
 

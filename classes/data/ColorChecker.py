@@ -16,7 +16,7 @@ class ColorChecker(Dataset):
 
         path_to_dataset = os.path.join(self._base_path_to_dataset, "color_checker")
         path_to_folds = os.path.join(path_to_dataset, "folds.mat")
-        path_to_metadata = os.path.join(path_to_dataset, "color_checker_metadata.txt")
+        path_to_metadata = os.path.join(path_to_dataset, "metadata.txt")
         self.__path_to_data = os.path.join(path_to_dataset, "preprocessed", "numpy_data")
         self.__path_to_label = os.path.join(path_to_dataset, "preprocessed", "numpy_labels")
 

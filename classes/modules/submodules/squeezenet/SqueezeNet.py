@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
-from classes.modules.fc4.squeezenet.Fire import Fire
+from classes.modules.submodules.squeezenet.Fire import Fire
 
 """ 
 This is the standard SqueezeNet implementation included in PyTorch at:
