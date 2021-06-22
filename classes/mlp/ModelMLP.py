@@ -4,7 +4,7 @@ import torch
 from torch import Tensor
 
 from classes.core.Model import Model
-from classes.fc4.FC4 import FC4
+from classes.modules.fc4.FC4 import FC4
 from classes.mlp.MLP import MLP
 
 

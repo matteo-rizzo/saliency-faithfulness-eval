@@ -10,8 +10,8 @@ from torch.utils.data import DataLoader
 from ModelAdvConfFC4 import ModelAdvConfFC4
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import jsd, scale
-from classes.data.ColorCheckerDataset import ColorCheckerDataset
-from classes.training.Evaluator import Evaluator
+from classes.data.ColorChecker import ColorChecker
+from classes.core.Evaluator import Evaluator
 
 NUM_FOLD = 0
 PATH_TO_PRETRAINED = os.path.join("trained_models")
@@ -54,7 +54,7 @@ def evaluate(model: ModelAdvConfFC4, dataloader: DataLoader):
 
 
 def main():
-    test_set = ColorCheckerDataset(train=False, folds_num=NUM_FOLD)
+    test_set = ColorChecker(train=False, folds_num=NUM_FOLD)
     dataloader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=20)
 
     print("\n *** Fold {} - Test set size: {} *** \n".format(NUM_FOLD, len(test_set)))

@@ -7,10 +7,10 @@ from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import print_metrics, log_metrics
-from classes.data.ColorCheckerDataset import ColorCheckerDataset
+from classes.data.ColorChecker import ColorChecker
 from classes.mlp.ModelMLP import ModelMLP
-from classes.training.Evaluator import Evaluator
-from classes.training.LossTracker import LossTracker
+from classes.core.Evaluator import Evaluator
+from classes.core.LossTracker import LossTracker
 
 RANDOM_SEED = 0
 EPOCHS = 2000
@@ -41,11 +41,11 @@ def main(opt):
     model.log_network(path_to_log)
     model.set_optimizer(learning_rate)
 
-    training_set = ColorCheckerDataset(train=True, folds_num=fold_num)
+    training_set = ColorChecker(train=True, folds_num=fold_num)
     training_loader = DataLoader(training_set, batch_size=batch_size, shuffle=True, num_workers=16, drop_last=True)
     print("\n Training set size ... : {}".format(len(training_set)))
 
-    test_set = ColorCheckerDataset(train=False, folds_num=fold_num)
+    test_set = ColorChecker(train=False, folds_num=fold_num)
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=16, drop_last=True)
     print(" Test set size ....... : {}\n".format(len(test_set)))
 

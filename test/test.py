@@ -5,9 +5,9 @@ import numpy as np
 import torch.utils.data
 
 from auxiliary.settings import DEVICE
-from classes.data.ColorCheckerDataset import ColorCheckerDataset
-from classes.fc4.ModelFC4 import ModelFC4
-from classes.training.Evaluator import Evaluator
+from classes.data.ColorChecker import ColorChecker
+from classes.modules.fc4.ModelFC4 import ModelFC4
+from classes.core.Evaluator import Evaluator
 
 """
 * FC4 using confidence-weighted pooling (fc_cwp):
@@ -44,7 +44,7 @@ def main():
 
     for num_fold in range(3):
         fold_evaluator = Evaluator()
-        test_set = ColorCheckerDataset(train=USE_TRAINING_SET, folds_num=num_fold)
+        test_set = ColorChecker(train=USE_TRAINING_SET, folds_num=num_fold)
         dataloader = torch.utils.data.DataLoader(test_set, batch_size=1, shuffle=False, num_workers=16)
 
         path_to_pretrained = os.path.join("trained_models", MODEL_TYPE, "fold_{}".format(num_fold))

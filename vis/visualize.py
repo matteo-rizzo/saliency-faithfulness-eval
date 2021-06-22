@@ -9,9 +9,9 @@ from torchvision.transforms import transforms
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import correct, rescale, scale
-from classes.data.ColorCheckerDataset import ColorCheckerDataset
-from classes.fc4.ModelFC4 import ModelFC4
-from classes.training.Evaluator import Evaluator
+from classes.data.ColorChecker import ColorChecker
+from classes.modules.fc4.ModelFC4 import ModelFC4
+from classes.core.Evaluator import Evaluator
 
 # Set to -1 to process all the samples in the test set of the current fold
 NUM_SAMPLES = -1
@@ -30,7 +30,7 @@ def main():
     os.makedirs(PATH_TO_SAVED)
 
     for num_fold in range(NUM_FOLDS):
-        test_set = ColorCheckerDataset(train=False, folds_num=num_fold)
+        test_set = ColorChecker(train=False, folds_num=num_fold)
         dataloader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=20)
 
         # path_to_pretrained = os.path.join("trained_models", "baseline", "fc4_cwp", "fold_{}".format(num_fold))

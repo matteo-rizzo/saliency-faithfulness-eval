@@ -7,35 +7,39 @@ from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import log_metrics
-from classes.adv.ModelAdvConfFC4 import ModelAdvConfFC4
-from classes.data.ColorCheckerDataset import ColorCheckerDataset
-from classes.training.Evaluator import Evaluator
-from classes.training.LossTracker import LossTracker
+from classes.adv.AdvModelConfFC4 import AdvModelConfFC4
+from classes.core.Evaluator import Evaluator
+from classes.core.LossTracker import LossTracker
+from classes.data.ColorChecker import ColorChecker
 
 RANDOM_SEED = 0
 EPOCHS = 1000
 BATCH_SIZE = 1
 LEARNING_RATE = 0.0003
-ADV_LAMBDA = 0.05
 FOLD_NUM = 0
+ADV_LAMBDA = 0.05
 
 PATH_TO_BASE_MODEL = os.path.join("trained_models", "adv", "base", "fold_{}".format(FOLD_NUM))
 
 
 def main(opt):
     fold_num, epochs, batch_size, lr, adv_lambda = opt.fold_num, opt.epochs, opt.batch_size, opt.lr, opt.adv_lambda
+    path_to_base_model = opt.path_to_base_model
 
-    path_to_log = os.path.join("logs", "adv_{}_fold_{}_{}".format(str(opt.adv_lambda), str(fold_num), str(time.time())))
+    # Path to log resulting metrics and models
+    path_to_log = os.path.join("logs", "adv_{}_fold_{}_{}".format(adv_lambda, fold_num, time.time()))
     os.makedirs(path_to_log, exist_ok=True)
 
+    # Path to store attention visualizations
     path_to_vis = os.path.join(path_to_log, "vis")
     os.makedirs(path_to_vis, exist_ok=True)
 
     path_to_metrics = os.path.join(path_to_log, "metrics.csv")
 
-    model = ModelAdvConfFC4(adv_lambda)
-    print("\n Loading base model at: {} \n".format(PATH_TO_BASE_MODEL))
-    model.load(PATH_TO_BASE_MODEL)
+    # Load base model and save it to log folder
+    model = AdvModelConfFC4(adv_lambda)
+    print("\n Loading base model at: {} \n".format(path_to_base_model))
+    model.load(path_to_base_model)
     print("\n Saving base model at: {} \n".format(path_to_log))
     model.save(path_to_log)
 
@@ -43,13 +47,17 @@ def main(opt):
     model.log_network(path_to_log)
     model.set_optimizer(lr)
 
-    training_set = ColorCheckerDataset(train=True, folds_num=fold_num)
-    training_loader = DataLoader(training_set, batch_size=batch_size, shuffle=True, num_workers=16, drop_last=True)
-    print("\n Training set size ... : {}".format(len(training_set)))
+    path_to_pred = os.path.join(path_to_base_model, "pred")
+    path_to_att = os.path.join(path_to_base_model, "att")
 
-    test_set = ColorCheckerDataset(train=False, folds_num=fold_num)
+    training_set = ColorChecker(train=True, fold_num=fold_num, path_to_pred=path_to_pred, path_to_att=path_to_att)
+    training_loader = DataLoader(training_set, batch_size=batch_size, shuffle=True, num_workers=16, drop_last=True)
+
+    test_set = ColorChecker(train=False, fold_num=fold_num, path_to_pred=path_to_pred, path_to_att=path_to_att)
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=16, drop_last=True)
-    print(" Test set size ....... : {}\n".format(len(test_set)))
+
+    print("\n\t Training set size ... : {}".format(len(training_set)))
+    print("\t Test set size ....... : {}\n".format(len(test_set)))
 
     print("\n**************************************************************")
     print("\t\t\t Training Adversary FC4 - Fold {}".format(fold_num))
@@ -58,6 +66,7 @@ def main(opt):
     evaluator_base, evaluator_adv = Evaluator(), Evaluator()
     best_val_loss, best_metrics = 100.0, evaluator_base.get_best_metrics()
     train_loss, val_loss = LossTracker(), LossTracker()
+    att_base, att_adv = None, None
 
     for epoch in range(epochs):
 
@@ -65,10 +74,10 @@ def main(opt):
         train_loss.reset()
         start = time.time()
 
-        for i, (img, label, filename) in enumerate(training_loader):
-            img, label = img.to(DEVICE), label.to(DEVICE)
-            (pred_base, _, conf_base), (pred_adv, _, conf_adv) = model.predict(img)
-            loss, losses = model.optimize(pred_base, pred_adv, conf_base, conf_adv)
+        for i, (img, label, filename, pred, att) in enumerate(training_loader):
+            img, label, pred, att = img.to(DEVICE), label.to(DEVICE), pred.to(DEVICE), att.to(DEVICE)
+            pred_base, pred_adv, att_base, att_adv = model.predict(img)
+            loss, losses = model.optimize(pred_base, pred_adv, att_base, att_adv)
             train_loss.update(loss)
 
             err_base = model.get_loss(pred_base, label).item()
@@ -84,7 +93,7 @@ def main(opt):
         if epoch % 50 == 0:
             path_to_save = os.path.join(path_to_vis, "epoch_{}".format(epoch))
             print("\n Saving vis at: {} \n".format(path_to_save))
-            model.save_vis(img, conf_base, conf_adv, path_to_save)
+            model.save_vis(img, att_base, att_adv, path_to_save)
 
         train_time = time.time() - start
 
@@ -101,10 +110,10 @@ def main(opt):
             print("--------------------------------------------------------------\n")
 
             with torch.no_grad():
-                for i, (img, label, _) in enumerate(test_loader):
-                    img, label = img.to(DEVICE), label.to(DEVICE)
-                    (pred_base, _, conf_base), (pred_adv, _, conf_adv) = model.predict(img)
-                    loss, losses = model.get_losses(conf_base, conf_adv, pred_base, pred_adv)
+                for i, (img, label, _, pred, conf) in enumerate(test_loader):
+                    img, label, pred, att = img.to(DEVICE), label.to(DEVICE), pred.to(DEVICE), att.to(DEVICE)
+                    pred_base, pred_adv, att_base, att_adv = model.predict(img)
+                    loss, losses = model.get_losses(att_base, att_adv, pred_base, pred_adv)
                     loss = loss.item()
                     val_loss.update(loss)
 
@@ -165,15 +174,17 @@ if __name__ == '__main__':
     parser.add_argument('--random_seed', type=int, default=RANDOM_SEED)
     parser.add_argument('--lr', type=float, default=LEARNING_RATE)
     parser.add_argument('--adv_lambda', type=float, default=ADV_LAMBDA)
+    parser.add_argument('--path_to_base_model', type=str, default=PATH_TO_BASE_MODEL)
     opt = parser.parse_args()
     make_deterministic(opt.random_seed)
 
     print("\n *** Training configuration ***")
-    print("\t Fold num ........ : {}".format(opt.fold_num))
-    print("\t Epochs .......... : {}".format(opt.epochs))
-    print("\t Batch size ...... : {}".format(opt.batch_size))
-    print("\t Learning rate ... : {}".format(opt.lr))
-    print("\t Random seed ..... : {}".format(opt.random_seed))
-    print("\t Adv lambda ...... : {}".format(opt.adv_lambda))
+    print("\t Fold num ............. : {}".format(opt.fold_num))
+    print("\t Epochs ............... : {}".format(opt.epochs))
+    print("\t Batch size ........... : {}".format(opt.batch_size))
+    print("\t Learning rate ........ : {}".format(opt.lr))
+    print("\t Random seed .......... : {}".format(opt.random_seed))
+    print("\t Adv lambda ........... : {}".format(opt.adv_lambda))
+    print("\t Path to base model ... : {}".format(opt.path_to_base_model))
 
     main(opt)

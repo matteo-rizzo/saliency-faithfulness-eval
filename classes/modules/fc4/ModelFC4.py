@@ -9,7 +9,7 @@ from torchvision.transforms import transforms
 from auxiliary.settings import DEVICE, USE_CONFIDENCE_WEIGHTED_POOLING
 from auxiliary.utils import correct, rescale, scale
 from classes.core.Model import Model
-from classes.fc4.FC4 import FC4
+from classes.modules.fc4.FC4 import FC4
 from classes.losses.BlockSparsityLoss import BlockSparsityLoss
 from classes.losses.TotalVariationLoss import TotalVariationLoss
 
