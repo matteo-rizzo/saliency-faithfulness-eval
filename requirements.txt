@@ -1,5 +1,5 @@
 numpy
-torch
+torch==1.9.90
 pandas
 torchvision
 pillow

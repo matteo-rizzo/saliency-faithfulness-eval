@@ -4,11 +4,11 @@ import torch
 from torch import Tensor
 from torch.nn import BCELoss
 
+from auxiliary.utils import scale
 from classes.core.Model import Model
 from classes.losses.ComplementaryLoss import ComplementaryLoss
 from classes.losses.IoULoss import IoULoss
 from classes.losses.SSIMLoss import SSIMLoss
-from utils import scale
 
 
 class AdvModel(Model):
@@ -41,3 +41,7 @@ class AdvModel(Model):
         }
         loss = losses["ang"] + self._adv_lambda * (losses["bce"] + losses["ssim"] + losses["iou"] + losses["comp"])
         return loss, losses
+
+    @staticmethod
+    def save_vis(*args, **kwargs):
+        pass

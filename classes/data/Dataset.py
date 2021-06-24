@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 
 import torch.utils.data as data
@@ -17,4 +16,4 @@ class Dataset(data.Dataset, ABC):
         self._path_to_pred = path_to_pred
         self._path_to_att = path_to_att
         self._da = DataAugmenter()
-        self._base_path_to_dataset = os.path.join(PATH_TO_DATASET)
+        self._base_path_to_dataset = PATH_TO_DATASET
