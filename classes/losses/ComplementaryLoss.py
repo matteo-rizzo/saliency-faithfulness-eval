@@ -1,5 +1,6 @@
 import torch
 from torch import Tensor
+from torch import linalg as LA
 
 from classes.core.Loss import Loss
 
@@ -12,4 +13,4 @@ class ComplementaryLoss(Loss):
 
     def _compute(self, img1: Tensor, img2: Tensor) -> Tensor:
         one = torch.ones_like(img1).to(self._device)
-        return torch.norm(one - (img1 + img2), p=1).to(self._device)
+        return LA.matrix_norm(one - (img1 + img2), ord=1).to(self._device)
