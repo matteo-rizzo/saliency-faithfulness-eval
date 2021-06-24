@@ -13,7 +13,7 @@ class AdvModelConfFC4(AdvModel):
 
     def __init__(self, adv_lambda: float = 0.00005):
         super().__init__(adv_lambda)
-        self._network_adv = FC4().to(self._device)
+        self._network = FC4().to(self._device)
 
     def predict(self, img: Tensor) -> Tuple:
         """
@@ -22,7 +22,7 @@ class AdvModelConfFC4(AdvModel):
         @return: the colour estimate as a Tensor. If "return_steps" is set to true, the per-path colour estimates and
         the confidence weights are also returned (used for visualizations)
         """
-        (pred_adv, _, conf_adv) = self._network_adv(img)
+        (pred_adv, _, conf_adv) = self._network(img)
         return pred_adv, conf_adv
 
     @staticmethod

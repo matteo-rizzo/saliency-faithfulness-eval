@@ -75,6 +75,7 @@ def main(opt):
             img, label = img.to(DEVICE), label.to(DEVICE)
             pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
             pred_adv, att_adv = adv_model.predict(img)
+
             tl, losses = adv_model.optimize(pred_base, pred_adv, att_base, att_adv)
             train_loss.update(tl)
 
@@ -85,7 +86,7 @@ def main(opt):
                 loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
                 print("[ Epoch: {}/{} - Batch: {} ] "
                       "| Loss: [ train: {:.4f} - {} ] "
-                      "| Error: [ base: {:.4f} - adv: {:.4f} ]"
+                      "| Ang Err: [ base: {:.4f} - adv: {:.4f} ]"
                       .format(epoch + 1, epochs, i, tl, loss_log, err_base, err_adv))
 
         if epoch % 50 == 0:
@@ -108,11 +109,12 @@ def main(opt):
             print("--------------------------------------------------------------\n")
 
             with torch.no_grad():
-                for i, (img, label, _, pred_base, conf_base) in enumerate(test_loader):
+                for i, (img, label, _, pred_base, att_base) in enumerate(test_loader):
                     img, label = img.to(DEVICE), label.to(DEVICE)
                     pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
                     pred_adv, att_adv = adv_model.predict(img)
-                    vl, losses = adv_model.get_losses(att_base, att_adv, pred_base, pred_adv)
+
+                    vl, losses = adv_model.get_losses(pred_base, pred_adv, att_base, att_adv)
                     vl = vl.item()
                     val_loss.update(vl)
 
@@ -126,7 +128,7 @@ def main(opt):
                         loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
                         print("[ Epoch: {}/{} - Batch: {} ] "
                               "| Loss: [ val: {:.4f} - {} ] "
-                              "| Error: [ base: {:.4f} - adv: {:.4f} ]"
+                              "| Ang Err: [ base: {:.4f} - adv: {:.4f} ]"
                               .format(epoch + 1, epochs, i, vl, loss_log, err_base, err_adv))
 
             print("\n--------------------------------------------------------------\n")
@@ -160,7 +162,7 @@ def main(opt):
             best_val_loss = val_loss.avg
             best_metrics = evaluator_adv.update_best_metrics()
             print("Saving new best models... \n")
-            adv_model.save_adv(path_to_log)
+            adv_model.save(path_to_log)
 
         log_metrics(train_loss.avg, val_loss.avg, metrics_adv, best_metrics, path_to_metrics)
 

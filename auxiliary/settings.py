@@ -34,3 +34,11 @@ def get_device() -> torch.device:
 
 
 DEVICE = get_device()
+
+# --- Paths ---
+
+PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc/"
+
+# --- Erasure test ---
+
+ERASURE = False

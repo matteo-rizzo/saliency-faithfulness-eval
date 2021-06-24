@@ -1,26 +1,17 @@
 import math
 import random
+from typing import Tuple
 
 import cv2
 import numpy as np
 
 from auxiliary.utils import rgb_to_bgr
 
-# ------------------------------------------------------------------------------------------
-
-TRAIN_IMG_W, TRAIN_IMG_H = 512, 512
-TEST_IMG_W, TEST_IMG_H = 0, 0
-
-
-# ------------------------------------------------------------------------------------------
-
 
 class DataAugmenter:
 
-    def __init__(self):
-        # Input Size of the fully-convolutional network (SqueezeNet)
-        self.__train_size = (TRAIN_IMG_H, TRAIN_IMG_W)
-        self.__test_size = (TEST_IMG_H, TEST_IMG_W)
+    def __init__(self, train_size: Tuple = (512, 512)):
+        self.__train_size = train_size
 
         # Rotation angle
         self.__angle = 60
@@ -77,7 +68,7 @@ class DataAugmenter:
         return cv2.warpAffine(image, affine_mat, (new_w, new_h), flags=cv2.INTER_LINEAR)
 
     @staticmethod
-    def __largest_rotated_rect(w: float, h: float, angle: float) -> tuple:
+    def __largest_rotated_rect(w: float, h: float, angle: float) -> Tuple:
         """
         Given a rectangle of size w x h that has been rotated by 'angle' (in radians), computes the width and height of
         the largest possible axis-aligned rectangle within the rotated rectangle.
@@ -129,7 +120,7 @@ class DataAugmenter:
             img = img[:, ::-1]
         return img.astype(np.float32)
 
-    def augment(self, img: np.ndarray, illumination: np.ndarray) -> tuple:
+    def augment(self, img: np.ndarray, illumination: np.ndarray) -> Tuple:
         scale = math.exp(random.random() * math.log(self.__scale[1] / self.__scale[0])) * self.__scale[0]
         s = min(max(int(round(min(img.shape[:2]) * scale)), 10), min(img.shape[:2]))
 
@@ -154,6 +145,3 @@ class DataAugmenter:
         new_illuminant = rgb_to_bgr(np.clip(new_illuminant, 0.01, 100))
 
         return new_image, new_illuminant
-
-    def crop(self, img: np.ndarray, scale: float = 0.5) -> np.ndarray:
-        return cv2.resize(img, self.__test_size, fx=scale, fy=scale)

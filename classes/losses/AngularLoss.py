@@ -14,4 +14,5 @@ class AngularLoss(Loss):
     def _compute(self, pred: Tensor, label: Tensor, safe_v: float = 0.999999) -> Tensor:
         dot = torch.clamp(torch.sum(normalize(pred, dim=1) * normalize(label, dim=1), dim=1), -safe_v, safe_v)
         angle = torch.acos(dot) * (180 / math.pi)
-        return torch.mean(angle).to(self._device)
+        loss = torch.mean(angle).to(self._device)
+        return loss

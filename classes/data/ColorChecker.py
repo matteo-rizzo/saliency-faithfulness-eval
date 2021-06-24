@@ -1,6 +1,7 @@
 import os
 from typing import Tuple
 
+import cv2
 import numpy as np
 import scipy.io
 import torch
@@ -8,11 +9,28 @@ import torch
 from auxiliary.utils import normalize, bgr_to_rgb, linear_to_nonlinear, hwc_to_chw
 from classes.data.Dataset import Dataset
 
+# ------------------------------------------------------------------------------------------
+
+# Size of training inputs
+TRAIN_IMG_W, TRAIN_IMG_H = 512, 512
+
+# Size of test inputs
+TEST_IMG_W, TEST_IMG_H = 0, 0
+
+# Whether or not to augment training inputs
+AUGMENT = False
+
+
+# ------------------------------------------------------------------------------------------
+
 
 class ColorChecker(Dataset):
 
-    def __init__(self, train: bool = True, fold_num: int = 1, path_to_pred: str = None, path_to_att: str = None):
-        super().__init__(train, fold_num, path_to_pred, path_to_att)
+    def __init__(self, train: bool, fold_num: int, path_to_pred: str = None, path_to_att: str = None):
+        super().__init__(train, fold_num, AUGMENT, path_to_pred, path_to_att)
+
+        self.__train_size = TRAIN_IMG_W, TRAIN_IMG_H
+        self.__test_size = TEST_IMG_W, TEST_IMG_H
 
         path_to_dataset = os.path.join(self._base_path_to_dataset, "color_checker")
         path_to_folds = os.path.join(path_to_dataset, "folds.mat")
@@ -37,13 +55,14 @@ class ColorChecker(Dataset):
         file_name = self.__fetch_filename(index)
         img = self.__load_from_file(os.path.join(self.__path_to_data, file_name))
         label = self.__load_from_file(os.path.join(self.__path_to_label, file_name))
-        pred = self.__load_from_file(os.path.join(self._path_to_pred, file_name)) if self._path_to_pred else None
-        att = self.__load_from_file(os.path.join(self._path_to_att, file_name)) if self._path_to_att else None
 
         if self._train:
-            img, label = self._da.augment(img, label)
+            if self._augment:
+                img, label = self._da.augment(img, label)
+            else:
+                img = cv2.resize(img, self.__train_size, fx=0.5, fy=0.5)
         else:
-            img = self._da.crop(img)
+            img = cv2.resize(img, self.__test_size, fx=0.5, fy=0.5)
 
         img = hwc_to_chw(linear_to_nonlinear(bgr_to_rgb(normalize(img))))
 
@@ -52,6 +71,18 @@ class ColorChecker(Dataset):
 
         if not self._train:
             img = img.type(torch.FloatTensor)
+
+        if self._path_to_pred:
+            pred = self.__load_from_file(os.path.join(self._path_to_pred, file_name))
+            pred = torch.from_numpy(pred.copy()).squeeze(0)
+        else:
+            pred = None
+
+        if self._path_to_att:
+            att = self.__load_from_file(os.path.join(self._path_to_att, file_name))
+            att = torch.from_numpy(att.copy()).squeeze(0)
+        else:
+            att = None
 
         return img, label, file_name, pred, att
 

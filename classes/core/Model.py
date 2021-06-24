@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -13,6 +14,9 @@ class Model:
         self._criterion = AngularLoss(self._device)
         self._optimizer = None
         self._network = None
+
+    def predict(self, x: Tensor) -> Tuple:
+        return self._network(x)
 
     def print_network(self):
         print("\n----------------------------------------------------------\n")
