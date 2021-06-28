@@ -60,17 +60,17 @@ def correct(img: Image, illuminant: Tensor) -> Image:
     return F.to_pil_image(linear_to_nonlinear(normalized_img).squeeze(), mode="RGB")
 
 
-def linear_to_nonlinear(img: Union[np.array, Image, Tensor]) -> Union[np.array, Image, Tensor]:
+def linear_to_nonlinear(img: Union[np.array, Image, Tensor], gamma: float = 2.2) -> Union[np.array, Image, Tensor]:
     if isinstance(img, np.ndarray):
-        return np.power(img, (1.0 / 2.2))
+        return np.power(img, (1.0 / gamma))
     if isinstance(img, Tensor):
-        return torch.pow(img, 1.0 / 2.2)
-    return F.to_pil_image(torch.pow(F.to_tensor(img), 1.0 / 2.2).squeeze(), mode="RGB")
+        return torch.pow(img, 1.0 / gamma)
+    return F.to_pil_image(torch.pow(F.to_tensor(img), 1.0 / gamma).squeeze(), mode="RGB")
 
 
-def normalize(img: np.ndarray) -> np.ndarray:
-    max_int = 65535.0
-    return np.clip(img, 0.0, max_int) * (1.0 / max_int)
+def normalize(img: np.ndarray, n_factor: float = 65535.0) -> np.ndarray:
+    """ Defaults to max_int = 65535.0"""
+    return np.clip(img, 0.0, n_factor) * (1.0 / n_factor)
 
 
 def rgb_to_bgr(x: np.ndarray) -> np.ndarray:
@@ -83,7 +83,7 @@ def bgr_to_rgb(x: np.ndarray) -> np.ndarray:
 
 def hwc_to_chw(x: np.ndarray) -> np.ndarray:
     """ Converts an image from height x width x channels to channels x height x width """
-    return x.transpose(2, 0, 1)
+    return x.transpose((2, 0, 1))
 
 
 def scale(x: Tensor) -> Tensor:

@@ -10,17 +10,20 @@ from auxiliary.utils import rgb_to_bgr
 
 class DataAugmenter:
 
-    def __init__(self, train_size: Tuple = (512, 512)):
-        self.__train_size = train_size
+    def __init__(self, train_size: Tuple = (512, 512), angle: int = 60, scale: Tuple = (0.1, 1.0), color: float = 0.8):
+        self._train_size = train_size
 
         # Rotation angle
-        self.__angle = 60
+        self._angle = angle
 
         # Patch scale
-        self.__scale = [0.1, 1.0]
+        self._scale = scale
 
         # Color rescaling
-        self.__color = 0.8
+        self._color = color
+
+    def __get_random_angle(self) -> float:
+        return (random.random() - 0.5) * self._angle
 
     @staticmethod
     def __rotate_image(image: np.ndarray, angle: float) -> np.ndarray:
@@ -106,34 +109,46 @@ class DataAugmenter:
         x1, x2 = int(image_center[0] - width * 0.5), int(image_center[0] + width * 0.5)
         y1, y2 = int(image_center[1] - height * 0.5), int(image_center[1] + height * 0.5)
 
-        return cv2.resize(image[y1:y2, x1:x2], self.__train_size)
+        return cv2.resize(image[y1:y2, x1:x2], self._train_size)
 
-    def __rotate_and_crop(self, image: np.ndarray, angle: float) -> np.ndarray:
+    def _rotate_and_crop(self, image: np.ndarray, angle: float = None) -> np.ndarray:
+        if angle is None:
+            angle = self.__get_random_angle()
         width, height = image.shape[:2]
         target_width, target_height = self.__largest_rotated_rect(width, height, math.radians(angle))
         return self.__crop_around_center(self.__rotate_image(image, angle), target_width, target_height)
 
     @staticmethod
-    def __random_flip(img: np.ndarray) -> np.ndarray:
-        """ Perform random left/right flip with probability 0.5 """
-        if random.randint(0, 1):
-            img = img[:, ::-1]
-        return img.astype(np.float32)
+    def _random_flip(img: np.ndarray, p: int = None) -> np.ndarray:
+        """
+        Perform random left/right flip with probability p (defaults to 0.5)
+        @param img: the image to be flipped
+        @param p: the probability according with image should be flipped (in {0, 1})
+        @return: the flipped image with probability p, else the original image
+        """
+        if p is None:
+            p = random.randint(0, 1)
+        return img[:, ::-1].astype(np.float32) if p else img.astype(np.float32)
+
+    def __get_random_scale(self, img: np.ndarray) -> float:
+        scale = math.exp(random.random() * math.log(self._scale[1] / self._scale[0])) * self._scale[0]
+        return min(max(int(round(min(img.shape[:2]) * scale)), 10), min(img.shape[:2]))
+
+    def _rescale(self, img: np.ndarray, scale: float = None) -> np.ndarray:
+        if scale is None:
+            scale = self.__get_random_scale(img)
+        start_x = random.randrange(0, img.shape[0] - scale + 1)
+        start_y = random.randrange(0, img.shape[1] - scale + 1)
+        return img[start_x:start_x + scale, start_y:start_y + scale]
 
     def augment(self, img: np.ndarray, illumination: np.ndarray) -> Tuple:
-        scale = math.exp(random.random() * math.log(self.__scale[1] / self.__scale[0])) * self.__scale[0]
-        s = min(max(int(round(min(img.shape[:2]) * scale)), 10), min(img.shape[:2]))
-
-        start_x = random.randrange(0, img.shape[0] - s + 1)
-        start_y = random.randrange(0, img.shape[1] - s + 1)
-        img = img[start_x:start_x + s, start_y:start_y + s]
-
-        img = self.__rotate_and_crop(img, angle=(random.random() - 0.5) * self.__angle)
-        img = self.__random_flip(img)
+        img = self._rescale(img)
+        img = self._rotate_and_crop(img)
+        img = self._random_flip(img)
 
         color_aug = np.zeros(shape=(3, 3))
         for i in range(3):
-            color_aug[i, i] = 1 + random.random() * self.__color - 0.5 * self.__color
+            color_aug[i, i] = 1 + random.random() * self._color - 0.5 * self._color
         img *= np.array([[[color_aug[0][0], color_aug[1][1], color_aug[2][2]]]], dtype=np.float32)
         new_image = np.clip(img, 0, 65535)
 

@@ -35,7 +35,7 @@ class AdvModel(Model):
         losses = {
             "ang": self._criterion(pred_base, pred_adv),  # prediction error
             "bce": self._bce_loss(att_adv, label_adv),  # pixel-level similarity
-            "ssim": self._ssim_loss(att_adv, label_adv),  # path-level similarity
+            "ssim": self._ssim_loss(att_adv, label_adv),  # patch-level similarity
             "iou": self._iou_loss(att_adv, label_adv),  # map-level similarity
             "comp": self._complementary_loss(att_base, att_adv)  # complementarity
         }

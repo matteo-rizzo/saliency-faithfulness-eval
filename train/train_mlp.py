@@ -7,10 +7,10 @@ from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import print_metrics, log_metrics
-from classes.data.ColorChecker import ColorChecker
-from classes.mlp.ModelMLP import ModelMLP
 from classes.core.Evaluator import Evaluator
 from classes.core.LossTracker import LossTracker
+from classes.mlp.ModelMLP import ModelMLP
+from datasets.ColorChecker import ColorChecker
 
 RANDOM_SEED = 0
 EPOCHS = 2000

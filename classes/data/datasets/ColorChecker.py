@@ -2,12 +2,18 @@ import os
 from typing import Tuple
 
 import cv2
-import numpy as np
 import scipy.io
 import torch
 
 from auxiliary.utils import normalize, bgr_to_rgb, linear_to_nonlinear, hwc_to_chw
-from classes.data.Dataset import Dataset
+from datasets.Dataset import Dataset
+
+# ------------------------------------------------------------------------------------------
+
+"""
+Link to download the Shi's Re-processing of Gehler's Raw "Color Checker" dataset: 
+<https://www2.cs.sfu.ca/~colour/data/shi_gehler/>
+"""
 
 # ------------------------------------------------------------------------------------------
 
@@ -29,7 +35,7 @@ class ColorChecker(Dataset):
     def __init__(self, train: bool, fold_num: int, path_to_pred: str = None, path_to_att: str = None):
         super().__init__(train, fold_num, AUGMENT, path_to_pred, path_to_att)
 
-        self.__train_size = TRAIN_IMG_W, TRAIN_IMG_H
+        self._train_size = TRAIN_IMG_W, TRAIN_IMG_H
         self.__test_size = TEST_IMG_W, TEST_IMG_H
 
         path_to_dataset = os.path.join(self._base_path_to_dataset, "color_checker")
@@ -44,23 +50,19 @@ class ColorChecker(Dataset):
         metadata = open(path_to_metadata, 'r').readlines()
         self.__fold_data = [metadata[i - 1] for i in img_idx]
 
-    @staticmethod
-    def __load_from_file(path_to_item: str) -> np.ndarray:
-        return np.array(np.load(path_to_item + '.npy'), dtype='float32')
-
     def __fetch_filename(self, index: int) -> str:
         return self.__fold_data[index].strip().split(' ')[1]
 
     def __getitem__(self, index: int) -> Tuple:
         file_name = self.__fetch_filename(index)
-        img = self.__load_from_file(os.path.join(self.__path_to_data, file_name))
-        label = self.__load_from_file(os.path.join(self.__path_to_label, file_name))
+        img = self._load_from_file(os.path.join(self.__path_to_data, file_name + '.npy'))
+        label = self._load_from_file(os.path.join(self.__path_to_label, file_name + '.npy'))
 
         if self._train:
             if self._augment:
                 img, label = self._da.augment(img, label)
             else:
-                img = cv2.resize(img, self.__train_size, fx=0.5, fy=0.5)
+                img = cv2.resize(img, self._train_size, fx=0.5, fy=0.5)
         else:
             img = cv2.resize(img, self.__test_size, fx=0.5, fy=0.5)
 
@@ -73,13 +75,13 @@ class ColorChecker(Dataset):
             img = img.type(torch.FloatTensor)
 
         if self._path_to_pred:
-            pred = self.__load_from_file(os.path.join(self._path_to_pred, file_name))
+            pred = self._load_from_file(os.path.join(self._path_to_pred, file_name + '.npy'))
             pred = torch.from_numpy(pred.copy()).squeeze(0)
         else:
             pred = None
 
         if self._path_to_att:
-            att = self.__load_from_file(os.path.join(self._path_to_att, file_name))
+            att = self._load_from_file(os.path.join(self._path_to_att, file_name + '.npy'))
             att = torch.from_numpy(att.copy()).squeeze(0)
         else:
             att = None

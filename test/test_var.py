@@ -7,17 +7,17 @@ import seaborn as sns
 import torch.utils.data
 from torch.utils.data import DataLoader
 
-from ModelAdvConfFC4 import ModelAdvConfFC4
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import jsd, scale
-from classes.data.ColorChecker import ColorChecker
+from classes.adv.AdvModelConfFC4 import AdvModelConfFC4
 from classes.core.Evaluator import Evaluator
+from datasets.ColorChecker import ColorChecker
 
 NUM_FOLD = 0
 PATH_TO_PRETRAINED = os.path.join("trained_models")
 
 
-def evaluate(model: ModelAdvConfFC4, dataloader: DataLoader):
+def evaluate(model: AdvModelConfFC4, dataloader: DataLoader):
     evaluator, evaluator_adv = Evaluator(), Evaluator()
     adv_conf_values, jsd_values = [], []
 
@@ -69,7 +69,7 @@ def main():
         path_to_pretrained = os.path.join(base_path_to_pretrained, model_dir)
         print("\n Using pretrained model stored at: {} \n".format(path_to_pretrained))
 
-        model = ModelAdvConfFC4()
+        model = AdvModelConfFC4()
         model.load(path_to_pretrained)
 
         conf_seed, jsd_seed = evaluate(model, dataloader)

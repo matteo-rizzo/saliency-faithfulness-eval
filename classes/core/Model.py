@@ -1,4 +1,5 @@
 import os
+from abc import ABC
 from typing import Tuple
 
 import torch
@@ -8,7 +9,7 @@ from auxiliary.settings import DEVICE
 from classes.losses.AngularLoss import AngularLoss
 
 
-class Model:
+class Model(ABC):
     def __init__(self):
         self._device = DEVICE
         self._criterion = AngularLoss(self._device)

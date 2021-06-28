@@ -12,7 +12,7 @@ from classes.adv.AdvModel import AdvModel
 from classes.adv.AdvModelConfFC4 import AdvModelConfFC4
 from classes.core.Evaluator import Evaluator
 from classes.core.LossTracker import LossTracker
-from classes.data.ColorChecker import ColorChecker
+from datasets.ColorChecker import ColorChecker
 
 """ Run test JW1/WP3 """
 
