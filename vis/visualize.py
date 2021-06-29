@@ -4,14 +4,14 @@ import time
 import matplotlib.pyplot as plt
 import torch.utils.data
 import torchvision.transforms.functional as F
+from classes.modules.fc4.ModelFC4 import ModelFC4
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import correct, rescale, scale
-from classes.data.ColorChecker import ColorChecker
-from classes.modules.fc4.ModelFC4 import ModelFC4
 from classes.core.Evaluator import Evaluator
+from datasets.ColorChecker import ColorChecker
 
 # Set to -1 to process all the samples in the test set of the current fold
 NUM_SAMPLES = -1

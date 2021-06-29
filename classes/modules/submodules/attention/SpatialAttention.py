@@ -1,7 +1,7 @@
 from torch import nn, Tensor
 
 
-class SpatialAttentionModule(nn.Module):
+class SpatialAttention(nn.Module):
 
     def __init__(self, input_size: int):
         super().__init__()

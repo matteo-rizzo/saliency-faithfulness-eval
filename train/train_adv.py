@@ -65,7 +65,7 @@ def eval_epoch(model: AdvModel, data: DataLoader, loss: LossTracker, eval_a: Eva
         pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
         pred_adv, att_adv = model.predict(img)
 
-        vl, losses = model.get_losses(pred_base, pred_adv, att_base, att_adv)
+        vl, losses = model.get_adv_spat_loss(pred_base, pred_adv, att_base, att_adv)
         vl = vl.item()
         loss.update(vl)
 

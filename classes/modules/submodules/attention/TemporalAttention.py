@@ -2,7 +2,7 @@ import torch
 from torch import nn, Tensor
 
 
-class TemporalAttentionModule(nn.Module):
+class TemporalAttention(nn.Module):
 
     def __init__(self, features_size: int = 512, hidden_size: int = 128):
         super().__init__()
