@@ -14,21 +14,15 @@ Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4
 
 #### Tests for Faithfulness Evaluation
 
-* Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (
-  2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
-* Serrano & Smith, *“Is Attention Interpretable?”,* ACL (
-  2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
-* Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/)
-  - [Code](https://github.com/successar/AttentionExplanation)] 
-* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (
-  2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)
+* Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
+* Serrano & Smith, *“Is Attention Interpretable?”,* ACL (2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
+* Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/) - [Code](https://github.com/successar/AttentionExplanation)] 
+* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)
 
 #### Color Constancy
 
-* Hu et al., *“FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling”*, CVPR (
-  2017) [[Paper](https://www.microsoft.com/en-us/research/publication/fully-convolutional-color-constancy-confidence-weighted-pooling/) - [Code](https://github.com/matteo-rizzo/fc4-pytorch)]
-* Qian et al. “A Benchmark for Temporal Color Constancy” ArXiv (
-  2020) [[Paper](https://arxiv.org/abs/2003.03763) - [Code](https://github.com/yanlinqian/Temporal-Color-Constancy)]
+* Hu et al., *“FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling”*, CVPR (2017) [[Paper](https://www.microsoft.com/en-us/research/publication/fully-convolutional-color-constancy-confidence-weighted-pooling/) - [Code](https://github.com/matteo-rizzo/fc4-pytorch)]
+* Qian et al. “A Benchmark for Temporal Color Constancy” ArXiv (2020) [[Paper](https://arxiv.org/abs/2003.03763) - [Code](https://github.com/yanlinqian/Temporal-Color-Constancy)]
 
 #### Datasets
 
