@@ -18,6 +18,10 @@ class Model:
     def predict(self, *args, **kwargs) -> Union[torch.Tensor, Tuple]:
         pass
 
+    @abstractmethod
+    def optimize(self, *args, **kwargs) -> Union[torch.Tensor, Tuple]:
+        pass
+
     def print_network(self):
         print("\n----------------------------------------------------------\n")
         print(self._network)

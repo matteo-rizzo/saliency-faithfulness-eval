@@ -2,9 +2,9 @@ from typing import Dict
 
 import torch
 from torch import Tensor
-from torch.nn import BCELoss
 
 from classes.core.Loss import Loss
+from classes.losses.BCELoss import BCELoss
 from classes.losses.ComplLoss import ComplLoss
 from classes.losses.IoULoss import IoULoss
 from classes.losses.SSIMLoss import SSIMLoss
@@ -21,7 +21,7 @@ class StructComplLoss(Loss):
         self.__factors = None
 
         # Pixel-level similarity
-        self.__bce_loss = BCELoss().to(self._device)
+        self.__bce_loss = BCELoss(self._device)
 
         # Patch-level similarity
         self.__ssim_loss = SSIMLoss(self._device)
@@ -39,4 +39,4 @@ class StructComplLoss(Loss):
         a1_compl = torch.ones_like(a1).to(self._device) - a1
         self.__factors = {"bce": self.__bce_loss(a2, a1_compl), "ssim": self.__ssim_loss(a2, a1_compl),
                           "iou": self.__iou_loss(a2, a1_compl), "comp": self.__complementary_loss(a2, a1)}
-        return torch.sum(*self.__factors.values())
+        return torch.sum(torch.stack(list(self.__factors.values())))

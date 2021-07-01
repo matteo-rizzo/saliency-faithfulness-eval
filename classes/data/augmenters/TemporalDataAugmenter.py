@@ -4,8 +4,8 @@ from typing import Tuple
 import cv2
 import numpy as np
 
-from augmenters.DataAugmenter import DataAugmenter
 from auxiliary.utils import rgb_to_bgr, bgr_to_rgb
+from classes.data.augmenters.DataAugmenter import DataAugmenter
 
 
 class TemporalDataAugmenter(DataAugmenter):

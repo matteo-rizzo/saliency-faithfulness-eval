@@ -2,17 +2,15 @@ from typing import Tuple
 
 import torch
 
-from augmenters.TemporalDataAugmenter import TemporalDataAugmenter
 from auxiliary.utils import hwc_to_chw, linear_to_nonlinear, bgr_to_rgb, normalize
-from datasets.Dataset import Dataset
+from classes.data.augmenters.TemporalDataAugmenter import TemporalDataAugmenter
+from classes.data.datasets.Dataset import Dataset
 
 
 class TemporalDataset(Dataset):
 
-    def __init__(self, train: bool, input_size: Tuple, augment: bool,
-                 path_to_pred: str = None, path_to_att: str = None, fold_num: int = 0):
-        super().__init__(train, fold_num, augment, path_to_pred, path_to_att)
-
+    def __init__(self, train: bool, input_size: Tuple, augment: bool, fold_num: int = 0):
+        super().__init__(train, fold_num, augment)
         self.__input_size = input_size
         self._da = TemporalDataAugmenter(input_size)
         self._data_dir, self._label_dir = "ndata_seq", "nlabel"

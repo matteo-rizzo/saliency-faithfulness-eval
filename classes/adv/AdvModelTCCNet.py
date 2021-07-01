@@ -32,8 +32,6 @@ class AdvModelTCCNet(AdvModel):
         return self._network(x)
 
     def get_adv_regs(self, att_base: Union[Tensor, Tuple], att_adv: Union[Tensor, Tuple]) -> Dict:
-        att_base, att_adv = scale(att_base), scale(att_adv)
-
         if self._mode == "spat":
             return self.get_adv_spat_loss(att_base, att_adv)
 
@@ -41,17 +39,19 @@ class AdvModelTCCNet(AdvModel):
             return self.get_adv_temp_loss(att_base, att_adv)
 
         if self._mode == "spatiotemp":
-            spat_losses = self.get_adv_spat_loss(att_base[0], att_adv[1])
-            temp_losses = self.get_adv_temp_loss(att_base[0], att_adv[1])
+            spat_losses = self.get_adv_spat_loss(att_base[0], att_adv[0])
+            temp_losses = self.get_adv_temp_loss(att_base[1], att_adv[1])
             spatiotemp_losses = {"adv": spat_losses.pop("adv") + temp_losses.pop("adv")}
             spatiotemp_losses.update({**spat_losses, **temp_losses})
             return spatiotemp_losses
 
     def get_adv_spat_loss(self, att_base: Tensor, att_adv: Tensor) -> Dict:
-        return {"adv": self._sc_loss(att_adv, att_base), **self._sc_loss.get_factors()}
+        att_base, att_adv = scale(att_base), scale(att_adv)
+        return {"adv": self._sc_loss(att_base, att_adv), **self._sc_loss.get_factors()}
 
     def get_adv_temp_loss(self, att_base: Tensor, att_adv: Tensor) -> Dict:
-        return {"adv": self._kldiv_loss(att_adv, att_base)}
+        att_base, att_adv = scale(att_base), scale(att_adv)
+        return {"adv": self._kldiv_loss(att_base, att_adv)}
 
     @staticmethod
     @abstractmethod

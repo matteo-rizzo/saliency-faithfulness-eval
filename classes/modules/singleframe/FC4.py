@@ -4,7 +4,6 @@ import torch
 from torch import nn, Tensor
 from torch.nn.functional import normalize
 
-from auxiliary.settings import ERASURE
 from classes.modules.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
 
 """
@@ -16,8 +15,10 @@ FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling
 
 class FC4(torch.nn.Module):
 
-    def __init__(self, squeezenet_version: float = 1.1):
+    def __init__(self, squeezenet_version: float = 1.1, use_cwp: bool = True):
         super().__init__()
+
+        self.__use_cwp = use_cwp
 
         # SqueezeNet backbone (conv1-fire8) for extracting semantic features
         squeezenet = SqueezeNetLoader(squeezenet_version).load(pretrained=True)
@@ -29,11 +30,9 @@ class FC4(torch.nn.Module):
             nn.Conv2d(512, 64, kernel_size=6, stride=1, padding=3),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
-            nn.Conv2d(64, 4, kernel_size=1, stride=1),
+            nn.Conv2d(64, 4 if self.__use_cwp else 3, kernel_size=1, stride=1),
             nn.ReLU(inplace=True)
         )
-
-        # self.softmax_2d = nn.Softmax2d()
 
     def forward(self, x: Tensor) -> Union[tuple, Tensor]:
         """
@@ -43,22 +42,23 @@ class FC4(torch.nn.Module):
         and the confidence weights are returned as well (used for visualizations)
         """
 
-        x = self.backbone(x)
-        out = self.final_convs(x)
+        # Get the semi-dense feature maps
+        out = self.final_convs(self.backbone(x))
 
-        # Per-patch color estimates (first 3 dimensions)
-        rgb = normalize(out[:, :3, :, :], dim=1)
+        # Confidence-weighted pooling: "out" is a set of semi-dense feature maps
+        if self.__use_cwp:
+            # Per-patch color estimates (first 3 dimensions)
+            rgb = normalize(out[:, :3, :, :], dim=1)
 
-        # Confidence (last dimension)
-        confidence = out[:, 3:4, :, :]
+            # Confidence (last dimension)
+            confidence = out[:, 3:4, :, :]
 
-        if ERASURE:
-            # TODO: fix
-            # max_val, max_loc = torch.max(confidence, dim=1)
-            # rnd_val, rnd_loc = torch.random(confidence, dim=1)
-            return
+            # Confidence-weighted pooling
+            pred = normalize(torch.sum(torch.sum(rgb * confidence, 2), 2), dim=1)
 
-        # Confidence-weighted pooling
-        pred = normalize(torch.sum(torch.sum(rgb * confidence, 2), 2), dim=1)
+            return pred, rgb, confidence
 
-        return pred, rgb, confidence
+        # Summation pooling
+        pred = normalize(torch.sum(torch.sum(out, 2), 2), dim=1)
+
+        return pred, out

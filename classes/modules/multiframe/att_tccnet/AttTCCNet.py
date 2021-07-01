@@ -65,12 +65,13 @@ class AttTCCNet(TCCNet):
         for t in range(time_steps):
             # Temporal attention
             temp_weighted_x, temp_weights = self.weight_temp(spat_weighted_x, hidden, t, time_steps)
-            temp_mask.append(temp_weights)
+            temp_mask.append(temp_weights.squeeze())
 
             hidden, cell = self.conv_lstm(temp_weighted_x.unsqueeze(0), hidden, cell)
             hidden_states.append(hidden)
 
         y = self.fc(torch.mean(torch.stack(hidden_states), dim=0))
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
+        temp_mask = torch.stack(temp_mask)
 
         return pred, spat_mask, temp_mask
