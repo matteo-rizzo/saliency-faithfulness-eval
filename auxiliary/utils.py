@@ -83,7 +83,7 @@ def bgr_to_rgb(x: np.ndarray) -> np.ndarray:
 
 def hwc_to_chw(x: np.ndarray) -> np.ndarray:
     """ Converts an image from height x width x channels to channels x height x width """
-    return x.transpose((2, 0, 1))
+    return x.transpose((0, 3, 1, 2))
 
 
 def scale(x: Tensor) -> Tensor:

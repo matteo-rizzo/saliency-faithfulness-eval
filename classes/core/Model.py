@@ -1,23 +1,22 @@
 import os
-from abc import ABC
-from typing import Tuple
+from abc import abstractmethod
+from typing import Union, Tuple
 
 import torch
 from torch import Tensor
 
 from auxiliary.settings import DEVICE
-from classes.losses.AngularLoss import AngularLoss
 
 
-class Model(ABC):
+class Model:
+
     def __init__(self):
         self._device = DEVICE
-        self._criterion = AngularLoss(self._device)
-        self._optimizer = None
-        self._network = None
+        self._criterion, self._network, self._optimizer = None, None, None
 
-    def predict(self, x: Tensor) -> Tuple:
-        return self._network(x)
+    @abstractmethod
+    def predict(self, *args, **kwargs) -> Union[torch.Tensor, Tuple]:
+        pass
 
     def print_network(self):
         print("\n----------------------------------------------------------\n")
@@ -36,13 +35,12 @@ class Model(ABC):
     def evaluation_mode(self):
         self._network = self._network.eval()
 
-    def save(self, path_to_log: str):
-        torch.save(self._network.state_dict(), os.path.join(path_to_log, "model.pth"))
+    def save(self, path_to_file: str):
+        torch.save(self._network.state_dict(), path_to_file)
 
     def load(self, path_to_pretrained: str):
-        path_to_model = os.path.join(path_to_pretrained, "model.pth")
-        self._network.load_state_dict(torch.load(path_to_model, map_location=self._device))
+        self._network.load_state_dict(torch.load(path_to_pretrained, map_location=self._device))
 
-    def set_optimizer(self, learning_rate: float, optimizer_type: str = "adam"):
+    def set_optimizer(self, learning_rate: float, optimizer_type: str = "rmsprop"):
         optimizers_map = {"adam": torch.optim.Adam, "rmsprop": torch.optim.RMSprop}
         self._optimizer = optimizers_map[optimizer_type](self._network.parameters(), lr=learning_rate)

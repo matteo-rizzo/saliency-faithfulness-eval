@@ -4,10 +4,8 @@ from torch import linalg as LA
 
 from classes.core.Loss import Loss
 
-""" https://ieeexplore.ieee.org/document/9380693 """
 
-
-class ComplementaryLoss(Loss):
+class ComplLoss(Loss):
     def __init__(self, device: torch.device):
         super().__init__(device)
 

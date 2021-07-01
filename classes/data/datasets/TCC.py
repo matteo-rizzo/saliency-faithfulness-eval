@@ -20,7 +20,7 @@ AUGMENT = False
 
 class TCC(TemporalDataset):
 
-    def __init__(self, train: bool, path_to_pred: str = None, path_to_att: str = None, data_folder: str = "tcc_split"):
+    def __init__(self, train: bool, data_folder: str = "tcc_split", path_to_pred: str = None, path_to_att: str = None):
         input_size = (TRAIN_IMG_W, TRAIN_IMG_H) if train else (TEST_IMG_W, TEST_IMG_H)
         super().__init__(train, input_size, AUGMENT, path_to_pred, path_to_att)
 

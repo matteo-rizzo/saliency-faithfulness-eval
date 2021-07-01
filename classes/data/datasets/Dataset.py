@@ -21,4 +21,4 @@ class Dataset(data.Dataset, ABC):
 
     @staticmethod
     def _load_from_file(path_to_item: str) -> np.ndarray:
-        return np.array(np.load(path_to_item), dtype='float32')
+        return np.load(path_to_item).astype("float32")

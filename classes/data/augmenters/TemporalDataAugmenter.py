@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from augmenters.DataAugmenter import DataAugmenter
-from auxiliary.utils import rgb_to_bgr
+from auxiliary.utils import rgb_to_bgr, bgr_to_rgb
 
 
 class TemporalDataAugmenter(DataAugmenter):
@@ -43,29 +43,23 @@ class TemporalDataAugmenter(DataAugmenter):
             color_bias = self.get_random_color_bias()
         return img * np.array([[[color_bias[0][0], color_bias[1][1], color_bias[2][2]]]], dtype=np.float32)
 
-    def augment_sequence(self, images: np.ndarray, illuminant: np.ndarray) -> Tuple:
+    def augment_sequence(self, seq: np.ndarray, illuminant: np.ndarray) -> Tuple:
         color_bias = self.get_random_color_bias()
 
         augmented_frames, augmented_illuminants = [], []
-        for i in range(images.shape[0]):
-            augmented_frames.append(self.__augment_image(images[i], color_bias))
+        for i in range(seq.shape[0]):
+            augmented_frames.append(self.__augment_image(seq[i], color_bias))
             augmented_illuminants.append(self.__augment_illuminant(illuminant, color_bias))
 
         color_bias = np.array([[[color_bias[0][0], color_bias[1][1], color_bias[2][2]]]], dtype=np.float32)
 
         return np.stack(augmented_frames), color_bias
 
-    def augment_mimic(self, img: np.ndarray) -> np.ndarray:
-        if len(img.shape) == 4:
-            num_steps = img.shape[0]
-            img = img[-1]
-        elif len(img.shape) == 3:
-            num_steps = 1
-            img = img
-        else:
-            raise ValueError("Bad image shape detected augmenting m: {}".format(img.shape))
+    def augment_mimic(self, seq: np.ndarray) -> np.ndarray:
+        num_steps = seq.shape[0]
+        shot_frame = seq[-1]
 
-        augmented_frames, img_temp = [], img[:, :, ::-1] * (1.0 / 255)
+        augmented_frames, img_temp = [], bgr_to_rgb(shot_frame) * (1.0 / 255)
         for _ in range(num_steps):
             scale = min(max(int(round(min(img_temp.shape[:2]) * 0.95)), 10), min(img_temp.shape[:2]))
             img_temp = self.__resize_image(self._rotate_and_crop(self._rescale(img_temp, scale)))

@@ -3,13 +3,13 @@ from typing import Union
 
 from torch import Tensor
 
-from classes.core.Model import Model
+from classes.core.ModelTCCNet import ModelTCCNet
 from classes.modules.multiframe.att_tccnet.AttTCCNet import AttTCCNet
 
 
-class ModelAttTCCNet(Model):
+class ModelAttTCCNet(ModelTCCNet):
 
-    def __init__(self, hidden_size: int, kernel_size: int, deactivate: bool):
+    def __init__(self, hidden_size: int, kernel_size: int, deactivate: str):
         super().__init__()
         self._network = AttTCCNet(hidden_size, kernel_size, deactivate).float().to(self._device)
 

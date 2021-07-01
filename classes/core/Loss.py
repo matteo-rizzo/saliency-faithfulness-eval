@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import torch
 from torch import Tensor
 
@@ -6,6 +8,7 @@ class Loss:
     def __init__(self, device: torch.device):
         self._device = device
 
+    @abstractmethod
     def _compute(self, *args, **kwargs) -> Tensor:
         pass
 

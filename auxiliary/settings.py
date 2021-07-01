@@ -37,7 +37,7 @@ DEVICE = get_device()
 
 # --- Dataset ---
 
-PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc/"
+PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc"
 
 # --- Erasure test ---
 
