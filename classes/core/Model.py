@@ -40,7 +40,7 @@ class Model:
         self._network = self._network.eval()
 
     def save(self, path_to_file: str):
-        torch.save(self._network.state_dict(), path_to_file)
+        torch.save(self._network.state_dict(), os.path.join(path_to_file, "model.pth"))
 
     def load(self, path_to_pretrained: str):
         self._network.load_state_dict(torch.load(path_to_pretrained, map_location=self._device))

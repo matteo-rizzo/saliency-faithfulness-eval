@@ -5,12 +5,12 @@ import time
 import torch
 from torch.utils.data import DataLoader
 
+from ModelMLP import ModelMLP
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import print_metrics, log_metrics
-from classes.core.Evaluator import Evaluator
+from ccc.core.EvaluatorCCC import EvaluatorCCC
+from ccc.singleframe.data.ColorChecker import ColorChecker
 from classes.core.LossTracker import LossTracker
-from classes.mlp.ModelMLP import ModelMLP
-from datasets.ColorChecker import ColorChecker
 
 RANDOM_SEED = 0
 EPOCHS = 2000
@@ -53,7 +53,7 @@ def main(opt):
     print("\t\t\t Training MLP with '{}' weights - Fold {}".format(weights, fold_num))
     print("**************************************************************\n")
 
-    evaluator = Evaluator()
+    evaluator = EvaluatorCCC()
     best_val_loss, best_metrics = 100.0, evaluator.get_best_metrics()
     train_loss, val_loss = LossTracker(), LossTracker()
 

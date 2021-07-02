@@ -4,13 +4,13 @@ import time
 
 from torch.utils.data import DataLoader
 
-from TrainerAdvTCC import TrainerAdvTCC
 from auxiliary.settings import make_deterministic
-from classes.adv.AdvModelTCCNet import AdvModelTCCNet
-from classes.data.datasets.TCC import TCC
-from classes.modules.multiframe.att_tccnet.AttTCCNet import AttTCCNet
-from classes.modules.multiframe.conf_att_tccnet.ConfAttTCCNet import ConfAttTCCNet
-from classes.modules.multiframe.conf_tccnet.ConfTCCNet import ConfTCCNet
+from classes.eval.adv.AdvModelTCCNet import AdvModelTCCNet
+from classes.eval.adv.TrainerAdvTCC import TrainerAdvTCC
+from classes.tasks.ccc.multiframe.data.TCC import TCC
+from classes.tasks.ccc.multiframe.modules.att_tccnet.AttTCCNet import AttTCCNet
+from classes.tasks.ccc.multiframe.modules.conf_att_tccnet.ConfAttTCCNet import ConfAttTCCNet
+from classes.tasks.ccc.multiframe.modules.conf_tccnet.ConfTCCNet import ConfTCCNet
 
 """ Run test JW1/WP3 """
 
@@ -19,7 +19,7 @@ from classes.modules.multiframe.conf_tccnet.ConfTCCNet import ConfTCCNet
 MODEL_TYPE = "att_tccnet"
 DATA_FOLDER = "tcc_split"
 MODE = "spatiotemp"
-PATH_TO_BASE_MODEL = os.path.join("trained_models", MODEL_TYPE, DATA_FOLDER)
+PATH_TO_BASE_MODEL = os.path.join("trained_models")
 
 HIDDEN_SIZE = 128
 KERNEL_SIZE = 5
@@ -87,9 +87,12 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     make_deterministic(opt.random_seed)
 
+    opt.path_to_base_model = os.path.join(opt.path_to_base_model, opt.model_type, opt.data_folder)
+
     print("\n *** Training configuration *** \n")
     print("\t Model type ........... : {}".format(opt.model_type))
     print("\t Data folder .......... : {}".format(opt.data_folder))
+    print("\t Mode ................. : {}".format(opt.mode))
     print("\t Path to base model ... : {}".format(opt.path_to_base_model))
     print("\t Hidden size .......... : {}".format(opt.hidden_size))
     print("\t Kernel size .......... : {}".format(opt.kernel_size))

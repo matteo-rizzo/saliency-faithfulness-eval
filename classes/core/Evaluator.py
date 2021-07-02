@@ -1,50 +1,40 @@
-import numpy as np
+from abc import abstractmethod, ABC
 
 
-class Evaluator:
+class Evaluator(ABC):
 
     def __init__(self):
+        super().__init__()
         self.__errors = []
 
         monitored_metrics = ["mean", "median", "trimean", "bst25", "wst25", "wst5"]
         self.__metrics = {}
         self.__best_metrics = {m: 100.0 for m in monitored_metrics}
 
-    def add_error(self, error: float):
-        self.__errors.append(error)
+    @abstractmethod
+    def add_error(self, **kwargs):
+        pass
 
+    @abstractmethod
     def reset_errors(self):
-        self.__errors = []
+        pass
 
-    def get_errors(self) -> list:
-        return self.__errors
+    @abstractmethod
+    def get_errors(self) -> any:
+        pass
 
-    def get_metrics(self) -> dict:
-        return self.__metrics
+    @abstractmethod
+    def get_metrics(self) -> any:
+        pass
 
-    def get_best_metrics(self) -> dict:
-        return self.__best_metrics
+    @abstractmethod
+    def get_best_metrics(self) -> any:
+        pass
 
-    def compute_metrics(self) -> dict:
-        self.__errors = sorted(self.__errors)
-        self.__metrics = {
-            "mean": np.mean(self.__errors),
-            "median": self.__g(0.5),
-            "trimean": 0.25 * (self.__g(0.25) + 2 * self.__g(0.5) + self.__g(0.75)),
-            "bst25": np.mean(self.__errors[:int(0.25 * len(self.__errors))]),
-            "wst25": np.mean(self.__errors[int(0.75 * len(self.__errors)):]),
-            "wst5": self.__g(0.95)
-        }
-        return self.__metrics
+    @abstractmethod
+    def compute_metrics(self) -> any:
+        pass
 
-    def update_best_metrics(self) -> dict:
-        self.__best_metrics["mean"] = self.__metrics["mean"]
-        self.__best_metrics["median"] = self.__metrics["median"]
-        self.__best_metrics["trimean"] = self.__metrics["trimean"]
-        self.__best_metrics["bst25"] = self.__metrics["bst25"]
-        self.__best_metrics["wst25"] = self.__metrics["wst25"]
-        self.__best_metrics["wst5"] = self.__metrics["wst5"]
-        return self.__best_metrics
-
-    def __g(self, f: float) -> float:
-        return np.percentile(self.__errors, f * 100)
+    @abstractmethod
+    def update_best_metrics(self) -> any:
+        pass

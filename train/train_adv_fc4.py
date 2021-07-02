@@ -10,9 +10,9 @@ from torch.utils.data import DataLoader
 from AdvModel import AdvModel
 from auxiliary.settings import DEVICE, make_deterministic
 from auxiliary.utils import log_metrics
-from classes.core.Evaluator import Evaluator
+from ccc.core.EvaluatorCCC import EvaluatorCCC
+from ccc.singleframe.data.ColorChecker import ColorChecker
 from classes.core.LossTracker import LossTracker
-from datasets.ColorChecker import ColorChecker
 
 """ Run test JW1/WP3 """
 
@@ -59,7 +59,8 @@ def train_epoch(model: AdvModel, data: DataLoader, loss: LossTracker, epoch: int
     return loss
 
 
-def eval_epoch(model: AdvModel, data: DataLoader, loss: LossTracker, eval_a: Evaluator, eval_b: Evaluator) -> Tuple:
+def eval_epoch(model: AdvModel, data: DataLoader, loss: LossTracker, eval_a: EvaluatorCCC,
+               eval_b: EvaluatorCCC) -> Tuple:
     for i, (img, label, _, pred_base, att_base) in enumerate(data):
         img, label = img.to(DEVICE), label.to(DEVICE)
         pred_base, att_base = pred_base.to(DEVICE), att_base.to(DEVICE)
@@ -117,7 +118,7 @@ def main(opt):
     print("\t\t\t Training Adversary Model - Fold {}".format(fold_num))
     print("**************************************************************\n")
 
-    evaluator_adv, evaluator_base = Evaluator(), Evaluator()
+    evaluator_adv, evaluator_base = EvaluatorCCC(), EvaluatorCCC()
     best_val_loss, best_metrics = 100.0, evaluator_base.get_best_metrics()
     train_loss, val_loss = LossTracker(), LossTracker()
 

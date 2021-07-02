@@ -4,14 +4,14 @@ import time
 import matplotlib.pyplot as plt
 import torch.utils.data
 import torchvision.transforms.functional as F
-from classes.modules.fc4.ModelFC4 import ModelFC4
+from classes.tasks.fc4.ModelFC4 import ModelFC4
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import correct, rescale, scale
-from classes.core.Evaluator import Evaluator
-from datasets.ColorChecker import ColorChecker
+from ccc.core.EvaluatorCCC import EvaluatorCCC
+from ccc.singleframe.data.ColorChecker import ColorChecker
 
 # Set to -1 to process all the samples in the test set of the current fold
 NUM_SAMPLES = -1
@@ -25,7 +25,7 @@ PATH_TO_SAVED = os.path.join("vis", "plots", "tmp_{}".format(time.time()))
 
 
 def main():
-    evaluator = Evaluator()
+    evaluator = EvaluatorCCC()
     model = ModelFC4()
     os.makedirs(PATH_TO_SAVED)
 
