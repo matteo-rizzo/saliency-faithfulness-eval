@@ -17,7 +17,7 @@ Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4
 * Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
 * Serrano & Smith, *“Is Attention Interpretable?”,* ACL (2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
 * Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/) - [Code](https://github.com/successar/AttentionExplanation)] 
-* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)
+* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)]
 
 #### Color Constancy
 
@@ -32,8 +32,7 @@ Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4
 
 ### Installation
 
-Please install the required Python packages listed in `requirements.txt`. Using a `virtualenv` is not compulsory but
-strongly advised.
+The code has been developed and tested on Ubuntu 20.10 using Python3.9 and some funtionalities introduced in torch 1.9.0. Please install the required Python packages listed in `requirements.txt`. Using a `virtualenv` is not compulsory but strongly advised.
 
 ### Configuring the dataset
 
