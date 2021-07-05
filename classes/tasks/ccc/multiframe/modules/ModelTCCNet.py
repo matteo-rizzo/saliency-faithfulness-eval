@@ -4,11 +4,11 @@ from typing import Union, Tuple
 import torch
 from torch import Tensor
 
-from classes.core.Model import Model
+from classes.eval.erasure.WeightsErasableModel import WeightsErasableModel
 from classes.losses.AngularLoss import AngularLoss
 
 
-class ModelTCCNet(Model):
+class ModelTCCNet(WeightsErasableModel):
 
     def __init__(self):
         super().__init__()

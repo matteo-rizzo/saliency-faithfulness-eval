@@ -44,8 +44,8 @@ def main(opt):
     hidden_size, kernel_size, deactivate = opt.hidden_size, opt.kernel_size, opt.deactivate
     epochs, batch_size, lr, adv_lambda = opt.epochs, opt.batch_size, opt.lr, opt.adv_lambda
 
-    log_folder = "{}_{}_{}_adv_{}_{}".format(model_type, mode, data_folder, adv_lambda, time.time())
-    path_to_log = os.path.join("train", "logs", log_folder)
+    log_folder = "adv_{}_{}_{}_{}_{}".format(model_type, mode, data_folder, adv_lambda, time.time())
+    path_to_log = os.path.join("tests", "adv", "logs", log_folder)
 
     path_to_pred = os.path.join(path_to_base_model, "pred")
     path_to_att = os.path.join(path_to_base_model, "att")
@@ -63,7 +63,7 @@ def main(opt):
     print("\t Test set size ....... : {}\n".format(len(test_set)))
 
     print("\n***********************************************************************************************")
-    print("\t\t\t Training Adversary {} Model - Data Folder {}".format(model_type, data_folder))
+    print("\t\t\t Training adversary '{}' model - Data folder '{}'".format(model_type, data_folder))
     print("***********************************************************************************************\n")
 
     trainer = TrainerAdvTCC(path_to_log, path_to_pred, path_to_att)

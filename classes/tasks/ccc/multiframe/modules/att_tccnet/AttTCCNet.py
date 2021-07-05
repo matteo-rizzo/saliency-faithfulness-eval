@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Tuple
 
 import torch
@@ -12,7 +13,7 @@ from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import
 """ Spatial attention + Temporal attention """
 
 
-class AttTCCNet(TCCNet):
+class AttTCCNet(TCCNet, ABC):
 
     def __init__(self, hidden_size: int = 128, kernel_size: int = 5, deactivate: str = ""):
         super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
@@ -56,6 +57,10 @@ class AttTCCNet(TCCNet):
         # Spatial attention
         spat_weighted_x, spat_mask = self.weight_spat(x)
 
+        # Spatial weights erasure (if active)
+        if self.erase_weights_active()[0]:
+            spat_weighted_x = self._we.single_weight_erasure(x, spat_mask, self.get_erasure_mode())
+
         # Init ConvLSTM
         _, _, h, w = spat_weighted_x.shape
         self.conv_lstm.init_hidden(self._hidden_size, (h, w))
@@ -65,6 +70,11 @@ class AttTCCNet(TCCNet):
         for t in range(time_steps):
             # Temporal attention
             temp_weighted_x, temp_weights = self.weight_temp(spat_weighted_x, hidden, t, time_steps)
+
+            # Temporal weights erasure (if active)
+            if self.erase_weights_active()[1]:
+                temp_weighted_x = self._we.single_weight_erasure(x, temp_weights, self.get_erasure_mode())
+
             temp_mask.append(temp_weights.squeeze())
 
             hidden, cell = self.conv_lstm(temp_weighted_x.unsqueeze(0), hidden, cell)
