@@ -15,11 +15,11 @@ class Model:
         self._criterion, self._network, self._optimizer = None, None, None
 
     @abstractmethod
-    def predict(self, *args, **kwargs) -> Union[torch.Tensor, Tuple]:
+    def predict(self, *args, **kwargs) -> Union[Tensor, Tuple]:
         pass
 
     @abstractmethod
-    def optimize(self, *args, **kwargs) -> Union[torch.Tensor, Tuple]:
+    def optimize(self, *args, **kwargs) -> Union[Tensor, Tuple]:
         pass
 
     def print_network(self):

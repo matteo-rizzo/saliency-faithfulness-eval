@@ -1,6 +1,4 @@
 import os
-from typing import Tuple
-from typing import Union
 
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
@@ -8,21 +6,15 @@ from torch import Tensor
 from torchvision.transforms import transforms
 
 from auxiliary.utils import correct, rescale, scale
-from classes.tasks.ccc.multiframe.modules.ModelTCCNet import ModelTCCNet
+from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.modules.conf_tccnet.ConfTCCNet import ConfTCCNet
 
 
-class ModelConfTCCNet(ModelTCCNet):
+class ModelConfTCCNet(ModelSaliencyTCCNet):
 
     def __init__(self, hidden_size: int, kernel_size: int, deactivate: str):
         super().__init__()
         self._network = ConfTCCNet(hidden_size, kernel_size, deactivate).float().to(self._device)
-
-    def predict(self, x: Tensor, m: Tensor = None, return_steps: bool = False) -> Union[Tuple, Tensor]:
-        pred, rgb, confidence = self._network(x)
-        if return_steps:
-            return pred, rgb, confidence
-        return pred
 
     def vis_confidence(self, model_output: dict, path_to_plot: str):
         model_output = {k: v.clone().detach().to(self._device) for k, v in model_output.items()}

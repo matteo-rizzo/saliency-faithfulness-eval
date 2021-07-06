@@ -1,4 +1,3 @@
-import torch
 from torch import nn, tanh
 from torch.nn.functional import normalize
 
@@ -17,7 +16,7 @@ class MLP(nn.Module):
         if self.__learn_attention:
             self.attention = SpatialAttention(input_size=512)
 
-    def __impose_attention(self, x: torch.Tensor, w: torch.Tensor = None):
+    def __impose_attention(self, x: Tensor, w: Tensor = None):
         if w is None and self.__learn_attention:
             x_temp = x.view(x.shape[0], int(x.shape[1] ** (1 / 2)), int(x.shape[1] ** (1 / 2)))
             x_temp = x_temp.unsqueeze(1).expand(-1, 512, -1, -1)
@@ -28,7 +27,7 @@ class MLP(nn.Module):
             x = x * w
         return x
 
-    def forward(self, x: torch.Tensor, w: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, x: Tensor, w: Tensor = None) -> Tensor:
         x = self.input_layer(x)
         x = tanh(x)
         x = self.__impose_attention(x, w)

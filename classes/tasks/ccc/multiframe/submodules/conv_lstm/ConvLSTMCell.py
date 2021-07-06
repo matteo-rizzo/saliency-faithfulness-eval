@@ -2,6 +2,7 @@ from typing import Tuple
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 from torch.autograd import Variable
 
 from auxiliary.settings import DEVICE
@@ -34,7 +35,7 @@ class ConvLSTMCell(nn.Module):
         self.Wcf = None
         self.Wco = None
 
-    def forward(self, x: torch.Tensor, h: torch.Tensor, c: torch.Tensor) -> Tuple:
+    def forward(self, x: Tensor, h: Tensor, c: Tensor) -> Tuple:
         ci = torch.sigmoid(self.Wxi(x) + self.Whi(h) + c * self.Wci)
         cf = torch.sigmoid(self.Wxf(x) + self.Whf(h) + c * self.Wcf)
         cc = cf * c + ci * torch.tanh(self.Wxc(x) + self.Whc(h))

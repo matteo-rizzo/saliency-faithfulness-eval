@@ -1,20 +1,9 @@
-from typing import Tuple
-from typing import Union
-
-from torch import Tensor
-
-from classes.tasks.ccc.multiframe.modules.ModelTCCNet import ModelTCCNet
+from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.modules.conf_att_tccnet.ConfAttTCCNet import ConfAttTCCNet
 
 
-class ModelConfAttTCCNet(ModelTCCNet):
+class ModelConfAttTCCNet(ModelSaliencyTCCNet):
 
     def __init__(self, hidden_size: int, kernel_size: int, deactivate: str):
         super().__init__()
         self._network = ConfAttTCCNet(hidden_size, kernel_size, deactivate).float().to(self._device)
-
-    def predict(self, x: Tensor, m: Tensor = None, return_steps: bool = False) -> Union[Tuple, Tensor]:
-        pred, rgb, confidence = self._network(x)
-        if return_steps:
-            return pred, rgb, confidence
-        return pred

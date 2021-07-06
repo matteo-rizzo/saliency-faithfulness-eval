@@ -2,10 +2,10 @@ from abc import ABC
 from typing import Tuple
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.nn.functional import normalize
 
-from classes.tasks.ccc.multiframe.submodules.TCCNet import TCCNet
+from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
 from classes.tasks.ccc.multiframe.submodules.attention.SpatialAttention import SpatialAttention
 from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
 from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
@@ -13,7 +13,7 @@ from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import
 """ Spatial attention + Temporal attention """
 
 
-class AttTCCNet(TCCNet, ABC):
+class AttTCCNet(SaliencyTCCNet, ABC):
 
     def __init__(self, hidden_size: int = 128, kernel_size: int = 5, deactivate: str = ""):
         super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
@@ -29,21 +29,46 @@ class AttTCCNet(TCCNet, ABC):
         if self._deactivate != "temporal":
             self.temp_att = TemporalAttention(features_size=512, hidden_size=hidden_size)
 
-    def weight_spat(self, x: torch.Tensor) -> Tuple:
+    def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
         if self._deactivate == "spatial":
             return x, None
+
         spat_weights = self.spat_att(x)
-        spat_weighted_x = (x * spat_weights).clone()
+
+        # Spatial weights erasure (if active)
+        if self.erase_weights_active()[0]:
+            spat_weights = self._we.single_weight_erasure(spat_weights, self.get_erasure_mode(), log_type="spat")
+
+        spat_weighted_x = self._apply_spat_weights(x, spat_weights)
+
         return spat_weighted_x, spat_weights
 
-    def weight_temp(self, x: torch.Tensor, hidden: torch.Tensor, t: int, time_steps: int) -> Tuple:
+    def __reset_temp_mask(self):
+        self.temp_mask = []
+
+    @staticmethod
+    def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+        return (x * mask).clone()
+
+    def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
         if self._deactivate == "temporal":
-            return x[t, :, :, :], None
+            return x[t, :, :, :], Tensor()
+
         temp_weights = self.temp_att(x, hidden)
-        temp_weighted_x = torch.div(torch.sum(x * temp_weights, dim=0), time_steps)
+
+        # Temporal weights erasure (if active)
+        if self.erase_weights_active()[1]:
+            temp_weights = self._we.single_weight_erasure(temp_weights, self.get_erasure_mode(), log_type="temp")
+
+        temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
+
         return temp_weighted_x, temp_weights
 
-    def forward(self, x: torch.Tensor) -> Tuple:
+    @staticmethod
+    def _apply_temp_weights(x: Tensor, mask: Tensor, time_steps: int, **kwargs) -> Tensor:
+        return torch.div(torch.sum(x * mask, dim=0), time_steps)
+
+    def forward(self, x: Tensor) -> Tuple:
         """
         @param x: the sequences of frames of shape "bs x ts x nc x h x w"
         @return: the normalized illuminant prediction
@@ -55,11 +80,7 @@ class AttTCCNet(TCCNet, ABC):
         x = self.backbone(x)
 
         # Spatial attention
-        spat_weighted_x, spat_mask = self.weight_spat(x)
-
-        # Spatial weights erasure (if active)
-        if self.erase_weights_active()[0]:
-            spat_weighted_x = self._we.single_weight_erasure(x, spat_mask, self.get_erasure_mode())
+        spat_weighted_x, spat_mask = self._weight_spat(x)
 
         # Init ConvLSTM
         _, _, h, w = spat_weighted_x.shape
@@ -69,19 +90,15 @@ class AttTCCNet(TCCNet, ABC):
         hidden_states, temp_mask = [], []
         for t in range(time_steps):
             # Temporal attention
-            temp_weighted_x, temp_weights = self.weight_temp(spat_weighted_x, hidden, t, time_steps)
-
-            # Temporal weights erasure (if active)
-            if self.erase_weights_active()[1]:
-                temp_weighted_x = self._we.single_weight_erasure(x, temp_weights, self.get_erasure_mode())
-
+            temp_weighted_x, temp_weights = self._weight_temp(spat_weighted_x, hidden, t, time_steps)
             temp_mask.append(temp_weights.squeeze())
 
             hidden, cell = self.conv_lstm(temp_weighted_x.unsqueeze(0), hidden, cell)
             hidden_states.append(hidden)
 
+        temp_mask = torch.stack(temp_mask)
+
         y = self.fc(torch.mean(torch.stack(hidden_states), dim=0))
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
-        temp_mask = torch.stack(temp_mask)
 
         return pred, spat_mask, temp_mask

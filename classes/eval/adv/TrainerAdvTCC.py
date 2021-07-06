@@ -23,7 +23,7 @@ class TrainerAdvTCC(TrainerCCC):
 
         self._evaluator_base = EvaluatorCCC()
 
-    def __load_from_file(self, path_to_item: str) -> torch.Tensor:
+    def __load_from_file(self, path_to_item: str) -> Tensor:
         item = np.load(os.path.join(path_to_item), allow_pickle=True)
         return torch.from_numpy(item).squeeze(0).to(self._device)
 
@@ -33,7 +33,7 @@ class TrainerAdvTCC(TrainerCCC):
         temp_att_base = self.__load_from_file(os.path.join(self.__path_to_temp_att, file_name))
         return pred_base, spat_att_base, temp_att_base
 
-    def __compute_prediction(self, x: torch.Tensor, y: torch.Tensor, path_to_x: str, model: AdvModel):
+    def __compute_prediction(self, x: Tensor, y: Tensor, path_to_x: str, model: AdvModel):
         x, y = x.to(self._device), y.to(self._device)
 
         file_name = path_to_x[0].split(os.sep)[-1]

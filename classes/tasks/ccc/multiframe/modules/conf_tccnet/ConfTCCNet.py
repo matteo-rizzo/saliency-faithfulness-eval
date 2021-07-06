@@ -2,16 +2,17 @@ from typing import Tuple
 
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 from torch.nn.functional import normalize
 
 from auxiliary.utils import scale
-from classes.tasks.ccc.multiframe.submodules.TCCNet import TCCNet
-from classes.tasks.ccc.singleframe.modules.FC4 import FC4
+from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
 
 """ Confidence as spatial attention + Confidence as temporal attention """
 
 
-class ConfTCCNet(TCCNet):
+class ConfTCCNet(SaliencyTCCNet):
 
     def __init__(self, hidden_size: int = 128, kernel_size: int = 5, deactivate: str = None):
         super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
@@ -19,17 +20,39 @@ class ConfTCCNet(TCCNet):
         # Confidences as spatial and temporal attention
         self.fcn = FC4()
 
-    def weight_spat(self, x: torch.Tensor, conf: torch.Tensor) -> torch.Tensor:
-        return scale(x if self._deactivate == "spatial" else (x * conf)).clone()
+    def _weight_spat(self, x: Tensor, spat_conf: Tensor, **kwargs) -> Tensor:
+        if self._deactivate == "spatial":
+            return scale(x).clone()
 
-    def weight_temp(self, x: torch.Tensor, conf: torch.Tensor) -> Tuple:
+        # Spatial weights erasure (if active)
+        if self.erase_weights_active()[0]:
+            spat_conf = self._we.single_weight_erasure(spat_conf, self.get_erasure_mode(), log_type="spat")
+
+        return self._apply_spat_weights(x, spat_conf)
+
+    @staticmethod
+    def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+        return scale(x * mask).clone()
+
+    def _weight_temp(self, x: Tensor, conf: Tensor, **kwargs) -> Tuple:
         if self._deactivate == "temporal":
             return x, None
+
         temp_conf = F.softmax(torch.mean(torch.mean(conf.squeeze(1), dim=1), dim=1), dim=0)
-        temp_weighted_x = x * temp_conf.unsqueeze(1).unsqueeze(2).unsqueeze(3)
+
+        # Temporal weights erasure (if active)
+        if self.erase_weights_active()[1]:
+            temp_conf = self._we.single_weight_erasure(temp_conf, self.get_erasure_mode(), log_type="temp")
+
+        temp_weighted_x = self._apply_temp_weights(x, temp_conf)
+
         return temp_weighted_x, temp_conf
 
-    def forward(self, x: torch.Tensor) -> Tuple:
+    @staticmethod
+    def _apply_temp_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+        return x * mask.unsqueeze(1).unsqueeze(2).unsqueeze(3)
+
+    def forward(self, x: Tensor) -> Tuple:
         batch_size, time_steps, num_channels, h, w = x.shape
         x = x.view(batch_size * time_steps, num_channels, h, w)
 
@@ -37,10 +60,10 @@ class ConfTCCNet(TCCNet):
         _, rgb, spat_conf = self.fcn(x)
 
         # Spatial confidence (confidence mask)
-        spat_weighted_x = self.weight_spat(rgb, spat_conf)
+        spat_weighted_x = self._weight_spat(rgb, spat_conf)
 
         # Temporal confidence (average of confidence mask)
-        temp_weighted_x, temp_conf = self.weight_temp(spat_weighted_x, spat_conf)
+        temp_weighted_x, temp_conf = self._weight_temp(spat_weighted_x, spat_conf)
 
         _, _, h, w = spat_weighted_x.shape
         self.conv_lstm.init_hidden(self._hidden_size, (h, w))

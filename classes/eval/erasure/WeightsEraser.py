@@ -15,21 +15,26 @@ class WeightsEraser:
     def set_path_to_save_dir(self, path_to_save_dir: str):
         self.__path_to_save_dir = path_to_save_dir
 
-    def single_weight_erasure(self, original_input: Tensor, saliency_mask: Tensor, mode: str) -> Tensor:
+    def single_weight_erasure(self, saliency_mask: Tensor, mode: str, log_type: str = "") -> Tensor:
         """
-        Zeroes out one weight in the input saliency mask according to the selected mode
-        :param original_input: the input tensor data (e.g., image, text, encodings etc.)
+        Zeroes out one weight in the input saliency mask according to the selected mode and logs erased value
+        and corresponding index to file
         :param saliency_mask: a saliency mask scaled to the original input
         :param mode: the criterion to select the saliency weight to erase, it can be either:
             - "rand": a random weight in the given mask
             - "max": the highest weight in the given mask
-        :return: the original input weighted by the saliency mask with an item zeroed out
+        :param log_type: an optional id to indicate the type of saliency in the log (e.g., spatial vs temporal)
+        :return: the input saliency mask with an item zeroed out
         """
         val, idx, saliency_mask = WeightsEraser.erase_single_weight(saliency_mask, mode)
-        log_data = pd.DataFrame({"{}_val".format(mode): val, "{}_idx".format(mode): idx})
+        self.log_to_file(val, idx, mode, log_type)
+        return saliency_mask
+
+    def log_to_file(self, val: float, idx: int, mode: str, log_type: str):
+        # log_data = pd.DataFrame({"type": log_type, "mode": mode, "val": [val], "idx": [idx]})
+        log_data = pd.DataFrame({"mode": mode, "val": [val], "idx": [idx]})
         header = log_data.keys() if not os.path.exists(self.__path_to_save_dir) else False
         log_data.to_csv(self.__path_to_save_dir, mode='a', header=header, index=False)
-        return (original_input * saliency_mask).clone()
 
     @staticmethod
     def erase_single_weight(saliency_mask: Tensor, mode: str = "rand") -> Tuple:
@@ -44,18 +49,17 @@ class WeightsEraser:
         """
         s = saliency_mask.shape
         saliency_mask = torch.flatten(saliency_mask)
-        val, idx = None, None
 
         if mode == "max":
             (_, max_indices) = torch.max(saliency_mask, dim=0, keepdim=True)
-            idx = max_indices[random.randint(0, max_indices.shape[0] - 1)]
-            saliency_mask[idx] = 0
+            idx = max_indices[random.randint(0, max_indices.shape[0] - 1)].item()
         elif mode == "rand":
             idx = random.randint(0, saliency_mask.shape[0] - 1)
-            saliency_mask[idx] = 0
         else:
             raise ValueError("Mode '{}' not supported!".format(mode))
 
+        val = saliency_mask[idx].detach().item()
+        saliency_mask[idx] = 0
         saliency_mask = saliency_mask.view(s)
 
         return val, idx, saliency_mask

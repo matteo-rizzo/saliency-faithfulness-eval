@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script runs the training of the adversarial model for each of the selected lambda values
+# This script runs the training of the adversarial model for each of the selected lambda values (JW1-WP3)
 
 pwd
 source venv/bin/activate
@@ -13,7 +13,7 @@ declare -a modes=("spatiotemp" "spat" "temp")
 for lambda in "${lambdas[@]}"; do
   for model_type in "${model_types[@]}"; do
     for mode in "${modes[@]}"; do
-      python3 train/train_adv_tccnet.py --epochs 1000 --model_type "$model_type" --adv_lambda "$lambda" --mode "$mode" || exit
+      python3 tests/adv/train_adv_tccnet.py --epochs 1000 --model_type "$model_type" --adv_lambda "$lambda" --mode "$mode" || exit
     done
   done
 done

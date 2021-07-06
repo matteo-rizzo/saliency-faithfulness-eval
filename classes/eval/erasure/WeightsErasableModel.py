@@ -12,7 +12,7 @@ class WeightsErasableModel(Model, ABC):
         self._network.set_erase_weights(state)
 
     def reset_weights_erasure(self):
-        self._network.set_erase_weights(False)
+        self._network.reset_erase_weights()
 
     def set_weights_erasure_mode(self, mode: str):
         self._network.set_erasure_mode(mode)

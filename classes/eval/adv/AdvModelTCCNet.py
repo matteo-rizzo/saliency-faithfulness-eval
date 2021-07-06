@@ -1,20 +1,19 @@
 from abc import abstractmethod
 from typing import Tuple, Dict, Union
 
-import torch
 from torch import Tensor
 
+from SaliencyTCCNet import SaliencyTCCNet
 from auxiliary.utils import scale
 from classes.eval.adv.AdvModel import AdvModel
 from classes.losses.AngularLoss import AngularLoss
 from classes.losses.KLDivLoss import KLDivLoss
 from classes.losses.StructComplLoss import StructComplLoss
-from classes.tasks.ccc.multiframe.submodules.TCCNet import TCCNet
 
 
 class AdvModelTCCNet(AdvModel):
 
-    def __init__(self, network: TCCNet, mode: str = "", adv_lambda: float = 0.00005):
+    def __init__(self, network: SaliencyTCCNet, mode: str = "", adv_lambda: float = 0.00005):
         super().__init__(adv_lambda)
 
         self._network = network.to(self._device)
@@ -28,7 +27,7 @@ class AdvModelTCCNet(AdvModel):
         self._sc_loss = StructComplLoss(self._device)
         self._kldiv_loss = KLDivLoss(self._device)
 
-    def predict(self, x: torch.Tensor) -> Tuple:
+    def predict(self, x: Tensor) -> Tuple:
         return self._network(x)
 
     def get_adv_regs(self, att_base: Union[Tensor, Tuple], att_adv: Union[Tensor, Tuple]) -> Dict:

@@ -1,15 +1,15 @@
-from abc import ABC
-from typing import Tuple
+from abc import ABC, abstractmethod
+from typing import Tuple, Union
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 
 from auxiliary.settings import DEVICE
 from classes.eval.erasure.MultiWeightsErasableModule import MultiWeightsErasableModule
 from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
 
 
-class TCCNet(MultiWeightsErasableModule, ABC):
+class SaliencyTCCNet(MultiWeightsErasableModule, ABC):
 
     def __init__(self, rnn_input_size: int = 3, hidden_size: int = 128, kernel_size: int = 3, deactivate: str = None):
         super().__init__()
@@ -34,3 +34,21 @@ class TCCNet(MultiWeightsErasableModule, ABC):
         hidden_state = torch.zeros((batch_size, self._hidden_size, h, w)).to(self.__device)
         cell_state = torch.zeros((batch_size, self._hidden_size, h, w)).to(self.__device)
         return hidden_state, cell_state
+
+    @abstractmethod
+    def _weight_spat(self, x: Tensor, **kwargs) -> Union[Tuple, Tensor]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+        pass
+
+    @abstractmethod
+    def _weight_temp(self, x: Tensor, **kwargs) -> Union[Tuple, Tensor]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _apply_temp_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+        pass
