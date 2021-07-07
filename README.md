@@ -21,18 +21,23 @@ Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4
 
 #### Color Constancy
 
-* Hu et al., *“FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling”*, CVPR (2017) [[Paper](https://www.microsoft.com/en-us/research/publication/fully-convolutional-color-constancy-confidence-weighted-pooling/) - [Code](https://github.com/matteo-rizzo/fc4-pytorch)]
-* Qian et al. “A Benchmark for Temporal Color Constancy” ArXiv (2020) [[Paper](https://arxiv.org/abs/2003.03763) - [Code](https://github.com/yanlinqian/Temporal-Color-Constancy)]
+* Hu et al., *“FC4: Fully Convolutional Color Constancy with Confidence-weighted Pooling”*, CVPR (
+    2017) [[Paper](https://www.microsoft.com/en-us/research/publication/fully-convolutional-color-constancy-confidence-weighted-pooling/) - [Code](https://github.com/matteo-rizzo/fc4-pytorch)]
+* Qian et al. “A Benchmark for Temporal Color Constancy” ArXiv (
+    2020) [[Paper](https://arxiv.org/abs/2003.03763) - [Code](https://github.com/yanlinqian/Temporal-Color-Constancy)]
 
 #### Datasets
 
 + [Color Checker](https://www2.cs.sfu.ca/~colour/data/shi_gehler/)
++ [TCC](https://github.com/yanlinqian/Temporal-Color-Constancy)
 
 ## Running the code
 
 ### Installation
 
-The code has been developed and tested on Ubuntu 20.10 using Python3.9 and some funtionalities introduced in torch 1.9.0. Please install the required Python packages listed in `requirements.txt`. Using a `virtualenv` is not compulsory but strongly advised.
+The code has been developed and tested on Ubuntu 20.10 using Python3.9 and some funtionalities introduced in torch
+1.9.0. Please install the required Python packages listed in `requirements.txt`. Using a `virtualenv` is not compulsory
+but strongly advised.
 
 ### Configuring the dataset
 
@@ -42,12 +47,16 @@ folder name coherently with paths used inside the user-defined PyTorch dataset c
 dataset implementation at `classes/data/datasets.ColorChecker.py` refer to a folder named `color_checker`, that should
 be found at `path/to/dataset/color_checker`.
 
-### Training an adversarial model
+### Tests
+
+#### JW1-WP3: Training an adversarial model
 
 1. Under the same root folder (at, e.g., `path/to/model`), store the ground truth predictions and attention masks in
    directories named `att` and `pred` respectively
-2. Either run the code with `python3 train/train_adv.py --path_to_base_model "path/to/model"` or edit
-   the `PATH_TO_BASE_MODEL` global variable inside `train/train_adv.py`.
+2. Either run the code with `python3 tests/adv/train_adv.py --path_to_base_model "path/to/model"` or edit
+   the `PATH_TO_BASE_MODEL` global variable inside `tests/adv/train_adv.py`.
+
+#### SS1-SS2: Erasing saliency weights
 
 ## Extending the code
 

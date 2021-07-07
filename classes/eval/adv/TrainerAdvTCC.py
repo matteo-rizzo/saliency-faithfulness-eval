@@ -3,6 +3,7 @@ from typing import Dict
 
 import numpy as np
 import torch
+from torch import Tensor
 from torch.utils.data import DataLoader
 
 from classes.eval.adv.AdvModel import AdvModel

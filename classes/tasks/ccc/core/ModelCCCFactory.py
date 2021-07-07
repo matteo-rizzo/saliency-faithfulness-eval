@@ -15,6 +15,7 @@ class ModelCCCFactory:
         }
 
     def get(self, model_type: str) -> ModelCCC:
-        if model_type not in self.__models.keys():
-            raise ValueError("Model '{}' not supported! Supported models: {}".format(model_type, self.__models.keys()))
+        supp_models = self.__models.keys()
+        if model_type not in supp_models:
+            raise ValueError("Model '{}' not supported! Supported models: {}".format(model_type, supp_models))
         return self.__models[model_type]

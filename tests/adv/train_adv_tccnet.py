@@ -7,13 +7,11 @@ from torch.utils.data import DataLoader
 from auxiliary.settings import make_deterministic
 from classes.eval.adv.AdvModelTCCNet import AdvModelTCCNet
 from classes.eval.adv.TrainerAdvTCC import TrainerAdvTCC
+from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.TCC import TCC
-from classes.tasks.ccc.multiframe.modules.att_tccnet.AttTCCNet import AttTCCNet
-from classes.tasks.ccc.multiframe.modules.conf_att_tccnet.ConfAttTCCNet import ConfAttTCCNet
-from classes.tasks.ccc.multiframe.modules.conf_tccnet.ConfTCCNet import ConfTCCNet
 
+# ----------------------------------------------------------------------------------------------------------
 """ Run test JW1/WP3 """
-
 # ----------------------------------------------------------------------------------------------------------
 
 MODEL_TYPE = "att_tccnet"
@@ -31,10 +29,6 @@ BATCH_SIZE = 1
 LEARNING_RATE = 0.0003
 ADV_LAMBDA = 0.05
 
-# ----------------------------------------------------------------------------------------------------------
-
-ADV_MODELS = {"att_tccnet": AttTCCNet, "conf_tccnet": ConfTCCNet, "conf_att_tccnet": ConfAttTCCNet}
-
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -50,7 +44,7 @@ def main(opt):
     path_to_pred = os.path.join(path_to_base_model, "pred")
     path_to_att = os.path.join(path_to_base_model, "att")
 
-    network = ADV_MODELS[model_type](hidden_size, kernel_size, deactivate)
+    network = NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, deactivate)
     adv_model = AdvModelTCCNet(network, mode, adv_lambda)
 
     training_set = TCC(train=True, data_folder=data_folder)

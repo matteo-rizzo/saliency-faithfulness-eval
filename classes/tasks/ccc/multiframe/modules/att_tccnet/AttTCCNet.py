@@ -43,9 +43,6 @@ class AttTCCNet(SaliencyTCCNet, ABC):
 
         return spat_weighted_x, spat_weights
 
-    def __reset_temp_mask(self):
-        self.temp_mask = []
-
     @staticmethod
     def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
         return (x * mask).clone()
@@ -62,7 +59,7 @@ class AttTCCNet(SaliencyTCCNet, ABC):
 
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
 
-        return temp_weighted_x, temp_weights
+        return temp_weighted_x, temp_weights.squeeze()
 
     @staticmethod
     def _apply_temp_weights(x: Tensor, mask: Tensor, time_steps: int, **kwargs) -> Tensor:
@@ -91,7 +88,7 @@ class AttTCCNet(SaliencyTCCNet, ABC):
         for t in range(time_steps):
             # Temporal attention
             temp_weighted_x, temp_weights = self._weight_temp(spat_weighted_x, hidden, t, time_steps)
-            temp_mask.append(temp_weights.squeeze())
+            temp_mask.append(temp_weights)
 
             hidden, cell = self.conv_lstm(temp_weighted_x.unsqueeze(0), hidden, cell)
             hidden_states.append(hidden)
