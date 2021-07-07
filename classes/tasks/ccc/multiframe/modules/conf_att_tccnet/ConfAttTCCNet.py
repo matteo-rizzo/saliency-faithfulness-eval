@@ -37,7 +37,7 @@ class ConfAttTCCNet(SaliencyTCCNet):
 
         # Spatial weights erasure (if active)
         if self.erase_weights_active()[0]:
-            spat_weights = self._we.single_weight_erasure(spat_conf, self.get_erasure_mode(), log_type="spat")
+            spat_weights = self._we.single_weight_erasure(spat_conf, self.get_erasure_mode())
 
         spat_weighted_x = self._apply_spat_weights(rgb, spat_conf)
 
@@ -51,7 +51,7 @@ class ConfAttTCCNet(SaliencyTCCNet):
 
         # Temporal weights erasure (if active)
         if self.erase_weights_active()[1]:
-            temp_weights = self._we.single_weight_erasure(temp_weights, self.get_erasure_mode(), log_type="temp")
+            temp_weights = self._we.single_weight_erasure(temp_weights, self.get_erasure_mode())
 
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
 
