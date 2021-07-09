@@ -53,8 +53,8 @@ def main(opt):
 
     tester = ESWTesterTCCNet(model, data_loader, path_to_log, deactivate)
 
-    print("\n\t -> Running SINGLE WEIGHT erasure \n")
-    tester.run(test_type="single")
+    # print("\n\t -> Running SINGLE WEIGHT erasure \n")
+    # tester.run(test_type="single")
 
     print("\n\t -> Running MULTI WEIGHTS erasure \n")
     tester.run(test_type="multi")

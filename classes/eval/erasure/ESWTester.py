@@ -21,7 +21,7 @@ class ESWTester:
 
     def _set_path_to_log_file(self, test_type: str):
         self._path_to_log_file = os.path.join(self.__path_to_log, "{}.csv".format(test_type))
-        self._model.set_we_path(self._path_to_log_file)
+        self._model.set_we_log_path(self._path_to_log_file)
 
     def _merge_logs(self):
         """ Merges the log written by the ESWTester with the one written by the WeightsEraser """

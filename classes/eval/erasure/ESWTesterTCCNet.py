@@ -60,11 +60,12 @@ class ESWTesterTCCNet(ESWTester):
         else:
             mask_size = log_base["mask_size"]
 
-        for n in range(mask_size):
+        for n in range(1, mask_size):
             # Set the number of weights to be erased
             if self.__deactivate is None:
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
+            print("\t * N: {}/{}".format(n, mask_size))
             self._model.set_we_num(n)
 
             self._erase_weights(x, y, mode="max", log_base=log_base)
@@ -101,6 +102,5 @@ class ESWTesterTCCNet(ESWTester):
 
             # Deactivate weights erasure
             self._model.deactivate_we()
-            break
 
         self._merge_logs()
