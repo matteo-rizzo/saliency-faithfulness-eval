@@ -16,8 +16,8 @@ class TrainerAdvTCC(TrainerCCC):
         super().__init__(path_to_log, val_frequency)
 
         self.__path_to_pred = path_to_pred
-        self.__path_to_spat_att = os.path.join(path_to_att, "spatial")
-        self.__path_to_temp_att = os.path.join(path_to_att, "temporal")
+        self.__path_to_spat_att = os.path.join(path_to_att, "spat")
+        self.__path_to_temp_att = os.path.join(path_to_att, "temp")
 
         self.__path_to_vis = os.path.join(path_to_log, "vis")
         os.makedirs(self.__path_to_vis)

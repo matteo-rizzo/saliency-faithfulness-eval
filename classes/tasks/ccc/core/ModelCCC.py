@@ -2,11 +2,11 @@ from abc import ABC
 
 from torch import Tensor
 
-from classes.eval.erasure.WeightsErasableModel import WeightsErasableModel
+from classes.eval.erasure.ESWModel import ESWModel
 from classes.losses.AngularLoss import AngularLoss
 
 
-class ModelCCC(WeightsErasableModel, ABC):
+class ModelCCC(ESWModel, ABC):
 
     def __init__(self):
         super().__init__()

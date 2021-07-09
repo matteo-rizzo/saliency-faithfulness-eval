@@ -1,3 +1,4 @@
+import random
 import re
 
 import numpy as np
@@ -9,6 +10,7 @@ import torch
 def make_deterministic(seed: int):
     torch.manual_seed(seed)
     np.random.seed(seed)
+    random.seed(seed)
     torch.backends.cudnn.benchmark = False
 
 

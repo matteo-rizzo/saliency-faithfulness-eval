@@ -5,11 +5,11 @@ import torch
 from torch import nn, Tensor
 
 from auxiliary.settings import DEVICE
-from classes.eval.erasure.MultiWeightsErasableModule import MultiWeightsErasableModule
+from classes.eval.erasure.EMultiSWModule import EMultiSWModule
 from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
 
 
-class SaliencyTCCNet(MultiWeightsErasableModule, ABC):
+class SaliencyTCCNet(EMultiSWModule, ABC):
 
     def __init__(self, rnn_input_size: int = 3, hidden_size: int = 128, kernel_size: int = 3, deactivate: str = None):
         super().__init__()

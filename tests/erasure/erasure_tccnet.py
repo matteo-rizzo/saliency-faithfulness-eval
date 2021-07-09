@@ -5,7 +5,7 @@ import time
 from torch.utils.data import DataLoader
 
 from auxiliary.settings import make_deterministic
-from classes.eval.erasure.WeightsErasureTesterTCCNet import WeightsErasureTesterTCCNet
+from classes.eval.erasure.ESWTesterTCCNet import ESWTesterTCCNet
 from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.multiframe.data.TCC import TCC
 
@@ -18,7 +18,7 @@ DATA_FOLDER = "tcc_split"
 PATH_TO_BASE_MODEL = os.path.join("trained_models")
 
 # Granularity of the erasure. Values: "single", "multi"
-ERASURE_TYPE = "multi"
+ERASURE_TYPE = "single"
 
 HIDDEN_SIZE = 128
 KERNEL_SIZE = 5
@@ -48,10 +48,16 @@ def main(opt):
     print("\n\t Dataset size : {}".format(len(dataset)))
 
     print("\n***********************************************************************************************")
-    print("\t\t\t Testing '{}' model - Data folder '{}'".format(model_type, data_folder))
+    print("\t\t WEIGHTS ERASURE (Testing '{}' model - Data folder '{}')".format(model_type, data_folder))
     print("***********************************************************************************************\n")
 
-    WeightsErasureTesterTCCNet(model, path_to_log).run(data_loader, deactivate)
+    tester = ESWTesterTCCNet(model, data_loader, path_to_log, deactivate)
+
+    print("\n\t -> Running SINGLE WEIGHT erasure \n")
+    tester.run(test_type="single")
+
+    print("\n\t -> Running MULTI WEIGHTS erasure \n")
+    tester.run(test_type="multi")
 
 
 if __name__ == '__main__':

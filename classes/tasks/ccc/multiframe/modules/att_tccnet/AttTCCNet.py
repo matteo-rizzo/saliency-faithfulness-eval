@@ -22,22 +22,22 @@ class AttTCCNet(SaliencyTCCNet, ABC):
         self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
 
         # Spatial attention
-        if self._deactivate != "spatial":
+        if self._deactivate != "spat":
             self.spat_att = SpatialAttention(input_size=512)
 
         # Temporal attention
-        if self._deactivate != "temporal":
+        if self._deactivate != "temp":
             self.temp_att = TemporalAttention(features_size=512, hidden_size=hidden_size)
 
     def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
-        if self._deactivate == "spatial":
+        if self._deactivate == "spat":
             return x, None
 
         spat_weights = self.spat_att(x)
 
         # Spatial weights erasure (if active)
-        if self.erase_weights_active()[0]:
-            spat_weights = self._we.single_weight_erasure(spat_weights, self.get_erasure_mode())
+        if self.we_spat_active():
+            spat_weights = self._we.erase(spat_weights, self.get_we_mode(), self.get_num_we_spat())
 
         spat_weighted_x = self._apply_spat_weights(x, spat_weights)
 
@@ -48,14 +48,14 @@ class AttTCCNet(SaliencyTCCNet, ABC):
         return (x * mask).clone()
 
     def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
-        if self._deactivate == "temporal":
+        if self._deactivate == "temp":
             return x[t, :, :, :], Tensor()
 
         temp_weights = self.temp_att(x, hidden)
 
         # Temporal weights erasure (if active)
-        if self.erase_weights_active()[1]:
-            temp_weights = self._we.single_weight_erasure(temp_weights, self.get_erasure_mode())
+        if self.we_temp_active():
+            temp_weights = self._we.erase(temp_weights, self.get_we_mode(), self.get_num_we_temp())
 
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
 

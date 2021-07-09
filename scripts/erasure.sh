@@ -8,7 +8,7 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
 declare -a model_types=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
 declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
-declare -a modes=("" "spatial" "temporal")
+declare -a modes=("" "spat" "temp")
 
 for model_type in "${model_types[@]}"; do
   for dir in "${dirs[@]}"; do

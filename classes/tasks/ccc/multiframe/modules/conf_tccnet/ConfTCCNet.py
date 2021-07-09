@@ -21,12 +21,12 @@ class ConfTCCNet(SaliencyTCCNet):
         self.fcn = FC4()
 
     def _weight_spat(self, x: Tensor, spat_conf: Tensor, **kwargs) -> Tensor:
-        if self._deactivate == "spatial":
+        if self._deactivate == "spat":
             return scale(x).clone()
 
         # Spatial weights erasure (if active)
-        if self.erase_weights_active()[0]:
-            spat_conf = self._we.single_weight_erasure(spat_conf, self.get_erasure_mode())
+        if self.we_spat_active():
+            spat_conf = self._we.erase(spat_conf, self.get_we_mode(), self.get_num_we())
 
         return self._apply_spat_weights(x, spat_conf)
 
@@ -35,14 +35,14 @@ class ConfTCCNet(SaliencyTCCNet):
         return scale(x * mask).clone()
 
     def _weight_temp(self, x: Tensor, conf: Tensor, **kwargs) -> Tuple:
-        if self._deactivate == "temporal":
+        if self._deactivate == "temp":
             return x, None
 
         temp_conf = F.softmax(torch.mean(torch.mean(conf.squeeze(1), dim=1), dim=1), dim=0)
 
         # Temporal weights erasure (if active)
-        if self.erase_weights_active()[1]:
-            temp_conf = self._we.single_weight_erasure(temp_conf, self.get_erasure_mode())
+        if self.we_temp_active():
+            temp_conf = self._we.erase(temp_conf, self.get_we_mode(), self.get_num_we())
 
         temp_weighted_x = self._apply_temp_weights(x, temp_conf)
 

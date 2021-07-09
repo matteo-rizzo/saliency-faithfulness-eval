@@ -18,10 +18,10 @@ class ConfAttTCCNet(SaliencyTCCNet):
         super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
 
         # Confidence as spatial attention
-        self.fcn = FC4(use_cwp=self._deactivate != "spatial")
+        self.fcn = FC4(use_cwp=self._deactivate != "spat")
 
         # Temporal attention
-        if self._deactivate != "temporal":
+        if self._deactivate != "temp":
             self.temp_att = TemporalAttention(features_size=3, hidden_size=hidden_size)
 
     @staticmethod
@@ -29,29 +29,29 @@ class ConfAttTCCNet(SaliencyTCCNet):
         return scale(x * mask).clone()
 
     def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
-        if self._deactivate == "spatial":
+        if self._deactivate == "spat":
             _, out = self.fcn(x)
             return out, None
 
         _, rgb, spat_conf = self.fcn(x)
 
         # Spatial weights erasure (if active)
-        if self.erase_weights_active()[0]:
-            spat_weights = self._we.single_weight_erasure(spat_conf, self.get_erasure_mode())
+        if self.we_spat_active():
+            spat_weights = self._we.erase(spat_conf, self.get_we_mode(), self.get_num_we())
 
         spat_weighted_x = self._apply_spat_weights(rgb, spat_conf)
 
         return spat_weighted_x, spat_conf
 
     def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
-        if self._deactivate == "temporal":
+        if self._deactivate == "temp":
             return x[t, :, :, :], Tensor()
 
         temp_weights = self.temp_att(x, hidden)
 
         # Temporal weights erasure (if active)
-        if self.erase_weights_active()[1]:
-            temp_weights = self._we.single_weight_erasure(temp_weights, self.get_erasure_mode())
+        if self.we_temp_active():
+            temp_weights = self._we.erase(temp_weights, self.get_we_mode(), self.get_num_we())
 
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
 
