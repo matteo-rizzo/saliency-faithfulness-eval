@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-import pandas as pd
+import numpy as np
 import torch
 
 from classes.eval.erasure.ESWModule import ESWModule
@@ -31,8 +31,14 @@ class EMultiSWModule(ESWModule):
         return self._num_we[1]
 
     def _save_grad(self, grad: List, saliency_type: str, **kwargs):
-        grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0)
-        grad_data = pd.DataFrame({"filename": [self._curr_filename], "type": [saliency_type], "grad": [grad]})
-        header = grad_data.keys() if not os.path.exists(self._save_grad_log_path) else False
-        grad_data.to_csv(self._save_grad_log_path, mode='a', header=header, index=False)
-        print("\t - Saved grad for {} saliency".format(saliency_type))
+        grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).numpy()
+
+        base_path_to_grad = os.path.join(self._path_to_sw_grad_log, saliency_type)
+        os.makedirs(base_path_to_grad, exist_ok=True)
+        path_to_grad = os.path.join(base_path_to_grad, self._curr_filename)
+
+        if os.path.isfile(path_to_grad):
+            grad = np.concatenate((grad, np.load(path_to_grad)), axis=1)
+
+        np.save(path_to_grad, grad)
+        print("\t - Saved {} saliency grad at {}".format(saliency_type, path_to_grad))

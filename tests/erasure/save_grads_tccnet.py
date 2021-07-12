@@ -20,7 +20,7 @@ PATH_TO_PTH = os.path.join("trained_models")
 
 HIDDEN_SIZE = 128
 KERNEL_SIZE = 5
-DEACTIVATE = ""
+DEACTIVATE = None
 
 USE_TRAINING_SET = False
 
@@ -45,9 +45,9 @@ def main(opt):
 
     model.activate_save_grad()
 
-    path_to_log = os.path.join("tests", "erasure", "logs")
-    os.makedirs(path_to_log, exist_ok=True)
-    model.set_save_grad_log_path(os.path.join(path_to_log, "grad_{}_{}_{}.csv").format(model_type, data_folder, time()))
+    path_to_log = os.path.join("tests", "erasure", "logs", "grad_{}_{}_{}".format(model_type, data_folder, time()))
+    os.makedirs(path_to_log)
+    model.set_path_to_sw_grad_log(path_to_log)
 
     print("\n------------------------------------------------------------------------------------------")
     print("\t\t Saving gradients for model '{}'".format(model_type))
@@ -55,7 +55,8 @@ def main(opt):
 
     for i, (x, _, y, path_to_seq) in enumerate(dataloader):
         x, y, file_name = x.to(DEVICE), y.to(DEVICE), path_to_seq[0].split(os.sep)[-1]
-        print("\n - Item {}/{} ({})".format(i, dataset_size, file_name))
+        print("\n - Item {}/{} ({})".format(i + 1, dataset_size, file_name))
+        model.set_curr_filename(file_name)
         pred = model.predict(x)
         torch.sum(pred).backward()
 

@@ -5,6 +5,8 @@ from torch.nn.functional import unfold
 
 from classes.core.Loss import Loss
 
+""" https://www.sciencedirect.com/science/article/abs/pii/S1077314218301954 """
+
 
 class BlockSparsityLoss(Loss):
     def __init__(self, device: torch.device):

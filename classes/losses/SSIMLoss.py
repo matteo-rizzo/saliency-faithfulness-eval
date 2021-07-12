@@ -11,8 +11,7 @@ from classes.core.Loss import Loss
 class SSIMLoss(Loss):
     def __init__(self, device: torch.device):
         super().__init__(device)
-        self.__one = Tensor([1]).to(self._device)
         self.__ssim_loss = SSIM(data_range=1, channel=1)
 
     def _compute(self, img1: Tensor, img2: Tensor) -> Tensor:
-        return self.__one - self.__ssim_loss(scale(img1), scale(img2)).to(self._device)
+        return self._one - self.__ssim_loss(scale(img1), scale(img2)).to(self._device)

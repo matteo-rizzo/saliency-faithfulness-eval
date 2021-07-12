@@ -41,6 +41,10 @@ def main(opt):
     os.makedirs(path_to_log)
 
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, deactivate)
+    path_to_pth = os.path.join(path_to_base_model, "model.pth")
+    print('\n Reloading pretrained model stored at: {} \n'.format(path_to_pth))
+    model.load(path_to_pth)
+    model.set_path_to_model_dir(path_to_base_model)
 
     dataset = TCC(train=use_train_set, data_folder=data_folder)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)

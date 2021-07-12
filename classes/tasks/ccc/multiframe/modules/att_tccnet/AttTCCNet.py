@@ -37,10 +37,11 @@ class AttTCCNet(SaliencyTCCNet, ABC):
 
         # Spatial weights erasure (if active)
         if self.we_spat_active():
-            spat_weights = self._we.erase(spat_weights, self.get_we_mode(), self.get_num_we_spat())
+            self._we.set_saliency_type("spat")
+            spat_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_spat())
 
         # Grad saving hook registration (if active)
-        if self.we_save_grad_active():
+        if self.save_sw_grad_active():
             spat_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="spat"))
 
         spat_weighted_x = self._apply_spat_weights(x, spat_weights)
@@ -59,10 +60,12 @@ class AttTCCNet(SaliencyTCCNet, ABC):
 
         # Temporal weights erasure (if active)
         if self.we_temp_active():
-            temp_weights = self._we.erase(temp_weights, self.get_we_mode(), self.get_num_we_temp())
+            self._we.set_saliency_type("temp")
+            temp_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_temp())
+            temp_weights = temp_weights[:, t].view(temp_weights.shape[0], 1, 1, 1)
 
         # Grad saving hook registration (if active)
-        if self.we_save_grad_active():
+        if self.save_sw_grad_active():
             temp_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="temp"))
 
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)

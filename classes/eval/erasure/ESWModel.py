@@ -29,5 +29,11 @@ class ESWModel(Model, ABC):
     def set_we_log_path(self, path: str):
         self._network.set_we_log_path(path)
 
-    def set_save_grad_log_path(self, path: str):
-        self._network.set_save_grad_log_path(path)
+    def set_path_to_model_dir(self, path: str):
+        self._network.set_path_to_model_dir(path)
+
+    def set_path_to_sw_grad_log(self, path: str):
+        self._network.set_path_to_sw_grad_log(path)
+
+    def set_curr_filename(self, filename):
+        self._network.set_curr_filename(filename)

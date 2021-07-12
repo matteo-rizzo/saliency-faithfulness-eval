@@ -12,20 +12,23 @@ class ESWModule(nn.Module):
         super().__init__()
         self._we = WeightsEraser()
         self._we_state = False
-        self._we_save_grad_state = False
         self._erasure_mode = "rand"
         self._num_we = 1
+        self._save_sw_grad_state = False
+        self._path_to_sw_grad_log = ""
         self._curr_filename = ""
-        self._save_grad_log_path = ""
 
-    def we_save_grad_active(self) -> bool:
-        return self._we_save_grad_state
+    def save_sw_grad_active(self) -> bool:
+        return self._save_sw_grad_state
 
     def set_save_grad_state(self, state: bool):
-        self._we_save_grad_state = state
+        self._save_sw_grad_state = state
 
-    def set_save_grad_log_path(self, path: str):
-        self._save_grad_log_path = path
+    def set_path_to_sw_grad_log(self, path: str):
+        self._path_to_sw_grad_log = path
+
+    def set_path_to_model_dir(self, path: str):
+        self._we.set_path_to_model_dir(path)
 
     def we_active(self) -> Union[bool, Tuple]:
         return self._we_state
@@ -39,17 +42,18 @@ class ESWModule(nn.Module):
     def set_we_mode(self, state: str):
         self._erasure_mode = state
 
-    def set_we_log_path(self, path: str):
-        self._we.set_path_to_save_dir(path)
-
     def set_num_we(self, state: Union[int, Tuple]):
         self._num_we = state
 
-    def set_we_state(self, state: Union[bool, Tuple]):
-        self._we_state = state
+    def set_we_log_path(self, path: str):
+        self._we.set_path_to_log(path)
 
     def set_curr_filename(self, filename: str):
+        self._we.set_curr_filename(filename)
         self._curr_filename = filename
+
+    def set_we_state(self, state: Union[bool, Tuple]):
+        self._we_state = state
 
     def deactivate_we(self):
         self._network.set_we_state(state=False)

@@ -869,3 +869,4 @@ FodyWeavers.xsd
 /dataset/color_checker/coordinates/
 /dataset/color_checker/images/
 /train/logs/
+/tests/erasure/assets/

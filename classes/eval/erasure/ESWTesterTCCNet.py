@@ -20,7 +20,7 @@ class ESWTesterTCCNet(ESWTester):
         :param deactivate: which saliency dimension to deactivate (either "spat", "temp" or None)
         """
         super().__init__(model, data, path_to_log)
-        if deactivate not in ["spat", "temp", None]:
+        if deactivate is not None and deactivate not in ["spat", "temp", ""]:
             raise ValueError("Invalid saliency dimension to deactivate: '{}'!".format(deactivate))
         self.__deactivate = deactivate
 
@@ -37,9 +37,9 @@ class ESWTesterTCCNet(ESWTester):
     def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, **kwargs) -> Dict:
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
-        print("\t - Err base: {:.4f}".format(err))
+        print("    - Err base: {:.4f}".format(err))
         log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().numpy()], "err_base": [err]}
-        if self.__deactivate is None:
+        if not self.__deactivate:
             return {**log_base, **{"spat_mask_size": prod(spat_mask.shape[1:]), "temp_mask_size": temp_mask.shape[1]}}
         if self.__deactivate != "spat":
             return {**log_base, **{"mask_size": prod(spat_mask.shape[1:])}}
@@ -53,7 +53,7 @@ class ESWTesterTCCNet(ESWTester):
     def _multi_weights_erasure(self, x: Tensor, y: Tensor, log_base: Dict):
         # Set the size of the mask to be considered depending on the deactivated dimension
         spat_mask_size, temp_mask_size, norm_fact = None, None, None
-        if self.__deactivate is None:
+        if not self.__deactivate:
             spat_mask_size, temp_mask_size = log_base["spat_mask_size"], log_base["temp_mask_size"]
             mask_size = min(spat_mask_size, temp_mask_size)
             norm_fact = max(spat_mask_size, temp_mask_size) // min(spat_mask_size, temp_mask_size)
@@ -62,12 +62,13 @@ class ESWTesterTCCNet(ESWTester):
 
         for n in range(1, mask_size):
             # Set the number of weights to be erased
-            if self.__deactivate is None:
+            if not self.__deactivate:
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
-            print("\t * N: {}/{}".format(n, mask_size))
+            print("\n  * N: {}/{}".format(n, mask_size))
             self._model.set_we_num(n)
 
+            self._erase_weights(x, y, mode="grad", log_base=log_base)
             self._erase_weights(x, y, mode="max", log_base=log_base)
             self._erase_weights(x, y, mode="rand", log_base=log_base)
 
@@ -91,6 +92,8 @@ class ESWTesterTCCNet(ESWTester):
             x, y, filename = x.to(self._device), y.to(self._device), path_to_x[0].split(os.sep)[-1]
             print("Testing item {}/{} ({}):".format(i, len(self._data), filename))
 
+            self._model.set_curr_filename(filename)
+
             # Predict without modifications
             log_base = self._predict_baseline(x, y, filename)
 
@@ -102,5 +105,7 @@ class ESWTesterTCCNet(ESWTester):
 
             # Deactivate weights erasure
             self._model.deactivate_we()
+
+            print("--------------------------------------------------------------")
 
         self._merge_logs()
