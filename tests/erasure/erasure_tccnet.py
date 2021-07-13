@@ -18,7 +18,7 @@ DATA_FOLDER = "tcc_split"
 PATH_TO_BASE_MODEL = os.path.join("trained_models")
 
 # Granularity of the erasure. Values: "single", "multi"
-ERASURE_TYPE = "single"
+ERASURE_TYPE = "multi"
 
 HIDDEN_SIZE = 128
 KERNEL_SIZE = 5
@@ -57,11 +57,8 @@ def main(opt):
 
     tester = ESWTesterTCCNet(model, data_loader, path_to_log, deactivate)
 
-    # print("\n\t -> Running SINGLE WEIGHT erasure \n")
-    # tester.run(test_type="single")
-
-    print("\n\t -> Running MULTI WEIGHTS erasure \n")
-    tester.run(test_type="multi")
+    print("\n\t -> Running {} WEIGHT(s) erasure \n".format(erasure_type.upper()))
+    tester.run(test_type=erasure_type)
 
 
 if __name__ == '__main__':
@@ -79,7 +76,14 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     make_deterministic(opt.random_seed)
 
-    opt.path_to_base_model = os.path.join(opt.path_to_base_model, opt.model_type, opt.data_folder)
+    if opt.deactivate == "temp":
+        sal_type = "spat"
+    elif opt.deactivate == "spat":
+        sal_type = "temp"
+    else:
+        sal_type = "spatiotemp"
+
+    opt.path_to_base_model = os.path.join(opt.path_to_base_model, sal_type, opt.model_type, opt.data_folder)
 
     print("\n *** Training configuration *** \n")
     print("\t Random seed .......... : {}".format(opt.random_seed))

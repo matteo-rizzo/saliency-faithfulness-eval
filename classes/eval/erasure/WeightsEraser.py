@@ -12,6 +12,8 @@ class WeightsEraser:
     def __init__(self):
         self.__path_to_log, self.__path_to_model_dir = "", ""
         self.__curr_filename, self.__saliency_type = None, None
+        self.__fetchers = {"max": self.__indices_max, "rand": self.__indices_rand,
+                           "grad": self.__indices_grad, "grad_prod": self.__indices_grad_prod}
 
     def set_path_to_log(self, path: str):
         self.__path_to_log = path
@@ -25,9 +27,12 @@ class WeightsEraser:
     def set_saliency_type(self, saliency_type: str):
         self.__saliency_type = saliency_type
 
-    def __load_grad(self) -> Tensor:
+    def __load_grad(self, x: torch.Tensor) -> Tensor:
         path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__saliency_type, self.__curr_filename)
-        return torch.from_numpy(np.load(path_to_grad))
+        grad = torch.from_numpy(np.load(path_to_grad))
+        if x.shape != grad.shape:
+            raise ValueError("Input-gradient shapes mismatch! Received input: {}, grad: {}".format(x.shape, grad.shape))
+        return grad
 
     def __load_saliency_mask(self) -> Tensor:
         path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__saliency_type, self.__curr_filename)
@@ -50,24 +55,28 @@ class WeightsEraser:
 
         s = saliency_mask.shape
         saliency_mask = torch.flatten(saliency_mask, start_dim=1)
-        idx = self.__fetch_indices(saliency_mask, mode, n)
-        val = saliency_mask[:, idx]
-        saliency_mask[:, idx] = 0
+
+        indices = self.__fetch_indices(saliency_mask, mode, n)
+        val = saliency_mask[:, indices]
+        saliency_mask[:, indices] = 0
+
         saliency_mask = saliency_mask.view(s)
 
-        if self.__path_to_log:
-            log_data = pd.DataFrame({"mode": mode, "val": [val.detach().numpy()], "idx": [idx.detach().numpy()]})
-            header = log_data.keys() if not os.path.exists(self.__path_to_log) else False
-            log_data.to_csv(self.__path_to_log, mode='a', header=header, index=False)
+        self.__log_erasure(mode, val, indices)
 
         return saliency_mask
 
+    def __log_erasure(self, mode: str, val: Tensor, indices: Tensor):
+        log_data = pd.DataFrame({"mode": mode, "val": [val.detach().numpy()], "indices": [indices.detach().numpy()]})
+        header = log_data.keys() if not os.path.exists(self.__path_to_log) else False
+        log_data.to_csv(self.__path_to_log, mode='a', header=header, index=False)
+
     def __fetch_indices(self, x: Tensor, mode: str, n: int = 1) -> Tensor:
-        fetchers = {"max": self.__indices_max, "rand": self.__indices_rand, "grad": self.__indices_grad}
-        if mode in fetchers.keys():
-            return fetchers[mode](x)[:, :n]
-        raise ValueError("Index fetcher '{}' for weights erasure not supported! Supported fetchers: {}"
-                         .format(mode, fetchers.keys()))
+        supp_fetchers = self.__fetchers.keys()
+        if mode not in supp_fetchers:
+            raise ValueError("Index fetcher '{}' for weights erasure not supported! Supported fetchers: {}"
+                             .format(mode, supp_fetchers))
+        return self.__fetchers[mode](x)[:, :n]
 
     @staticmethod
     def __indices_rand(x: Tensor) -> Tensor:
@@ -84,15 +93,17 @@ class WeightsEraser:
         return indices
 
     def __indices_grad(self, x: Tensor) -> Tensor:
-        grad = self.__load_grad()
-        return self.__indices_max(grad)
+        return self.__indices_max(self.__load_grad(x))
+
+    def __indices_grad_prod(self, x: Tensor) -> Tensor:
+        grad = self.__load_grad(x)
+        grad_prod = grad * x
+        return self.__indices_max(grad_prod)
 
 
 if __name__ == '__main__':
     we = WeightsEraser()
     we.set_path_to_model_dir("trained_models/att_tccnet/tcc_split")
     we.set_curr_filename("test1.npy")
-    t = torch.rand((16, 1)).view(1, 16)
-    print(t)
-    sm = we.erase(t, mode="grad")
-    print(sm)
+    we.set_saliency_type("temp")
+    sm = we.erase(mode="grad")

@@ -13,8 +13,7 @@ declare -a modes=("" "spat" "temp")
 for model_type in "${model_types[@]}"; do
   for dir in "${dirs[@]}"; do
     for mode in "${modes[@]}"; do
-      python3 tests/erasure/erasure_tccnet.py --model_type "$model_type" --data_folder "$dir" --deactivate "$mode" --erasure_type "single" || exit
-      python3 tests/erasure/erasure_tccnet.py --model_type "$model_type" --data_folder "$dir" --deactivate "$mode" --erasure_type "multi" || exit
+      python3 tests/erasure/save_grads_tccnet.py --model_type "$model_type" --data_folder "$dir" --deactivate "$mode" || exit
     done
   done
 done

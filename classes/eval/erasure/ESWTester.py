@@ -18,6 +18,8 @@ class ESWTester:
         self._device, self._logs = DEVICE, []
         self._model, self._data, self.__path_to_log = model, data, path_to_log
         self.__tests = {"single": self._single_weight_erasure, "multi": self._multi_weights_erasure}
+        self._single_weight_erasures = ["max", "rand"]
+        self._multi_weights_erasures = ["max", "rand", "grad", "grad_prod"]
 
     def _set_path_to_log_file(self, test_type: str):
         self._path_to_log_file = os.path.join(self.__path_to_log, "{}.csv".format(test_type))

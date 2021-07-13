@@ -23,34 +23,48 @@ class ConfTCCNet(SaliencyTCCNet):
     def _weight_spat(self, x: Tensor, spat_conf: Tensor, **kwargs) -> Tensor:
         if self._deactivate == "spat":
             return scale(x).clone()
-
-        # Spatial weights erasure (if active)
-        if self.we_spat_active():
-            spat_conf = self._we.erase(spat_conf, self.get_we_mode(), self.get_num_we())
-
+        spat_conf = self._spat_we_check(spat_conf)
         return self._apply_spat_weights(x, spat_conf)
 
     @staticmethod
     def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
         return scale(x * mask).clone()
 
+    def _spat_we_check(self, spat_weights: Tensor, **kwargs) -> Tensor:
+        # Spatial weights erasure (if active)
+        if self.we_spat_active():
+            self._we.set_saliency_type("spat")
+            spat_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_spat())
+
+        # Grad saving hook registration (if active)
+        if self.save_sw_grad_active():
+            spat_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="spat"))
+
+        return spat_weights
+
     def _weight_temp(self, x: Tensor, conf: Tensor, **kwargs) -> Tuple:
         if self._deactivate == "temp":
             return x, None
-
         temp_conf = F.softmax(torch.mean(torch.mean(conf.squeeze(1), dim=1), dim=1), dim=0)
-
-        # Temporal weights erasure (if active)
-        if self.we_temp_active():
-            temp_conf = self._we.erase(temp_conf, self.get_we_mode(), self.get_num_we())
-
+        temp_conf = self._temp_we_check(temp_conf)
         temp_weighted_x = self._apply_temp_weights(x, temp_conf)
-
         return temp_weighted_x, temp_conf
 
     @staticmethod
     def _apply_temp_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
         return x * mask.unsqueeze(1).unsqueeze(2).unsqueeze(3)
+
+    def _temp_we_check(self, temp_weights: Tensor, **kwargs) -> Tensor:
+        # Temporal weights erasure (if active)
+        if self.we_temp_active():
+            self._we.set_saliency_type("temp")
+            temp_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_temp())
+
+        # Grad saving hook registration (if active)
+        if self.save_sw_grad_active():
+            temp_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="temp"))
+
+        return temp_weights
 
     def forward(self, x: Tensor) -> Tuple:
         batch_size, time_steps, num_channels, h, w = x.shape

@@ -45,7 +45,8 @@ def main(opt):
 
     model.activate_save_grad()
 
-    path_to_log = os.path.join("tests", "erasure", "logs", "grad_{}_{}_{}".format(model_type, data_folder, time()))
+    log_dir = "grad_{}_no_{}_{}_{}".format(model_type, deactivate, data_folder, time())
+    path_to_log = os.path.join("tests", "erasure", "logs", log_dir)
     os.makedirs(path_to_log)
     model.set_path_to_sw_grad_log(path_to_log)
 
@@ -73,7 +74,14 @@ if __name__ == '__main__':
     parser.add_argument('--path_to_pth', type=str, default=PATH_TO_PTH)
     opt = parser.parse_args()
 
-    opt.path_to_pth = os.path.join(opt.path_to_pth, opt.model_type, opt.data_folder)
+    if opt.deactivate == "temp":
+        sal_type = "spat"
+    elif opt.deactivate == "spat":
+        sal_type = "temp"
+    else:
+        sal_type = "spatiotemp"
+
+    opt.path_to_pth = os.path.join(opt.path_to_pth, sal_type, opt.model_type, opt.data_folder)
 
     print("\n *** Test configuration ***")
     print("\t Model type ......... : {}".format(opt.model_type))

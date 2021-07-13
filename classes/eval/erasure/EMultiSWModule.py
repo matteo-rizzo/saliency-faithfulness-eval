@@ -1,8 +1,10 @@
 import os
+from abc import abstractmethod
 from typing import List
 
 import numpy as np
 import torch
+from torch import Tensor
 
 from classes.eval.erasure.ESWModule import ESWModule
 
@@ -29,6 +31,14 @@ class EMultiSWModule(ESWModule):
 
     def get_num_we_temp(self) -> int:
         return self._num_we[1]
+
+    @abstractmethod
+    def _spat_we_check(self, spat_weights: Tensor, **kwargs) -> Tensor:
+        pass
+
+    @abstractmethod
+    def _temp_we_check(self, temp_weights: Tensor, **kwargs) -> Tensor:
+        pass
 
     def _save_grad(self, grad: List, saliency_type: str, **kwargs):
         grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).numpy()

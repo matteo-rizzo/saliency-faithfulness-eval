@@ -1,6 +1,6 @@
 import os
 from math import prod
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 from torch import Tensor
@@ -24,20 +24,19 @@ class ESWTesterTCCNet(ESWTester):
             raise ValueError("Invalid saliency dimension to deactivate: '{}'!".format(deactivate))
         self.__deactivate = deactivate
 
-    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, **kwargs):
+    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, **kwargs) -> float:
         self._model.set_we_mode(mode)
         pred = self._model.predict(x)
         err = self._model.get_loss(pred, y).item()
-        print("\t - Err {}: {:.4f}".format(mode, err))
-        log_max = {"pred": [pred.detach().squeeze().numpy()], "err": [err]}
-        self._logs.append(pd.DataFrame({**log_base, **log_max, "type": ["spat"]}))
+        log_mode = {"pred": [pred.detach().squeeze().numpy()], "err": [err]}
+        self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["spat"]}))
         for _ in range(x.shape[1]):
-            self._logs.append(pd.DataFrame({**log_base, **log_max, "type": ["temp"]}))
+            self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["temp"]}))
+        return err
 
     def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, **kwargs) -> Dict:
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
-        print("    - Err base: {:.4f}".format(err))
         log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().numpy()], "err_base": [err]}
         if not self.__deactivate:
             return {**log_base, **{"spat_mask_size": prod(spat_mask.shape[1:]), "temp_mask_size": temp_mask.shape[1]}}
@@ -46,9 +45,15 @@ class ESWTesterTCCNet(ESWTester):
         if self.__deactivate != "temp":
             return {**log_base, **{"mask_size": temp_mask.shape[1]}}
 
+    def __run_erasure_modes(self, x: Tensor, y: Tensor, modes: List, log_base: Dict):
+        logs = []
+        for mode in modes:
+            err = self._erase_weights(x, y, mode, log_base)
+            logs.append("{}: {:.4f}".format(mode.upper(), err))
+        print("    -> Erasure errors: [ {} ]".format(" - ".join(logs)))
+
     def _single_weight_erasure(self, x: Tensor, y: Tensor, log_base: Dict):
-        self._erase_weights(x, y, mode="max", log_base=log_base)
-        self._erase_weights(x, y, mode="rand", log_base=log_base)
+        self.__run_erasure_modes(x, y, self._single_weight_erasures, log_base)
 
     def _multi_weights_erasure(self, x: Tensor, y: Tensor, log_base: Dict):
         # Set the size of the mask to be considered depending on the deactivated dimension
@@ -65,12 +70,14 @@ class ESWTesterTCCNet(ESWTester):
             if not self.__deactivate:
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
+            else:
+                n = (0, n) if self.__deactivate == "spat" else (n, 0)
+
             print("\n  * N: {}/{}".format(n, mask_size))
             self._model.set_we_num(n)
 
-            self._erase_weights(x, y, mode="grad", log_base=log_base)
-            self._erase_weights(x, y, mode="max", log_base=log_base)
-            self._erase_weights(x, y, mode="rand", log_base=log_base)
+            # Erase weights for each supported modality
+            self.__run_erasure_modes(x, y, self._multi_weights_erasures, log_base)
 
     def run(self, test_type: str = "single", **kwargs):
         """
@@ -90,12 +97,14 @@ class ESWTesterTCCNet(ESWTester):
 
         for i, (x, _, y, path_to_x) in enumerate(self._data):
             x, y, filename = x.to(self._device), y.to(self._device), path_to_x[0].split(os.sep)[-1]
-            print("Testing item {}/{} ({}):".format(i, len(self._data), filename))
 
             self._model.set_curr_filename(filename)
 
             # Predict without modifications
             log_base = self._predict_baseline(x, y, filename)
+
+            print("Testing item {}/{} ({}) - Base error: {:.4f}"
+                  .format(i, len(self._data), filename, log_base["err_base"][0]))
 
             # Activate weights erasure
             self._model.activate_we(state=(self.__deactivate != "spat", self.__deactivate != "temp"))
