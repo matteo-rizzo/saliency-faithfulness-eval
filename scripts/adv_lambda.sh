@@ -6,14 +6,21 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
-declare -a lambdas=(0.00005 0.0005 0.005 0.05)
-declare -a model_types=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
+declare path_to_script="tests/adv/train_adv_tccnet.py"
+
+# Values: 0.00005 0.0005 0.005 0.05
+declare -a lambdas=(0.00005)
+
+# Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
+declare -a models=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
+
+# Values: "spatiotemp" "spat" "temp"
 declare -a modes=("spatiotemp" "spat" "temp")
 
 for lambda in "${lambdas[@]}"; do
-  for model_type in "${model_types[@]}"; do
+  for model in "${models[@]}"; do
     for mode in "${modes[@]}"; do
-      python3 tests/adv/train_adv_tccnet.py --epochs 1000 --model_type "$model_type" --adv_lambda "$lambda" --mode "$mode" || exit
+      python3 "$path_to_script" --epochs 1000 --model_type "$model" --adv_lambda "$lambda" --sal_type "$mode" --infer_path || exit
     done
   done
 done

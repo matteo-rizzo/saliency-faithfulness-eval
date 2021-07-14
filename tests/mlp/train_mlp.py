@@ -22,12 +22,12 @@ FOLD_NUM = 0
 IMPOSED_WEIGHTS = None
 
 
-def main(opt):
-    fold_num = opt.fold_num
-    epochs = opt.epochs
-    batch_size = opt.batch_size
-    learning_rate = opt.lr
-    weights = opt.weights
+def main(ns):
+    fold_num = ns.fold_num
+    epochs = ns.epochs
+    batch_size = ns.batch_size
+    learning_rate = ns.lr
+    weights = ns.weights
 
     path_to_log = os.path.join("logs", "{}_fold_{}_{}".format(weights, fold_num, time.time()))
     os.makedirs(path_to_log, exist_ok=True)
@@ -128,15 +128,15 @@ if __name__ == '__main__':
     parser.add_argument('--random_seed', type=int, default=RANDOM_SEED)
     parser.add_argument('--lr', type=float, default=LEARNING_RATE)
     parser.add_argument('--weights', type=str, default=IMPOSED_WEIGHTS)
-    opt = parser.parse_args()
-    make_deterministic(opt.random_seed)
+    ns = parser.parse_args()
+    make_deterministic(ns.random_seed)
 
     print("\n *** Training configuration ***")
-    print("\t Fold num .......... : {}".format(opt.fold_num))
-    print("\t Epochs ............ : {}".format(opt.epochs))
-    print("\t Batch size ........ : {}".format(opt.batch_size))
-    print("\t Learning rate ..... : {}".format(opt.lr))
-    print("\t Random seed ....... : {}".format(opt.random_seed))
-    print("\t Imposed weights ... : {}".format(opt.weights))
+    print("\t Fold num .......... : {}".format(ns.fold_num))
+    print("\t Epochs ............ : {}".format(ns.epochs))
+    print("\t Batch size ........ : {}".format(ns.batch_size))
+    print("\t Learning rate ..... : {}".format(ns.lr))
+    print("\t Random seed ....... : {}".format(ns.random_seed))
+    print("\t Imposed weights ... : {}".format(ns.weights))
 
-    main(opt)
+    main(ns)

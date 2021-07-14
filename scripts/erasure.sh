@@ -6,15 +6,26 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
-declare -a model_types=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
-declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
-declare -a modes=("" "spat" "temp")
+declare path_to_script="tests/erasure/erasure_tccnet.py"
 
-for model_type in "${model_types[@]}"; do
+# Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
+declare -a models=("conf_tccnet" "conf_att_tccnet")
+
+# Values: "tcc_split" "fold_0" "fold_1" "fold_2"
+declare -a dirs=("tcc_split")
+
+# Values: "spatiotemp" "spat" "temp"
+declare -a modes=("spatiotemp" "spat")
+
+# Values: "single" "multi"
+declare -a erasures=("single" "multi")
+
+for model in "${models[@]}"; do
   for dir in "${dirs[@]}"; do
     for mode in "${modes[@]}"; do
-      python3 tests/erasure/erasure_tccnet.py --model_type "$model_type" --data_folder "$dir" --deactivate "$mode" --erasure_type "single" || exit
-      python3 tests/erasure/erasure_tccnet.py --model_type "$model_type" --data_folder "$dir" --deactivate "$mode" --erasure_type "multi" || exit
+      for erasure in "${erasures[@]}"; do
+        python3 "$path_to_script" --model_type "$model" --data_folder "$dir" --sal_type "$mode" --erasure_type "$erasure" --infer_path || exit
+      done
     done
   done
 done

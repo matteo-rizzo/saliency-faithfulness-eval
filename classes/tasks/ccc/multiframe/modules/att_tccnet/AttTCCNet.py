@@ -14,37 +14,26 @@ from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import
 
 class AttTCCNet(SaliencyTCCNet):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, deactivate: str = ""):
-        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_type: str = ""):
+        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_type=sal_type)
 
         # SqueezeNet backbone (conv1-fire8) for extracting semantic features
         self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
 
         # Spatial attention
-        if self._deactivate != "spat":
+        if self._sal_type in ["spat", "spatiotemp"]:
             self.spat_att = SpatialAttention(input_size=512)
 
         # Temporal attention
-        if self._deactivate != "temp":
+        if self._sal_type in ["temp", "spatiotemp"]:
             self.temp_att = TemporalAttention(features_size=512, hidden_size=hidden_size)
 
-    def _spat_we_check(self, spat_weights: Tensor, **kwargs) -> Tensor:
-        # Spatial weights erasure (if active)
-        if self.we_spat_active():
-            self._we.set_saliency_type("spat")
-            spat_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_spat())
-
-        # Grad saving hook registration (if active)
-        if self.save_sw_grad_active():
-            spat_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="spat"))
-
-        return spat_weights
-
     def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
-        if self._deactivate == "spat":
+        if not self._is_saliency_active("spat"):
             return x, None
         spat_weights = self.spat_att(x)
         spat_weights = self._spat_we_check(spat_weights)
+        spat_weights = self._spat_save_grad_check(spat_weights)
         spat_weighted_x = self._apply_spat_weights(x, spat_weights)
         return spat_weighted_x, spat_weights
 
@@ -53,23 +42,18 @@ class AttTCCNet(SaliencyTCCNet):
         return (x * mask).clone()
 
     def _temp_we_check(self, temp_weights: Tensor, t: int, **kwargs) -> Tensor:
-        # Temporal weights erasure (if active)
         if self.we_temp_active():
             self._we.set_saliency_type("temp")
-            temp_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_temp())
+            temp_weights = self._we.erase(n=self.get_num_we_temp())
             temp_weights = temp_weights[:, t].view(temp_weights.shape[0], 1, 1, 1)
-
-        # Grad saving hook registration (if active)
-        if self.save_sw_grad_active():
-            temp_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="temp"))
-
         return temp_weights
 
     def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
-        if self._deactivate == "temp":
+        if not self._is_saliency_active("temp"):
             return x[t, :, :, :], Tensor()
         temp_weights = self.temp_att(x, hidden)
         temp_weights = self._temp_we_check(temp_weights, t)
+        temp_weights = self._temp_save_grad_check(temp_weights)
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
         return temp_weighted_x, temp_weights.squeeze()
 

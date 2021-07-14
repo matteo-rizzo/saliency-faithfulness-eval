@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 
 from classes.core.Loss import Loss
-from utils import scale
+from functional.image_processing import scale
 
 
 class MSELoss(Loss):

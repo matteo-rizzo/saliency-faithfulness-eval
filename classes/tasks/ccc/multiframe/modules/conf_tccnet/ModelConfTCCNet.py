@@ -5,16 +5,16 @@ import torch.nn.functional as F
 from torch import Tensor
 from torchvision.transforms import transforms
 
-from auxiliary.utils import correct, rescale, scale
 from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.modules.conf_tccnet.ConfTCCNet import ConfTCCNet
+from functional.image_processing import correct, rescale, scale
 
 
 class ModelConfTCCNet(ModelSaliencyTCCNet):
 
-    def __init__(self, hidden_size: int, kernel_size: int, deactivate: str):
+    def __init__(self, hidden_size: int, kernel_size: int, sal_type: str):
         super().__init__()
-        self._network = ConfTCCNet(hidden_size, kernel_size, deactivate).float().to(self._device)
+        self._network = ConfTCCNet(hidden_size, kernel_size, sal_type).float().to(self._device)
 
     def vis_confidence(self, model_output: dict, path_to_plot: str):
         model_output = {k: v.clone().detach().to(self._device) for k, v in model_output.items()}

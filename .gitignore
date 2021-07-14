@@ -783,7 +783,7 @@ node_modules/
 *.plg
 
 # Visual Studio 6 workspace options file
-*.opt
+*.ns
 
 # Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
 *.vbw

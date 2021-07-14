@@ -5,32 +5,30 @@ from time import time
 import torch
 from torch.utils.data import DataLoader
 
-from auxiliary.settings import DEVICE, make_deterministic
+from auxiliary.settings import DEVICE, RANDOM_SEED, PATH_TO_PRETRAINED
+from auxiliary.utils import print_namespace, make_deterministic
 from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.multiframe.data.TCC import TCC
 
-""" Save gradients of output w.r.t. saliency weights"""
+""" Save gradients of output w.r.t. saliency weights """
 # ----------------------------------------------------------------------------------------------------------------
 
-RANDOM_SEED = 0
 
 MODEL_TYPE = "att_tccnet"
 DATA_FOLDER = "tcc_split"
-PATH_TO_PTH = os.path.join("trained_models")
+PATH_TO_PTH = PATH_TO_PRETRAINED
 
 HIDDEN_SIZE = 128
 KERNEL_SIZE = 5
-DEACTIVATE = None
-
-USE_TRAINING_SET = False
+SALIENCY_TYPE = "spatiotemp"
 
 
 # ----------------------------------------------------------------------------------------------------------------
 
-def main(opt):
-    model_type, data_folder, path_to_pth = opt.model_type, opt.data_folder, opt.path_to_pth
-    hidden_size, kernel_size, deactivate = opt.hidden_size, opt.kernel_size, opt.deactivate
-    use_training_set = opt.use_training_set
+def main(ns):
+    model_type, data_folder, path_to_pth = ns.model_type, ns.data_folder, ns.path_to_pth
+    hidden_size, kernel_size, sal_type = ns.hidden_size, ns.kernel_size, ns.sal_type
+    use_training_set = ns.use_training_set
 
     print("\n Loading data from '{}':".format(data_folder))
     dataset = TCC(train=use_training_set, data_folder=data_folder)
@@ -38,14 +36,14 @@ def main(opt):
     dataset_size = len(dataset)
     print("\n -> Data loaded! Dataset size is {}".format(dataset_size))
 
-    model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, deactivate)
+    model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     path_to_pth = os.path.join(path_to_pth, "model.pth")
     print('\n Reloading pretrained model stored at: {} \n'.format(path_to_pth))
     model.load(path_to_pth)
 
     model.activate_save_grad()
 
-    log_dir = "grad_{}_no_{}_{}_{}".format(model_type, deactivate, data_folder, time())
+    log_dir = "grad_{}_{}_{}_{}".format(model_type, sal_type, data_folder, time())
     path_to_log = os.path.join("tests", "erasure", "logs", log_dir)
     os.makedirs(path_to_log)
     model.set_path_to_sw_grad_log(path_to_log)
@@ -69,29 +67,15 @@ if __name__ == '__main__':
     parser.add_argument('--random_seed', type=int, default=RANDOM_SEED)
     parser.add_argument('--hidden_size', type=int, default=HIDDEN_SIZE)
     parser.add_argument('--kernel_size', type=int, default=KERNEL_SIZE)
-    parser.add_argument('--deactivate', type=str, default=DEACTIVATE)
-    parser.add_argument('--use_training_set', type=bool, default=USE_TRAINING_SET)
+    parser.add_argument('--sal_type', type=str, default=SALIENCY_TYPE)
+    parser.add_argument('--use_training_set', action="store_true")
     parser.add_argument('--path_to_pth', type=str, default=PATH_TO_PTH)
-    opt = parser.parse_args()
+    parser.add_argument('--infer_path', action="store_true")
+    namespace = parser.parse_args()
+    make_deterministic(namespace.random_seed)
 
-    if opt.deactivate == "temp":
-        sal_type = "spat"
-    elif opt.deactivate == "spat":
-        sal_type = "temp"
-    else:
-        sal_type = "spatiotemp"
-
-    opt.path_to_pth = os.path.join(opt.path_to_pth, sal_type, opt.model_type, opt.data_folder)
-
-    print("\n *** Test configuration ***")
-    print("\t Model type ......... : {}".format(opt.model_type))
-    print("\t Data folder ........ : {}".format(opt.data_folder))
-    print("\t Random seed ........ : {}".format(opt.random_seed))
-    print("\t Hidden size ........ : {}".format(opt.hidden_size))
-    print("\t Kernel size ........ : {}".format(opt.kernel_size))
-    print("\t Deactivate ......... : {}".format(opt.deactivate))
-    print("\t Use training set ... : {}".format(opt.use_training_set))
-    print("\t Path to PTH ........ : {}".format(opt.path_to_pth))
-
-    make_deterministic(opt.random_seed)
-    main(opt)
+    if namespace.infer_path:
+        namespace.path_to_pth = os.path.join(namespace.path_to_pth, namespace.sal_type,
+                                             namespace.model_type, namespace.data_folder)
+    print_namespace(namespace)
+    main(namespace)

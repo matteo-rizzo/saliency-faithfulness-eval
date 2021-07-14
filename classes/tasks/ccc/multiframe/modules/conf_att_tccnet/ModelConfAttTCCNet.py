@@ -4,6 +4,6 @@ from classes.tasks.ccc.multiframe.modules.conf_att_tccnet.ConfAttTCCNet import C
 
 class ModelConfAttTCCNet(ModelSaliencyTCCNet):
 
-    def __init__(self, hidden_size: int, kernel_size: int, deactivate: str):
+    def __init__(self, hidden_size: int, kernel_size: int, sal_type: str):
         super().__init__()
-        self._network = ConfAttTCCNet(hidden_size, kernel_size, deactivate).float().to(self._device)
+        self._network = ConfAttTCCNet(hidden_size, kernel_size, sal_type).float().to(self._device)

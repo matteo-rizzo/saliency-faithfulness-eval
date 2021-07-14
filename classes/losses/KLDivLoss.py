@@ -1,8 +1,8 @@
 import torch
 from torch import Tensor
 
-from auxiliary.utils import scale
 from classes.core.Loss import Loss
+from functional.image_processing import scale
 
 
 class KLDivLoss(Loss):

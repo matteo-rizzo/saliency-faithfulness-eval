@@ -1,42 +1,15 @@
-import random
-import re
+from auxiliary.utils import get_device
 
-import numpy as np
-import torch
+# --- Random seed (for reproducibility) ---
 
-
-# --- Determinism (for reproducibility) ---
-
-def make_deterministic(seed: int):
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.backends.cudnn.benchmark = False
-
+RANDOM_SEED = 0
 
 # --- Device (cpu or cuda:n) ---
 
 DEVICE_TYPE = "cuda:0"
+DEVICE = get_device(DEVICE_TYPE)
 
-
-def get_device() -> torch.device:
-    if DEVICE_TYPE == "cpu":
-        print("\n Running on device 'cpu' \n")
-        return torch.device("cpu")
-
-    if re.match(r"\bcuda:\b\d+", DEVICE_TYPE):
-        if not torch.cuda.is_available():
-            print("\n WARNING: running on cpu since device {} is not available \n".format(DEVICE_TYPE))
-            return torch.device("cpu")
-
-        print("\n Running on device '{}' \n".format(DEVICE_TYPE))
-        return torch.device(DEVICE_TYPE)
-
-    raise ValueError("ERROR: {} is not a valid device! Supported device are 'cpu' and 'cuda:n'".format(DEVICE_TYPE))
-
-
-DEVICE = get_device()
-
-# --- Dataset ---
+# --- PATHS ---
 
 PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc"
+PATH_TO_PRETRAINED = "trained_models"

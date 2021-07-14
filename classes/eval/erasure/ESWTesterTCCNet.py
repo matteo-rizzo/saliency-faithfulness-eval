@@ -12,17 +12,18 @@ from classes.eval.erasure.ESWTester import ESWTester
 
 class ESWTesterTCCNet(ESWTester):
 
-    def __init__(self, model: ESWModel, data: DataLoader, path_to_log: str, deactivate: str = None):
+    def __init__(self, model: ESWModel, data: DataLoader, path_to_log: str, sal_type: str = None):
         """
         :param model: a model to run inference
         :param data: the data the model inference should be run on
         :param path_to_log: the base path to the log file for the tests
-        :param deactivate: which saliency dimension to deactivate (either "spat", "temp" or None)
+        :param sal_type: which saliency dimension to sal_type (either "spat", "temp" or None)
         """
         super().__init__(model, data, path_to_log)
-        if deactivate is not None and deactivate not in ["spat", "temp", ""]:
-            raise ValueError("Invalid saliency dimension to deactivate: '{}'!".format(deactivate))
-        self.__deactivate = deactivate
+        if sal_type not in ["spat", "temp", "spatiotemp"]:
+            raise ValueError("Invalid saliency type: '{}'!".format(sal_type))
+        self.__sal_type = sal_type
+        self.__we_state = (True, True) if sal_type == "spatiotemp" else (sal_type == "spat", sal_type == "temp")
 
     def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, **kwargs) -> float:
         self._model.set_we_mode(mode)
@@ -38,12 +39,12 @@ class ESWTesterTCCNet(ESWTester):
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
         log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().numpy()], "err_base": [err]}
-        if not self.__deactivate:
-            return {**log_base, **{"spat_mask_size": prod(spat_mask.shape[1:]), "temp_mask_size": temp_mask.shape[1]}}
-        if self.__deactivate != "spat":
-            return {**log_base, **{"mask_size": prod(spat_mask.shape[1:])}}
-        if self.__deactivate != "temp":
-            return {**log_base, **{"mask_size": temp_mask.shape[1]}}
+        return {**log_base, **self.__select_mask_size(spat_mask, temp_mask)}
+
+    def __select_mask_size(self, spat_mask: Tensor, temp_mask: Tensor) -> Dict:
+        if self.__sal_type == "spatiotemp":
+            return {"spat_mask_size": prod(spat_mask.shape[1:]), "temp_mask_size": temp_mask.shape[1]}
+        return {"mask_size": prod(spat_mask.shape[1:]) if self.__sal_type == "spat" else temp_mask.shape[1]}
 
     def __run_erasure_modes(self, x: Tensor, y: Tensor, modes: List, log_base: Dict):
         logs = []
@@ -58,7 +59,7 @@ class ESWTesterTCCNet(ESWTester):
     def _multi_weights_erasure(self, x: Tensor, y: Tensor, log_base: Dict):
         # Set the size of the mask to be considered depending on the deactivated dimension
         spat_mask_size, temp_mask_size, norm_fact = None, None, None
-        if not self.__deactivate:
+        if self.__sal_type == "spatiotemp":
             spat_mask_size, temp_mask_size = log_base["spat_mask_size"], log_base["temp_mask_size"]
             mask_size = min(spat_mask_size, temp_mask_size)
             norm_fact = max(spat_mask_size, temp_mask_size) // min(spat_mask_size, temp_mask_size)
@@ -67,11 +68,11 @@ class ESWTesterTCCNet(ESWTester):
 
         for n in range(1, mask_size):
             # Set the number of weights to be erased
-            if not self.__deactivate:
+            if self.__sal_type == "spatiotemp":
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
             else:
-                n = (0, n) if self.__deactivate == "spat" else (n, 0)
+                n = (0, n) if self.__sal_type == "spat" else (n, 0)
 
             print("\n  * N: {}/{}".format(n, mask_size))
             self._model.set_we_num(n)
@@ -107,7 +108,7 @@ class ESWTesterTCCNet(ESWTester):
                   .format(i, len(self._data), filename, log_base["err_base"][0]))
 
             # Activate weights erasure
-            self._model.activate_we(state=(self.__deactivate != "spat", self.__deactivate != "temp"))
+            self._model.activate_we(state=self.__we_state)
 
             # Run the test
             self._test(x, y, log_base, test_type)
@@ -117,4 +118,4 @@ class ESWTesterTCCNet(ESWTester):
 
             print("--------------------------------------------------------------")
 
-        self._merge_logs()
+            self._merge_logs()

@@ -12,6 +12,7 @@ class WeightsEraser:
     def __init__(self):
         self.__path_to_log, self.__path_to_model_dir = "", ""
         self.__curr_filename, self.__saliency_type = None, None
+        self.__mode = ""
         self.__fetchers = {"max": self.__indices_max, "rand": self.__indices_rand,
                            "grad": self.__indices_grad, "grad_prod": self.__indices_grad_prod}
 
@@ -27,6 +28,9 @@ class WeightsEraser:
     def set_saliency_type(self, saliency_type: str):
         self.__saliency_type = saliency_type
 
+    def set_erasure_mode(self, mode: str):
+        self.__mode = mode
+
     def __load_grad(self, x: torch.Tensor) -> Tensor:
         path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__saliency_type, self.__curr_filename)
         grad = torch.from_numpy(np.load(path_to_grad))
@@ -38,15 +42,11 @@ class WeightsEraser:
         path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__saliency_type, self.__curr_filename)
         return torch.from_numpy(np.load(path_to_mask, allow_pickle=True))
 
-    def erase(self, saliency_mask: Tensor = None, mode: str = "rand", n: int = 1) -> Tensor:
+    def erase(self, saliency_mask: Tensor = None, n: int = 1) -> Tensor:
         """
         Zeroes out one weight in the input saliency mask according to the selected mode and logs erased value
         and corresponding index to file
         :param saliency_mask: a saliency mask scaled to the original input. If not provided, will be loaded
-        :param mode: the criterion to select the saliency weight to erase, it can be either:
-            - "rand": a random weight in the given mask
-            - "max": the highest weight in the given mask
-            - "grad": the weight corresponding to the highest gradient in the given mask
         :param n: the number of indices to select (upper bounded by the length of the flattened saliency mask)
         :return: the input saliency mask with an item zeroed out
         """
@@ -56,27 +56,29 @@ class WeightsEraser:
         s = saliency_mask.shape
         saliency_mask = torch.flatten(saliency_mask, start_dim=1)
 
-        indices = self.__fetch_indices(saliency_mask, mode, n)
+        indices = self.__fetch_indices(saliency_mask, n)
         val = saliency_mask[:, indices]
         saliency_mask[:, indices] = 0
 
         saliency_mask = saliency_mask.view(s)
 
-        self.__log_erasure(mode, val, indices)
+        self.__log_erasure(val, indices)
 
         return saliency_mask
 
-    def __log_erasure(self, mode: str, val: Tensor, indices: Tensor):
-        log_data = pd.DataFrame({"mode": mode, "val": [val.detach().numpy()], "indices": [indices.detach().numpy()]})
+    def __log_erasure(self, val: Tensor, indices: Tensor):
+        log_data = pd.DataFrame({"mode": self.__mode,
+                                 "val": [val.detach().numpy()],
+                                 "indices": [indices.detach().numpy()]})
         header = log_data.keys() if not os.path.exists(self.__path_to_log) else False
         log_data.to_csv(self.__path_to_log, mode='a', header=header, index=False)
 
-    def __fetch_indices(self, x: Tensor, mode: str, n: int = 1) -> Tensor:
+    def __fetch_indices(self, x: Tensor, n: int = 1) -> Tensor:
         supp_fetchers = self.__fetchers.keys()
-        if mode not in supp_fetchers:
+        if self.__mode not in supp_fetchers:
             raise ValueError("Index fetcher '{}' for weights erasure not supported! Supported fetchers: {}"
-                             .format(mode, supp_fetchers))
-        return self.__fetchers[mode](x)[:, :n]
+                             .format(self.__mode, supp_fetchers))
+        return self.__fetchers[self.__mode](x)[:, :n]
 
     @staticmethod
     def __indices_rand(x: Tensor) -> Tensor:
@@ -99,11 +101,3 @@ class WeightsEraser:
         grad = self.__load_grad(x)
         grad_prod = grad * x
         return self.__indices_max(grad_prod)
-
-
-if __name__ == '__main__':
-    we = WeightsEraser()
-    we.set_path_to_model_dir("trained_models/att_tccnet/tcc_split")
-    we.set_curr_filename("test1.npy")
-    we.set_saliency_type("temp")
-    sm = we.erase(mode="grad")

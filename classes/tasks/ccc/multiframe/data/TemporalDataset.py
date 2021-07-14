@@ -2,9 +2,9 @@ from typing import Tuple
 
 import torch
 
-from auxiliary.utils import hwc_to_chw, linear_to_nonlinear, bgr_to_rgb, normalize
 from classes.tasks.ccc.core.DatasetCCC import DatasetCCC
 from classes.tasks.ccc.multiframe.data.TemporalDataAugmenter import TemporalDataAugmenter
+from functional.image_processing import hwc_to_chw, linear_to_nonlinear, bgr_to_rgb, normalize
 
 
 class TemporalDataset(DatasetCCC):

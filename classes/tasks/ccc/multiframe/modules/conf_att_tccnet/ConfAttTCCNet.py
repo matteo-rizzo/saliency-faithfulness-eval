@@ -4,32 +4,33 @@ import torch
 from torch import Tensor
 from torch.nn.functional import normalize
 
-from auxiliary.utils import scale
 from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
 from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
 from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
+from functional.image_processing import scale
 
 """ Confidence as spatial attention + Temporal attention """
 
 
 class ConfAttTCCNet(SaliencyTCCNet):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, deactivate: str = ""):
-        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, deactivate=deactivate)
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_type: str = ""):
+        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, sal_type=sal_type)
 
         # Confidence as spatial attention
-        self.fcn = FC4(use_cwp=self._deactivate != "spat")
+        self.fcn = FC4(use_cwp=self._sal_type != "temp")
 
         # Temporal attention
-        if self._deactivate != "temp":
+        if self._sal_type in ["temp", "spatiotemp"]:
             self.temp_att = TemporalAttention(features_size=3, hidden_size=hidden_size)
 
     def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
-        if self._deactivate == "spat":
+        if not self._is_saliency_active("spat"):
             _, out = self.fcn(x)
-            return out, None
+            return out, Tensor()
         _, rgb, spat_conf = self.fcn(x)
         spat_conf = self._spat_we_check(spat_conf)
+        spat_conf = self._spat_save_grad_check(spat_conf)
         spat_weighted_x = self._apply_spat_weights(rgb, spat_conf)
         return spat_weighted_x, spat_conf
 
@@ -37,23 +38,12 @@ class ConfAttTCCNet(SaliencyTCCNet):
     def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
         return scale(x * mask).clone()
 
-    def _spat_we_check(self, spat_weights: Tensor, **kwargs) -> Tensor:
-        # Spatial weights erasure (if active)
-        if self.we_spat_active():
-            self._we.set_saliency_type("spat")
-            spat_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_spat())
-
-        # Grad saving hook registration (if active)
-        if self.save_sw_grad_active():
-            spat_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="spat"))
-
-        return spat_weights
-
     def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
-        if self._deactivate == "temp":
+        if not self._is_saliency_active("temp"):
             return x[t, :, :, :], Tensor()
         temp_weights = self.temp_att(x, hidden)
         temp_weights = self._temp_we_check(temp_weights, t)
+        temp_weights = self._temp_save_grad_check(temp_weights)
         temp_weighted_x = self._apply_temp_weights(x, temp_weights, time_steps)
         return temp_weighted_x, temp_weights.squeeze()
 
@@ -62,16 +52,10 @@ class ConfAttTCCNet(SaliencyTCCNet):
         return torch.div(torch.sum(x * mask, dim=0), time_steps)
 
     def _temp_we_check(self, temp_weights: Tensor, t: int, **kwargs) -> Tensor:
-        # Temporal weights erasure (if active)
         if self.we_temp_active():
             self._we.set_saliency_type("temp")
-            temp_weights = self._we.erase(mode=self.get_we_mode(), n=self.get_num_we_temp())
+            temp_weights = self._we.erase(n=self.get_num_we_temp())
             temp_weights = temp_weights[:, t].view(temp_weights.shape[0], 1, 1, 1)
-
-        # Grad saving hook registration (if active)
-        if self.save_sw_grad_active():
-            temp_weights.register_hook(lambda grad: self._save_grad(grad, saliency_type="temp"))
-
         return temp_weights
 
     def forward(self, x: Tensor) -> Tuple:

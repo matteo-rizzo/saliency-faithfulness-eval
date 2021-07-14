@@ -21,6 +21,12 @@ class ESWModel(Model, ABC):
         self._network.set_save_grad_state(state=False)
 
     def set_we_mode(self, mode: str):
+        """
+        :param mode: the criterion to select the saliency weight to erase, it can be either:
+            - "rand": a random weight in the given mask
+            - "max": the highest weight in the given mask
+            - "grad": the weight corresponding to the highest gradient in the given mask
+        """
         self._network.set_we_mode(mode)
 
     def set_we_num(self, n: Tuple):

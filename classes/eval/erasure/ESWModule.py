@@ -12,7 +12,6 @@ class ESWModule(nn.Module):
         super().__init__()
         self._we = WeightsEraser()
         self._we_state = False
-        self._erasure_mode = "rand"
         self._num_we = 1
         self._save_sw_grad_state = False
         self._path_to_sw_grad_log = ""
@@ -39,8 +38,8 @@ class ESWModule(nn.Module):
     def get_num_we(self) -> Union[int, Tuple]:
         return self._num_we
 
-    def set_we_mode(self, state: str):
-        self._erasure_mode = state
+    def set_we_mode(self, mode: str):
+        self._we.set_erasure_mode(mode)
 
     def set_num_we(self, state: Union[int, Tuple]):
         self._num_we = state
