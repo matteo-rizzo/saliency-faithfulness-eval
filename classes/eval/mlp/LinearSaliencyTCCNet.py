@@ -3,30 +3,23 @@ from typing import Tuple
 import torch
 from torch import nn, Tensor
 
-from auxiliary.utils import overloads
+from classes.eval.mlp.LinearEncoder import LinearEncoder
 from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from classes.tasks.ccc.multiframe.submodules.attention.SpatialAttention import SpatialAttention
-from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
 from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
 
-""" Spatial attention + Temporal attention """
 
+class LinearSaliencyTCCNet(SaliencyTCCNet):
 
-class AttTCCNet(SaliencyTCCNet):
+    def __init__(self, input_size: Tuple, kernel_size: int = 5, sal_type: str = ""):
+        super().__init__(rnn_input_size=512, hidden_size=128, kernel_size=5, sal_type=sal_type)
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_type: str = ""):
-        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_type=sal_type)
-
-        # SqueezeNet backbone (conv1-fire8) for extracting semantic features
         self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
 
-        # Spatial attention
         if self._sal_type in ["spat", "spatiotemp"]:
-            self.spat_att = SpatialAttention(input_size=512)
+            self.spat_enc = LinearEncoder()
 
-        # Temporal attention
         if self._sal_type in ["temp", "spatiotemp"]:
-            self.temp_att = TemporalAttention(features_size=512, hidden_size=hidden_size)
+            self.temp_enc = LinearEncoder()
 
     def _weight_spat(self, x: Tensor, *args, **kwargs) -> Tuple:
         if not self._is_saliency_active("spat"):

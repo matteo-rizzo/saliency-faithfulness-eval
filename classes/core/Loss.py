@@ -15,4 +15,4 @@ class Loss:
         pass
 
     def __call__(self, *args, **kwargs):
-        return self._compute(*args).to(self._device)
+        return self._compute(*args, **kwargs).to(self._device)

@@ -15,7 +15,7 @@ declare -a lambdas=(0.00005)
 declare -a models=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a modes=("spatiotemp" "spat" "temp")
+declare -a modes=("spatiotemp")
 
 for lambda in "${lambdas[@]}"; do
   for model in "${models[@]}"; do

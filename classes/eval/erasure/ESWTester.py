@@ -40,11 +40,11 @@ class ESWTester:
         log.to_csv(self._path_to_log_file, index=False)
 
     @abstractmethod
-    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, **kwargs):
+    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, *args, **kwargs):
         pass
 
     @abstractmethod
-    def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, **kwargs):
+    def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, *args, **kwargs):
         pass
 
     @abstractmethod
@@ -62,5 +62,5 @@ class ESWTester:
         self.__tests[test_type](x, y, log_base)
 
     @abstractmethod
-    def run(self, test_type: str = "single", **kwargs):
+    def run(self, test_type: str, *args, **kwargs):
         pass

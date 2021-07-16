@@ -33,14 +33,14 @@ class EMultiSWModule(ESWModule):
         return self._num_we[1]
 
     @abstractmethod
-    def _spat_we_check(self, spat_weights: Tensor, **kwargs) -> Tensor:
+    def _spat_we_check(self, spat_weights: Tensor, *args, **kwargs) -> Tensor:
         pass
 
     @abstractmethod
-    def _temp_we_check(self, temp_weights: Tensor, **kwargs) -> Tensor:
+    def _temp_we_check(self, temp_weights: Tensor, *args, **kwargs) -> Tensor:
         pass
 
-    def _save_grad(self, grad: List, saliency_type: str, **kwargs):
+    def _save_grad(self, grad: List, saliency_type: str, *args, **kwargs):
         grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).numpy()
 
         base_path_to_grad = os.path.join(self._path_to_sw_grad_log, saliency_type)

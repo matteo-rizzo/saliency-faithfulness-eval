@@ -25,7 +25,7 @@ class SqueezeNet(nn.Module):
 
         if version == 1.0:
             self.features = nn.Sequential(
-                nn.Conv2d(3, 96, kernel_size=7, stride=2),
+                nn.Conv2d(3, 96, kernel_size=(7, 7), stride=(2, 2)),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
                 Fire(96, 16, 64, 64),
@@ -41,7 +41,7 @@ class SqueezeNet(nn.Module):
             )
         elif version == 1.1:
             self.features = nn.Sequential(
-                nn.Conv2d(3, 64, kernel_size=3, stride=2),
+                nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(2, 2)),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
                 Fire(64, 16, 64, 64),
@@ -59,7 +59,7 @@ class SqueezeNet(nn.Module):
             raise ValueError("Unsupported SqueezeNet version {version}: 1.0 or 1.1 expected".format(version=version))
 
         # Final convolution is initialized differently form the rest
-        final_conv = nn.Conv2d(512, self.num_classes, kernel_size=1)
+        final_conv = nn.Conv2d(512, self.num_classes, kernel_size=(1, 1))
         self.classifier = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
@@ -78,5 +78,5 @@ class SqueezeNet(nn.Module):
 
     def forward(self, x: torch):
         x = self.features(x)
-        x = self.classifier(x)
+        x = self.fc(x)
         return x.view(x.size(0), self.num_classes)

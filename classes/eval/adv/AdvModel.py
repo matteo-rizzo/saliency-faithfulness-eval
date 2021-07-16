@@ -3,6 +3,7 @@ from typing import Tuple, Dict, Union
 
 from torch import Tensor
 
+from auxiliary.utils import overloads
 from classes.core.Model import Model
 
 
@@ -10,9 +11,9 @@ class AdvModel(Model):
 
     def __init__(self, adv_lambda: float = 0.00005):
         super().__init__()
-        self._network = None
         self._adv_lambda = Tensor([adv_lambda]).to(self._device)
 
+    @overloads(Model.optimize)
     def optimize(self, pred_base: Tensor, pred_adv: Tensor,
                  att_base: Union[Tensor, Tuple], att_adv: Union[Tensor, Tuple]) -> Tuple:
         self._optimizer.zero_grad()

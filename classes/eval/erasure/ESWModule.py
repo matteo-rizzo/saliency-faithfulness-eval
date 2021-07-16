@@ -58,5 +58,5 @@ class ESWModule(nn.Module):
         self._network.set_we_state(state=False)
 
     @abstractmethod
-    def _save_grad(self, grad: List, **kwargs):
+    def _save_grad(self, grad: List, *args, **kwargs):
         pass

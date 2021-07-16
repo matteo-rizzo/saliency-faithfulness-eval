@@ -53,7 +53,7 @@ be found at `path/to/dataset/color_checker`.
 
 1. Under the same root folder (at, e.g., `path/to/model`), store the ground truth predictions and attention masks in
    directories named `att` and `pred` respectively
-2. Either run the code with `python3 tests/adv/train_adv.py --path_to_base_model "path/to/model"` or edit
+2. Either run the code with `python3 tests/adv/train_adv.py --path_to_pretrained "path/to/model"` or edit
    the `PATH_TO_BASE_MODEL` global variable inside `tests/adv/train_adv.py`.
 
 #### SS1-SS2: Erasing saliency weights

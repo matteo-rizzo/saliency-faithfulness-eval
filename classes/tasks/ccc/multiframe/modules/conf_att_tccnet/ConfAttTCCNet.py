@@ -2,8 +2,8 @@ from typing import Tuple
 
 import torch
 from torch import Tensor
-from torch.nn.functional import normalize
 
+from auxiliary.utils import overloads
 from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
 from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
 from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
@@ -24,7 +24,7 @@ class ConfAttTCCNet(SaliencyTCCNet):
         if self._sal_type in ["temp", "spatiotemp"]:
             self.temp_att = TemporalAttention(features_size=3, hidden_size=hidden_size)
 
-    def _weight_spat(self, x: Tensor, **kwargs) -> Tuple:
+    def _weight_spat(self, x: Tensor, *args, **kwargs) -> Tuple:
         if not self._is_saliency_active("spat"):
             _, out = self.fcn(x)
             return out, Tensor()
@@ -35,10 +35,11 @@ class ConfAttTCCNet(SaliencyTCCNet):
         return spat_weighted_x, spat_conf
 
     @staticmethod
-    def _apply_spat_weights(x: Tensor, mask: Tensor, **kwargs) -> Tensor:
+    def _apply_spat_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
         return scale(x * mask).clone()
 
-    def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, **kwargs) -> Tuple:
+    @overloads(SaliencyTCCNet._weight_temp)
+    def _weight_temp(self, x: Tensor, hidden: Tensor, t: int, time_steps: int, *args, **kwargs) -> Tuple:
         if not self._is_saliency_active("temp"):
             return x[t, :, :, :], Tensor()
         temp_weights = self.temp_att(x, hidden)
@@ -48,39 +49,17 @@ class ConfAttTCCNet(SaliencyTCCNet):
         return temp_weighted_x, temp_weights.squeeze()
 
     @staticmethod
-    def _apply_temp_weights(x: Tensor, mask: Tensor, time_steps: int, **kwargs) -> Tensor:
+    @overloads(SaliencyTCCNet._apply_temp_weights)
+    def _apply_temp_weights(x: Tensor, mask: Tensor, time_steps: int, *args, **kwargs) -> Tensor:
         return torch.div(torch.sum(x * mask, dim=0), time_steps)
 
-    def _temp_we_check(self, temp_weights: Tensor, t: int, **kwargs) -> Tensor:
+    @overloads(SaliencyTCCNet._temp_we_check)
+    def _temp_we_check(self, temp_weights: Tensor, t: int, *args, **kwargs) -> Tensor:
         if self.we_temp_active():
             self._we.set_saliency_type("temp")
             temp_weights = self._we.erase(n=self.get_num_we_temp())
             temp_weights = temp_weights[:, t].view(temp_weights.shape[0], 1, 1, 1)
         return temp_weights
 
-    def forward(self, x: Tensor) -> Tuple:
-        batch_size, time_steps, num_channels, h, w = x.shape
-        x = x.view(batch_size * time_steps, num_channels, h, w)
-
-        # Spatial confidence (confidence mask)
-        spat_weighted_x, spat_conf = self._weight_spat(x)
-
-        # Init ConvLSTM
-        _, _, h, w = spat_weighted_x.shape
-        self.conv_lstm.init_hidden(self._hidden_size, (h, w))
-        hidden, cell = self.init_hidden(batch_size, h, w)
-
-        hidden_states, temp_mask = [], []
-        for t in range(time_steps):
-            # Temporal attention
-            temp_weighted_x, temp_weights = self._weight_temp(spat_weighted_x, hidden, t, time_steps)
-            temp_mask.append(temp_weights)
-
-            hidden, cell = self.conv_lstm(temp_weighted_x.unsqueeze(0), hidden, cell)
-            hidden_states.append(hidden)
-
-        y = self.fc(torch.mean(torch.stack(hidden_states), dim=0))
-        pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
-        temp_mask = torch.stack(temp_mask)
-
-        return pred, spat_conf, temp_mask
+    def _spat_comp(self, x: Tensor, *args, **kwargs) -> Tuple:
+        return self._weight_spat(x)

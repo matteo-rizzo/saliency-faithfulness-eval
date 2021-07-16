@@ -1,35 +1,28 @@
 from abc import abstractmethod, ABC
+from typing import List, Dict
 
 
 class Evaluator(ABC):
 
     def __init__(self):
         super().__init__()
-        self.__errors = []
+        self._errors = []
+        self._metrics, self._best_metrics = {}, {}
 
-        monitored_metrics = ["mean", "median", "trimean", "bst25", "wst25", "wst5"]
-        self.__metrics = {}
-        self.__best_metrics = {m: 100.0 for m in monitored_metrics}
+    def add_error(self, error: any):
+        self._errors.append(error)
 
-    @abstractmethod
-    def add_error(self, **kwargs):
-        pass
-
-    @abstractmethod
     def reset_errors(self):
-        pass
+        self._errors = []
 
-    @abstractmethod
-    def get_errors(self) -> any:
-        pass
+    def get_errors(self) -> List:
+        return self._errors
 
-    @abstractmethod
-    def get_metrics(self) -> any:
-        pass
+    def get_metrics(self) -> Dict:
+        return self._metrics
 
-    @abstractmethod
-    def get_best_metrics(self) -> any:
-        pass
+    def get_best_metrics(self) -> Dict:
+        return self._best_metrics
 
     @abstractmethod
     def compute_metrics(self) -> any:

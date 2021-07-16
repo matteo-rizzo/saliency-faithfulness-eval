@@ -25,7 +25,7 @@ class ESWTesterTCCNet(ESWTester):
         self.__sal_type = sal_type
         self.__we_state = (True, True) if sal_type == "spatiotemp" else (sal_type == "spat", sal_type == "temp")
 
-    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, **kwargs) -> float:
+    def _erase_weights(self, x: Tensor, y: Tensor, mode: str, log_base: Dict, *args, **kwargs) -> float:
         self._model.set_we_mode(mode)
         pred = self._model.predict(x)
         err = self._model.get_loss(pred, y).item()
@@ -35,7 +35,7 @@ class ESWTesterTCCNet(ESWTester):
             self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["temp"]}))
         return err
 
-    def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, **kwargs) -> Dict:
+    def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, *args, **kwargs) -> Dict:
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
         log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().numpy()], "err_base": [err]}
@@ -80,7 +80,7 @@ class ESWTesterTCCNet(ESWTester):
             # Erase weights for each supported modality
             self.__run_erasure_modes(x, y, self._multi_weights_erasures, log_base)
 
-    def run(self, test_type: str = "single", **kwargs):
+    def run(self, test_type: str, *args, **kwargs):
         """
         If test_type = "single" then runs the single weights erasure test (SS1) on the given set of data.
         Model inference is run:
@@ -93,6 +93,8 @@ class ESWTesterTCCNet(ESWTester):
         * With no modifications to the saliency mask
         * After zeroing out the saliency weights ranked from highest to lowest
         * After zeroing out the saliency weight ranked randomly
+        * After zeroing out the saliency weight ranked based on the gradient
+        * After zeroing out the saliency weight ranked based on the gradient-weight product
         """
         self._set_path_to_log_file(test_type)
 
@@ -118,4 +120,4 @@ class ESWTesterTCCNet(ESWTester):
 
             print("--------------------------------------------------------------")
 
-            self._merge_logs()
+        self._merge_logs()

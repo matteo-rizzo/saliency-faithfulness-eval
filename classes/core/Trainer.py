@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE
+from auxiliary.utils import SEPARATOR
 from classes.core.Evaluator import Evaluator
 from classes.core.LossTracker import LossTracker
 from classes.core.Model import Model
@@ -46,7 +47,7 @@ class Trainer:
             start = time()
             self._train_epoch(model, training_set, epoch)
             self.print_train_performance(train_time=time() - start)
-
+            exit()
             if epoch % self._val_frequency == 0:
                 model.evaluation_mode()
                 self._val_loss.reset()
@@ -62,7 +63,7 @@ class Trainer:
                 self._check_if_best_model(model)
 
     @abstractmethod
-    def _train_epoch(self, model: Model, data: DataLoader, epoch: int, **kwargs) -> any:
+    def _train_epoch(self, model: Model, data: DataLoader, epoch: int, *args, **kwargs) -> any:
         """
         Trains the given model for one epoch updating the training loss (as side effect)
         :param model: the model to be trained (a PyTorch nn.Module)
@@ -72,7 +73,7 @@ class Trainer:
         pass
 
     @abstractmethod
-    def _eval_epoch(self, model: Model, data: DataLoader, **kwargs) -> any:
+    def _eval_epoch(self, model: Model, data: DataLoader, *args, **kwargs) -> any:
         """
         Evaluates the model for one epoch testing it against the provided data. Updates the validation loss (as side
         effect) and stores metrics/error values in the evaluator (as side effect)
@@ -87,12 +88,12 @@ class Trainer:
         pass
 
     @abstractmethod
-    def _log_metrics(self, **kwargs):
+    def _log_metrics(self, *args, **kwargs):
         """ Saves the metrics on file """
         pass
 
     @abstractmethod
-    def _print_metrics(self, **kwargs):
+    def _print_metrics(self, *args, **kwargs):
         """ Prints the current metrics on the standard output """
         pass
 
@@ -109,7 +110,7 @@ class Trainer:
         if 0 < self._val_loss.avg < self._best_val_loss:
             self._best_val_loss = self._val_loss.avg
             self._best_metrics = self._evaluator.update_best_metrics()
-            print("Saving new best models... \n")
+            print("Saving new best model...")
             model.save(self._path_to_log)
 
     def print_train_performance(self, train_time: float):
@@ -117,10 +118,10 @@ class Trainer:
         Prints the training time/loss for the most recent epoch
         :param train_time: the training time for the most recent epoch
         """
-        print("\n********************************************************************")
+        print("\n" + SEPARATOR["stars"])
         print(" Train Time ... : {:.4f}".format(train_time))
         print(" Train Loss ... : {:.4f}".format(self._train_loss.avg))
-        print("\n********************************************************************")
+        print(SEPARATOR["stars"])
 
     def print_val_performance(self, val_time: float):
         """
@@ -129,10 +130,10 @@ class Trainer:
         """
         print(" Val Time ..... : {:.4f}".format(val_time))
         print(" Val Loss ..... : {:.4f}".format(self._val_loss.avg))
-        print("\n********************************************************************")
+        print("\n" + SEPARATOR["stars"])
 
     @staticmethod
     def print_heading(mode: str, epoch: int, epochs: int):
-        print("\n--------------------------------------------------------------")
+        print("\n" + SEPARATOR["dashes"])
         print("\t\t {} epoch {}/{}".format(mode.upper(), epoch + 1, epochs))
-        print("--------------------------------------------------------------\n")
+        print(SEPARATOR["dashes"] + "\n")

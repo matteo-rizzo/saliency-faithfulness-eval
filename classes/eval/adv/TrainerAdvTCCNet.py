@@ -11,7 +11,7 @@ from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
 from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 
-class TrainerAdvTCC(TrainerCCC):
+class TrainerAdvTCCNet(TrainerCCC):
     def __init__(self, path_to_log: str, path_to_pred: str, path_to_att: str, val_frequency: int = 5):
         super().__init__(path_to_log, val_frequency)
 
@@ -34,7 +34,7 @@ class TrainerAdvTCC(TrainerCCC):
         temp_att_base = self.__load_from_file(os.path.join(self.__path_to_temp_att, file_name))
         return pred_base, spat_att_base, temp_att_base
 
-    def __compute_prediction(self, x: Tensor, y: Tensor, path_to_x: str, model: AdvModel):
+    def __compute_pred(self, x: Tensor, y: Tensor, path_to_x: str, model: AdvModel):
         x, y = x.to(self._device), y.to(self._device)
 
         file_name = path_to_x[0].split(os.sep)[-1]
@@ -45,9 +45,9 @@ class TrainerAdvTCC(TrainerCCC):
 
         return pred_base, pred_adv, att_base, att_adv
 
-    def _train_epoch(self, model: AdvModel, data: DataLoader, epoch: int, **kwargs):
+    def _train_epoch(self, model: AdvModel, data: DataLoader, epoch: int, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
-            pred_base, pred_adv, att_base, att_adv = self.__compute_prediction(x, y, path_to_x, model)
+            pred_base, pred_adv, att_base, att_adv = self.__compute_pred(x, y, path_to_x, model)
             tl, losses = model.optimize(pred_base, pred_adv, att_base, att_adv)
             self._train_loss.update(tl)
 
@@ -64,9 +64,9 @@ class TrainerAdvTCC(TrainerCCC):
                 print("\n Saving vis at: {} \n".format(path_to_save))
                 model.save_vis(x, att_base, att_adv, path_to_save)
 
-    def _eval_epoch(self, model: AdvModel, data: DataLoader, **kwargs):
+    def _eval_epoch(self, model: AdvModel, data: DataLoader, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
-            pred_base, pred_adv, att_base, att_adv = self.__compute_prediction(x, y, path_to_x, model)
+            pred_base, pred_adv, att_base, att_adv = self.__compute_pred(x, y, path_to_x, model)
             vl, losses = model.get_adv_loss(pred_base, pred_adv, att_base, att_adv)
             vl = vl.item()
             self._val_loss.update(vl)
@@ -91,16 +91,7 @@ class TrainerAdvTCC(TrainerCCC):
         self._print_metrics(metrics_base=metrics_base, metrics_adv=metrics_adv)
         self._log_metrics(metrics_adv)
 
-    def _print_metrics(self, metrics_base: Dict, **kwargs):
-        print(" Mean ........ : {:.4f} (Best: {:.4f} - Base: {:.4f})"
-              .format(kwargs["metrics_adv"]["mean"], self._best_metrics["mean"], metrics_base["mean"]))
-        print(" Median ...... : {:.4f} (Best: {:.4f} - Base: {:.4f}))"
-              .format(kwargs["metrics_adv"]["median"], self._best_metrics["median"], metrics_base["median"]))
-        print(" Trimean ..... : {:.4f} (Best: {:.4f} - Base: {:.4f}))"
-              .format(kwargs["metrics_adv"]["trimean"], self._best_metrics["trimean"], metrics_base["trimean"]))
-        print(" Best 25% .... : {:.4f} (Best: {:.4f} - Base: {:.4f}))"
-              .format(kwargs["metrics_adv"]["bst25"], self._best_metrics["bst25"], metrics_base["bst25"]))
-        print(" Worst 25% ... : {:.4f} (Best: {:.4f} - Base: {:.4f}))"
-              .format(kwargs["metrics_adv"]["wst25"], self._best_metrics["wst25"], metrics_base["wst25"]))
-        print(" Worst 5% .... : {:.4f} (Best: {:.4f} - Base: {:.4f}))"
-              .format(kwargs["metrics_adv"]["wst5"], self._best_metrics["wst5"], metrics_base["wst5"]))
+    def _print_metrics(self, metrics_base: Dict, *args, **kwargs):
+        for mn, mv in kwargs["metrics_adv"].items():
+            print((" {} " + "".join(["."] * (15 - len(mn))) + " : {:.4f} (Best: {:.4f} - Base: {:.4f})")
+                  .format(mn.capitalize(), mv, self._best_metrics[mn], metrics_base[mn]))

@@ -15,11 +15,3 @@ class ModelSaliencyTCCNet(ModelCCC):
         if return_steps:
             return pred, spat_mask, temp_mask
         return pred
-
-    def optimize(self, x: Tensor, y: Tensor, m: Tensor = None) -> float:
-        self._optimizer.zero_grad()
-        pred = self.predict(x, m)
-        loss = self.get_loss(pred, y)
-        loss.backward()
-        self._optimizer.step()
-        return loss.item()
