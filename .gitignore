@@ -870,3 +870,4 @@ FodyWeavers.xsd
 /dataset/color_checker/images/
 /train/logs/
 /tests/erasure/assets/
+/tests/mlp/logs/

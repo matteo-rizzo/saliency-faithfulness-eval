@@ -16,6 +16,9 @@ class DataHandlerTCC:
         return training_loader, test_loader
 
     def get_loader(self, train: bool, data_folder: str) -> DataLoader:
-        dataset = self.__dataset(train=False, data_folder=data_folder)
-        print(" {} dataset size: {}".format("TRAIN" if train else "TEST", len(dataset)))
+        dataset = self.__dataset(train, data_folder)
+        set_type = "TRAIN" if train else "TEST"
+        if not len(dataset):
+            raise ValueError("Empty {} set for data folder '{}'".format(set_type, data_folder))
+        print(" {} dataset size: {}".format(set_type, len(dataset)))
         return DataLoader(dataset, batch_size=1, shuffle=train, num_workers=cpu_count(), drop_last=True)

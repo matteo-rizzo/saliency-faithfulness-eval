@@ -6,7 +6,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from classes.eval.adv.AdvModel import AdvModel
+from classes.eval.adv.core.AdvModel import AdvModel
 from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
 from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 

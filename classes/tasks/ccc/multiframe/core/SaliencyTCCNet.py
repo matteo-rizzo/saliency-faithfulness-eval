@@ -110,10 +110,11 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
             hidden_states.append(hidden)
 
         temp_mask = torch.stack(temp_mask)
-        y = self.fc(torch.mean(torch.stack(hidden_states), dim=0))
+        out = torch.mean(torch.stack(hidden_states), dim=0)
 
-        return y, temp_mask
+        return out, temp_mask
 
+    @overload
     def forward(self, x: Tensor) -> Tuple:
         """
         @param x: the sequences of frames of shape "bs x ts x nc x h x w"
@@ -121,7 +122,11 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
         """
         batch_size, time_steps, num_channels, h, w = x.shape
         x = x.view(batch_size * time_steps, num_channels, h, w)
+
         spat_weighted_x, spat_mask = self._spat_comp(x)
-        y, temp_mask = self._temp_comp(spat_weighted_x, batch_size)
+        out, temp_mask = self._temp_comp(spat_weighted_x, batch_size)
+
+        y = self.fc(out)
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
+
         return pred, spat_mask, temp_mask

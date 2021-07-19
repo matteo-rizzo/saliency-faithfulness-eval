@@ -64,18 +64,18 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
             hidden, cell = self.conv_lstm(temp_weighted_x[t, :, :, :].unsqueeze(0), hidden, cell)
             hidden_states.append(hidden)
 
-        y = self.fc(torch.mean(torch.stack(hidden_states), dim=0))
+        out = torch.mean(torch.stack(hidden_states), dim=0)
 
-        return y, temp_mask
+        return out, temp_mask
 
     def forward(self, x: Tensor) -> Tuple:
-        """
-        @param x: the sequences of frames of shape "bs x ts x nc x h x w"
-        @return: the normalized illuminant prediction
-        """
         batch_size, time_steps, num_channels, h, w = x.shape
         x = x.view(batch_size * time_steps, num_channels, h, w)
+
         spat_weighted_x, spat_mask = self._spat_comp(x)
-        y, temp_mask = self._temp_comp(spat_weighted_x, batch_size, spat_mask)
+        out, temp_mask = self._temp_comp(spat_weighted_x, batch_size, spat_mask)
+
+        y = self.fc(torch.mean(torch.stack(out), dim=0))
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
+
         return pred, spat_mask, temp_mask

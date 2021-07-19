@@ -1,8 +1,9 @@
+from abc import ABC
 from typing import Tuple, Dict, Union
 
 from torch import Tensor
 
-from classes.eval.adv.AdvModel import AdvModel
+from classes.eval.adv.core.AdvModel import AdvModel
 from classes.losses.AngularLoss import AngularLoss
 from classes.losses.KLDivLoss import KLDivLoss
 from classes.losses.StructComplLoss import StructComplLoss
@@ -10,7 +11,7 @@ from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
 from functional.image_processing import scale
 
 
-class AdvModelTCCNet(AdvModel):
+class AdvModelTCCNet(AdvModel, ABC):
 
     def __init__(self, network: SaliencyTCCNet, adv_lambda: float = 0.00005):
         super().__init__(adv_lambda)

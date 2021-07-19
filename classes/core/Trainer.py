@@ -47,7 +47,7 @@ class Trainer:
             start = time()
             self._train_epoch(model, training_set, epoch)
             self.print_train_performance(train_time=time() - start)
-            exit()
+
             if epoch % self._val_frequency == 0:
                 model.evaluation_mode()
                 self._val_loss.reset()
