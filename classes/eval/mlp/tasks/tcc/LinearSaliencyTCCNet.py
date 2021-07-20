@@ -71,7 +71,10 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
         batch_size, time_steps, num_channels, h, w = x.shape
         x = x.view(batch_size * time_steps, num_channels, h, w)
 
+        # --- Spatial component ---
+
         if self._is_saliency_active("spat"):
+            # Linear encoder
             x = self.spat_enc(x)
             x = x.view(time_steps, NUM_SPAT_DIM, *ENCODING_SIZE)
 
@@ -81,9 +84,13 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
 
             x = self._apply_spat_weights(x, spat_weights)
         else:
+            # Convolutional encoder
             x, _ = self._spat_comp(x)
 
+        # --- Temporal component ---
+
         if self._is_saliency_active("temp"):
+            # Linear encoder
             x = self.temp_enc(x)
             x = x.view(time_steps, NUM_TEMP_DIM, *ENCODING_SIZE)
 
@@ -94,6 +101,7 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
             x = self._apply_temp_weights(x, temp_weights, time_steps)
             x = torch.mean(x, dim=0).unsqueeze(0)
         else:
+            # Recurrent encoder
             x, _ = self._temp_comp(x, batch_size)
 
         x = self.fc(x)
