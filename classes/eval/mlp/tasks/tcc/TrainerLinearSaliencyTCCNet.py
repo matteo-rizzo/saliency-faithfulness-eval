@@ -29,12 +29,12 @@ class TrainerLinearSaliencyTCCNet(TrainerCCC):
         return self.__load_from_file(os.path.join(self.__path_to_sw, self.__sal_type, filename))
 
     def __compute_pred(self, model: ModelLinearSaliencyTCCNet, x: Tensor, y: Tensor, path_to_x: str):
-        x, y = x.to(self._device), y.to(self._device)
         w = self.__load_sw_from_file(filename=path_to_x[0].split(os.sep)[-1])
         return model.predict(x, w)
 
     def _train_epoch(self, model: ModelLinearSaliencyTCCNet, data: DataLoader, epoch: int, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
+            x, y = x.to(self._device), y.to(self._device)
             pred = self.__compute_pred(model, x, y, path_to_x)
             tl = model.optimize(pred, y)
             self._train_loss.update(tl)
@@ -43,6 +43,7 @@ class TrainerLinearSaliencyTCCNet(TrainerCCC):
 
     def _eval_epoch(self, model: ModelLinearSaliencyTCCNet, data: DataLoader, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
+            x, y = x.to(self._device), y.to(self._device)
             pred = self.__compute_pred(model, x, y, path_to_x)
             vl = model.get_loss(pred, y).item()
             self._val_loss.update(vl)

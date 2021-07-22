@@ -38,7 +38,7 @@ class ESWTesterTCCNet(ESWTester):
     def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, *args, **kwargs) -> Dict:
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
-        log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().numpy()], "err_base": [err]}
+        log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().cpu().numpy()], "err_base": [err]}
         return {**log_base, **self.__select_mask_size(spat_mask, temp_mask)}
 
     def __select_mask_size(self, spat_mask: Tensor, temp_mask: Tensor) -> Dict:

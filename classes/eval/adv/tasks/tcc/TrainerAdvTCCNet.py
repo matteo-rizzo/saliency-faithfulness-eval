@@ -35,8 +35,6 @@ class TrainerAdvTCCNet(TrainerCCC):
         return pred_base, spat_att_base, temp_att_base
 
     def __compute_pred(self, x: Tensor, y: Tensor, path_to_x: str, model: AdvModel):
-        x, y = x.to(self._device), y.to(self._device)
-
         file_name = path_to_x[0].split(os.sep)[-1]
         pred_base, spat_att_base, temp_att_base = self.__load_ground_truths(file_name)
 
@@ -47,6 +45,7 @@ class TrainerAdvTCCNet(TrainerCCC):
 
     def _train_epoch(self, model: AdvModel, data: DataLoader, epoch: int, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
+            x, y = x.to(self._device), y.to(self._device)
             pred_base, pred_adv, att_base, att_adv = self.__compute_pred(x, y, path_to_x, model)
             tl, losses = model.optimize(pred_base, pred_adv, att_base, att_adv)
             self._train_loss.update(tl)
@@ -66,6 +65,7 @@ class TrainerAdvTCCNet(TrainerCCC):
 
     def _eval_epoch(self, model: AdvModel, data: DataLoader, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
+            x, y = x.to(self._device), y.to(self._device)
             pred_base, pred_adv, att_base, att_adv = self.__compute_pred(x, y, path_to_x, model)
             vl, losses = model.get_adv_loss(pred_base, pred_adv, att_base, att_adv)
             vl = vl.item()
