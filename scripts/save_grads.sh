@@ -9,7 +9,7 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 declare path_to_script="tests/erasure/save_grads_tccnet.py"
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
-declare -a model_types=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
+declare -a model_types=("conf_tccnet")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
 declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")

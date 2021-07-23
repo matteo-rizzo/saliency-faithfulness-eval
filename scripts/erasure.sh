@@ -15,7 +15,7 @@ declare -a models=("att_tccnet")
 declare -a dirs=("tcc_split")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a modes=("temp" "spatiotemp" "spat")
+declare -a modes=("spatiotemp" "spat" "temp")
 
 # Values: "single" "multi"
 declare -a erasures=("single" "multi")

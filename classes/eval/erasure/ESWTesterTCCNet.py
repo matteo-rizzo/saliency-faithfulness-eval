@@ -29,7 +29,7 @@ class ESWTesterTCCNet(ESWTester):
         self._model.set_we_mode(mode)
         pred = self._model.predict(x)
         err = self._model.get_loss(pred, y).item()
-        log_mode = {"pred": [pred.detach().squeeze().numpy()], "err": [err]}
+        log_mode = {"pred": [pred.detach().squeeze().cpu().numpy()], "err": [err]}
         self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["spat"]}))
         for _ in range(x.shape[1]):
             self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["temp"]}))

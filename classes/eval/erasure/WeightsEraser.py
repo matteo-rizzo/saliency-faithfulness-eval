@@ -6,10 +6,13 @@ import pandas as pd
 import torch
 from torch import Tensor
 
+from auxiliary.settings import DEVICE
+
 
 class WeightsEraser:
 
     def __init__(self):
+        self.__device = DEVICE
         self.__path_to_log, self.__path_to_model_dir = "", ""
         self.__curr_filename, self.__saliency_type = None, None
         self.__mode = ""
@@ -36,11 +39,11 @@ class WeightsEraser:
         grad = torch.from_numpy(np.load(path_to_grad))
         if x.shape != grad.shape:
             raise ValueError("Input-gradient shapes mismatch! Received input: {}, grad: {}".format(x.shape, grad.shape))
-        return grad
+        return grad.to(self.__device)
 
     def __load_saliency_mask(self) -> Tensor:
         path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__saliency_type, self.__curr_filename)
-        return torch.from_numpy(np.load(path_to_mask, allow_pickle=True))
+        return torch.from_numpy(np.load(path_to_mask, allow_pickle=True)).to(self.__device)
 
     def erase(self, saliency_mask: Tensor = None, n: int = 1) -> Tensor:
         """
@@ -68,8 +71,8 @@ class WeightsEraser:
 
     def __log_erasure(self, val: Tensor, indices: Tensor):
         log_data = pd.DataFrame({"mode": self.__mode,
-                                 "val": [val.detach().numpy()],
-                                 "indices": [indices.detach().numpy()]})
+                                 "val": [val.detach().cpu().numpy()],
+                                 "indices": [indices.detach().cpu().numpy()]})
         header = log_data.keys() if not os.path.exists(self.__path_to_log) else False
         log_data.to_csv(self.__path_to_log, mode='a', header=header, index=False)
 
