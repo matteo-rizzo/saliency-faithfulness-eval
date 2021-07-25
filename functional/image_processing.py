@@ -62,8 +62,9 @@ def hwc_to_chw(x: np.ndarray) -> np.ndarray:
 def scale(x: Tensor) -> Tensor:
     """ Scales all values of a tensor between 0 and 1 """
     x = x - x.min()
-    x = x / x.max()
-    return x
+    if not x.max().item():
+        return x
+    return x / x.max()
 
 
 def rescale(x: Tensor, size: Tuple) -> Tensor:
