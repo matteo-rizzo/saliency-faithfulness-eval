@@ -85,7 +85,7 @@ class WeightsEraser:
     @staticmethod
     def __indices_rand(x: Tensor) -> Tensor:
         indices = []
-        for i in enumerate(range(x.shape[1])):
+        for i in enumerate(range(x.shape[0])):
             item_indices = list(range(x.shape[1]))
             random.Random(i).shuffle(indices)
             indices.append(item_indices)

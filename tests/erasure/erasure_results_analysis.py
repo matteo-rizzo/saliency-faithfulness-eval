@@ -9,7 +9,7 @@ import pandas as pd
 import torch
 
 from auxiliary.settings import RANDOM_SEED
-from auxiliary.utils import make_deterministic, print_namespace
+from auxiliary.utils import make_deterministic, print_namespace, experiment_header
 from functional.image_processing import angular_error
 
 
@@ -35,10 +35,14 @@ def main(ns: argparse.Namespace):
     log_dir = "{}_{}_{}_{}".format(model_type, data_folder, sal_type, time())
     path_to_log = os.path.join("tests", "erasure", "analysis", log_dir)
 
+    experiment_header("Single weights erasure")
+
     # Single weights erasure
     path_to_test_results = os.path.join(path_to_results, "single")
     erasure_data = pd.read_csv(os.path.join(path_to_test_results, "data.csv"))
     att_diffs_spat, att_diffs_temp, errs_spat, errs_temp = [], [], [], []
+
+    print("\n Fetching data at: {} \n".format(path_to_test_results))
 
     for filename in erasure_data["filename"].tolist():
         print("\n Processing item: {}".format(filename))
