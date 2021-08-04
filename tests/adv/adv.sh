@@ -12,7 +12,7 @@ declare path_to_script="tests/adv/train_adv_tccnet.py"
 declare -a lambdas=(0.00005)
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
-declare -a models=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
+declare -a models=("conf_att_tccnet" "att_tccnet" "conf_tccnet")
 
 # Values: "spatiotemp" "spat" "temp"
 declare -a modes=("spatiotemp")

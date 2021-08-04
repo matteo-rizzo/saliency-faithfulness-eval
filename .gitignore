@@ -871,3 +871,4 @@ FodyWeavers.xsd
 /train/logs/
 /tests/erasure/assets/
 /tests/mlp/logs/
+/results/

@@ -6,6 +6,7 @@ import pandas as pd
 from torch import Tensor
 from torch.utils.data import DataLoader
 
+from auxiliary.utils import SEPARATOR
 from classes.eval.erasure.ESWModel import ESWModel
 from classes.eval.erasure.ESWTester import ESWTester
 
@@ -29,16 +30,20 @@ class ESWTesterTCCNet(ESWTester):
         self._model.set_we_mode(mode)
         pred = self._model.predict(x)
         err = self._model.get_loss(pred, y).item()
-        log_mode = {"pred": [pred.detach().squeeze().cpu().numpy()], "err": [err]}
-        self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["spat"]}))
+        pred = pred.detach().squeeze().cpu().numpy()
+        self._save_pred(pred, filename=log_base["filename"][0], pred_type=mode + "_erasure")
+        log_mode = {"pred_erasure": [pred], "err_erasure": [err], "mode": [mode]}
+        self._logs.append(pd.DataFrame({**log_base, **log_mode, "sal_type": ["spat"], "n": [self._num_weights[0]]}))
         for _ in range(x.shape[1]):
-            self._logs.append(pd.DataFrame({**log_base, **log_mode, "type": ["temp"]}))
+            self._logs.append(pd.DataFrame({**log_base, **log_mode, "sal_type": ["temp"], "n": [self._num_weights[1]]}))
         return err
 
     def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, *args, **kwargs) -> Dict:
         pred, spat_mask, temp_mask = self._model.predict(x, return_steps=True)
         err = self._model.get_loss(pred, y).item()
-        log_base = {"filename": [filename], "pred_base": [pred.detach().squeeze().cpu().numpy()], "err_base": [err]}
+        pred = pred.detach().squeeze().cpu().numpy()
+        self._save_pred(pred, filename)
+        log_base = {"filename": [filename], "pred_base": [pred], "err_base": [err]}
         return {**log_base, **self.__select_mask_size(spat_mask, temp_mask)}
 
     def __select_mask_size(self, spat_mask: Tensor, temp_mask: Tensor) -> Dict:
@@ -75,7 +80,7 @@ class ESWTesterTCCNet(ESWTester):
                 n = (0, n) if self.__sal_type == "spat" else (n, 0)
 
             print("\n  * N: {}/{}".format(n, mask_size))
-            self._model.set_we_num(n)
+            self._set_num_weights(n)
 
             # Erase weights for each supported modality
             self.__run_erasure_modes(x, y, self._multi_weights_erasures, log_base)
@@ -96,7 +101,7 @@ class ESWTesterTCCNet(ESWTester):
         * After zeroing out the saliency weight ranked based on the gradient
         * After zeroing out the saliency weight ranked based on the gradient-weight product
         """
-        self._set_path_to_log_file(test_type)
+        self._set_path_to_test_log(test_type)
 
         for i, (x, _, y, path_to_x) in enumerate(self._data):
             x, y, filename = x.to(self._device), y.to(self._device), path_to_x[0].split(os.sep)[-1]
@@ -107,7 +112,7 @@ class ESWTesterTCCNet(ESWTester):
             log_base = self._predict_baseline(x, y, filename)
 
             print("Testing item {}/{} ({}) - Base error: {:.4f}"
-                  .format(i, len(self._data), filename, log_base["err_base"][0]))
+                  .format(i + 1, len(self._data), filename, log_base["err_base"][0]))
 
             # Activate weights erasure
             self._model.activate_we(state=self.__we_state)
@@ -118,6 +123,6 @@ class ESWTesterTCCNet(ESWTester):
             # Deactivate weights erasure
             self._model.deactivate_we()
 
-            print("--------------------------------------------------------------")
+            print(SEPARATOR["dashes"])
 
-        self._merge_logs()
+        self._write_logs()

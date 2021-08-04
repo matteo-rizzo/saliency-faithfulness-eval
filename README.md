@@ -8,9 +8,7 @@ A suite of tests to assess attention faithfulness for interpretability.
 
 ### Main references
 
-#### Project Roadmap
-
-Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4LrXuQuOXWnYdOXPufeEjg/edit?usp=sharing).
+#### References
 
 #### Tests for Faithfulness Evaluation
 
@@ -35,7 +33,7 @@ Matteo's [slides](https://docs.google.com/presentation/d/1JuJhpu43QZfxYxAFgYqIl4
 
 ### Installation
 
-The code has been developed and tested on Ubuntu 20.10 using Python3.9 and some funtionalities introduced in torch
+The code has been developed and tested on Ubuntu 20.10 using Python3.9 and some functionalities introduced in torch
 1.9.0. Please install the required Python packages listed in `requirements.txt`. Using a `virtualenv` is not compulsory
 but strongly advised.
 

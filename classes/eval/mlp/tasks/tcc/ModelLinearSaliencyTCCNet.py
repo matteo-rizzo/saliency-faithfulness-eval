@@ -10,9 +10,9 @@ from classes.tasks.ccc.core.ModelCCC import ModelCCC
 
 class ModelLinearSaliencyTCCNet(ModelCCC):
 
-    def __init__(self, sal_type: str = "spatiotemp", learn_weights: bool = False):
+    def __init__(self, sal_type: str = "spatiotemp", weights_mode: str = "imposed"):
         super().__init__()
-        self._network = LinearSaliencyTCCNet(sal_type, learn_weights).to(self._device)
+        self._network = LinearSaliencyTCCNet(sal_type, weights_mode).to(self._device)
 
     @overloads(Model.predict)
     def predict(self, x: Tensor, w: Union[Tensor, Tuple], *args, **kwargs) -> Tensor:

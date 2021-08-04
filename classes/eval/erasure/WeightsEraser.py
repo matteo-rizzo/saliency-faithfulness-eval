@@ -2,7 +2,6 @@ import os
 import random
 
 import numpy as np
-import pandas as pd
 import torch
 from torch import Tensor
 
@@ -13,14 +12,16 @@ class WeightsEraser:
 
     def __init__(self):
         self.__device = DEVICE
-        self.__path_to_log, self.__path_to_model_dir = "", ""
-        self.__curr_filename, self.__saliency_type = None, None
-        self.__mode = ""
+        self.__path_to_model_dir, self.__path_to_val, self.__path_to_indices = "", "", ""
+        self.__curr_filename, self.__sal_type, self.__mode = "", "", ""
         self.__fetchers = {"max": self.__indices_max, "rand": self.__indices_rand,
                            "grad": self.__indices_grad, "grad_prod": self.__indices_grad_prod}
 
     def set_path_to_log(self, path: str):
-        self.__path_to_log = path
+        self.__path_to_val = os.path.join(path, "val")
+        os.makedirs(self.__path_to_val)
+        self.__path_to_indices = os.path.join(path, "indices")
+        os.makedirs(self.__path_to_indices)
 
     def set_path_to_model_dir(self, path: str):
         self.__path_to_model_dir = path
@@ -29,20 +30,20 @@ class WeightsEraser:
         self.__curr_filename = filename
 
     def set_saliency_type(self, saliency_type: str):
-        self.__saliency_type = saliency_type
+        self.__sal_type = saliency_type
 
     def set_erasure_mode(self, mode: str):
         self.__mode = mode
 
     def __load_grad(self, x: torch.Tensor) -> Tensor:
-        path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__saliency_type, self.__curr_filename)
+        path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__sal_type, self.__curr_filename)
         grad = torch.from_numpy(np.load(path_to_grad))
         if x.shape != grad.shape:
             raise ValueError("Input-gradient shapes mismatch! Received input: {}, grad: {}".format(x.shape, grad.shape))
         return grad.to(self.__device)
 
     def __load_saliency_mask(self) -> Tensor:
-        path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__saliency_type, self.__curr_filename)
+        path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__sal_type, self.__curr_filename)
         return torch.from_numpy(np.load(path_to_mask, allow_pickle=True)).to(self.__device)
 
     def erase(self, saliency_mask: Tensor = None, n: int = 1) -> Tensor:
@@ -65,16 +66,14 @@ class WeightsEraser:
 
         saliency_mask = saliency_mask.view(s)
 
-        self.__log_erasure(val, indices)
+        self.__log_erasure(val, indices, n)
 
         return saliency_mask
 
-    def __log_erasure(self, val: Tensor, indices: Tensor):
-        log_data = pd.DataFrame({"mode": self.__mode,
-                                 "val": [val.detach().cpu().numpy()],
-                                 "indices": [indices.detach().cpu().numpy()]})
-        header = log_data.keys() if not os.path.exists(self.__path_to_log) else False
-        log_data.to_csv(self.__path_to_log, mode='a', header=header, index=False)
+    def __log_erasure(self, val: Tensor, indices: Tensor, n: int):
+        filename = "{}_{}_{}_{}".format(self.__curr_filename, self.__sal_type, self.__mode, n)
+        np.save(os.path.join(self.__path_to_val, filename), val.detach().cpu().numpy())
+        np.save(os.path.join(self.__path_to_indices, filename), indices.detach().cpu().numpy())
 
     def __fetch_indices(self, x: Tensor, n: int = 1) -> Tensor:
         supp_fetchers = self.__fetchers.keys()

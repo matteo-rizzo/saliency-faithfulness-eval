@@ -12,7 +12,7 @@ from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 
 def main(ns):
-    model_type, data_folder, sal_type, learn_weights = ns.model_type, ns.data_folder, ns.sal_type, ns.learn_weights
+    model_type, data_folder, sal_type, mode = ns.model_type, ns.data_folder, ns.sal_type, ns.mode
     path_to_pretrained, epochs, lr = ns.path_to_pretrained, ns.epochs, ns.lr
 
     experiment_header("Training MLP for '{}' - '{}' weights - Data folder {}".format(sal_type, model_type, data_folder))
@@ -20,7 +20,7 @@ def main(ns):
     log_folder = "mlp_{}_{}_{}_{}".format(model_type, data_folder, sal_type, time.time())
     path_to_log = os.path.join("tests", "mlp", "logs", log_folder)
 
-    model = ModelLinearSaliencyTCCNet(sal_type, learn_weights)
+    model = ModelLinearSaliencyTCCNet(sal_type, mode)
     training_loader, test_loader = DataHandlerTCC().train_test_loaders(data_folder)
 
     trainer = TrainerLinearSaliencyTCCNet(path_to_log, path_to_pretrained, sal_type)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("--model_type", type=str, default="att_tccnet")
     parser.add_argument("--data_folder", type=str, default="tcc_split")
     parser.add_argument('--sal_type', type=str, default="spat")
-    parser.add_argument("--learn_weights", action="store_true")
+    parser.add_argument("--mode", type=str, default="deactivate")
     parser.add_argument("--epochs", type=int, default="1000")
     parser.add_argument('--lr', type=float, default="0.0003")
     parser.add_argument('--path_to_pretrained', type=str, default=PATH_TO_PRETRAINED)
