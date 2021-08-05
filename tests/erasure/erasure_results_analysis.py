@@ -10,7 +10,7 @@ import torch
 
 from auxiliary.settings import RANDOM_SEED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header
-from functional.image_processing import angular_error
+from functional.metrics import angular_error
 
 
 def get_plot_scores(path_to_results: str, filename: str, sal_type: str) -> Tuple:

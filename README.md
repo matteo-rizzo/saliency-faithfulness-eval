@@ -8,14 +8,16 @@ A suite of tests to assess attention faithfulness for interpretability.
 
 ### Main references
 
-#### References
-
 #### Tests for Faithfulness Evaluation
 
-* Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
-* Serrano & Smith, *“Is Attention Interpretable?”,* ACL (2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
-* Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/) - [Code](https://github.com/successar/AttentionExplanation)] 
-* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)]
+* Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (
+    2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
+* Serrano & Smith, *“Is Attention Interpretable?”,* ACL (
+    2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
+* Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/)
+    - [Code](https://github.com/successar/AttentionExplanation)] 
+* Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (
+    2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)]
 
 #### Color Constancy
 
@@ -24,7 +26,7 @@ A suite of tests to assess attention faithfulness for interpretability.
 * Qian et al. “A Benchmark for Temporal Color Constancy” ArXiv (
     2020) [[Paper](https://arxiv.org/abs/2003.03763) - [Code](https://github.com/yanlinqian/Temporal-Color-Constancy)]
 
-#### Datasets
+### Datasets
 
 + [Color Checker](https://www2.cs.sfu.ca/~colour/data/shi_gehler/)
 + [TCC](https://github.com/yanlinqian/Temporal-Color-Constancy)
@@ -47,24 +49,22 @@ be found at `path/to/dataset/color_checker`.
 
 ### Tests
 
+All tests can be run from shell using the scripts (`.sh` files) into the `tests` folder. Each script allows for multiple
+configuration options that can be edited within the file and are thereby described.
+
 #### JW1-WP3: Training an adversarial model
 
-1. Under the same root folder (at, e.g., `path/to/model`), store the ground truth predictions and attention masks in
-   directories named `att` and `pred` respectively
-2. Either run the code with `python3 tests/adv/train_adv.py --path_to_pretrained "path/to/model"` or edit
-   the `PATH_TO_BASE_MODEL` global variable inside `tests/adv/train_adv.py`.
+* Run `python3 tests/adv/variance.sh` to training the models with multiple different random seeds. This step is optional
+  but strongly advised
+* Run `python3 tests/adv/adv.sh` to train the adversarial attention models
 
 #### SS1-SS2: Erasing saliency weights
 
-## Extending the code
+* Run `python3 tests/erasure/save_grads.sh` to save the attention gradients of each model at test time. These values
+  will be used to ground the gradient-based criteria for the multi weights erasure
+* Run `python3 tests/erasure/erasure.sh` to run either the single or the multi weight erasure
 
-## Testing a new dataset
+#### WP2: Attention-guided MLP
 
-* Move your desired dataset to a folder under dataset
-* Create a new PyTorch dataset as a new file at `classes/data`
-
-## Testing a new model
-
-* Create a file storing your model as a PyTorch `nn.Module` at `classes/modules`
-* Create a new adversary model at `classes/adv`
-* Move your base model, and the stored attention values and predictions, to a new folder under `trained_models`
+* Run `python3 tests/mlp/mlp.sh` to train the MLP models either guided by imposed attention weights or learning their
+  own attention weights
