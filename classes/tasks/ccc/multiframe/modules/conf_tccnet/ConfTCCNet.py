@@ -75,7 +75,7 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
         spat_weighted_x, spat_mask = self._spat_comp(x)
         out, temp_mask = self._temp_comp(spat_weighted_x, batch_size, spat_mask)
 
-        y = self.fc(torch.mean(torch.stack(out), dim=0))
+        y = self.fc(out)
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
 
         return pred, spat_mask, temp_mask

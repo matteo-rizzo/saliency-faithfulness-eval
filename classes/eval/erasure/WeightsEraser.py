@@ -14,8 +14,8 @@ class WeightsEraser:
         self.__device = DEVICE
         self.__path_to_model_dir, self.__path_to_val, self.__path_to_indices = "", "", ""
         self.__curr_filename, self.__sal_type, self.__mode = "", "", ""
-        self.__fetchers = {"max": self.__indices_max, "rand": self.__indices_rand,
-                           "grad": self.__indices_grad, "grad_prod": self.__indices_grad_prod}
+        self.__rankings = {"max": self.__max_ranking, "rand": self.__rand_ranking,
+                           "grad": self.__grad_ranking, "grad_prod": self.__grad_prod_ranking}
 
     def set_path_to_log(self, path: str):
         self.__path_to_val = os.path.join(path, "val")
@@ -37,7 +37,7 @@ class WeightsEraser:
 
     def __load_grad(self, x: torch.Tensor) -> Tensor:
         path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__sal_type, self.__curr_filename)
-        grad = torch.from_numpy(np.load(path_to_grad))
+        grad = torch.flatten(torch.from_numpy(np.load(path_to_grad)))
         if x.shape != grad.shape:
             raise ValueError("Input-gradient shapes mismatch! Received input: {}, grad: {}".format(x.shape, grad.shape))
         return grad.to(self.__device)
@@ -58,11 +58,11 @@ class WeightsEraser:
             saliency_mask = self.__load_saliency_mask()
 
         s = saliency_mask.shape
-        saliency_mask = torch.flatten(saliency_mask, start_dim=1)
+        saliency_mask = torch.flatten(saliency_mask)
 
         indices = self.__fetch_indices(saliency_mask, n)
-        val = saliency_mask[:, indices]
-        saliency_mask[:, indices] = 0
+        val = saliency_mask[indices]
+        saliency_mask[indices] = 0
 
         saliency_mask = saliency_mask.view(s)
 
@@ -76,30 +76,30 @@ class WeightsEraser:
         np.save(os.path.join(self.__path_to_indices, filename), indices.detach().cpu().numpy())
 
     def __fetch_indices(self, x: Tensor, n: int = 1) -> Tensor:
-        supp_fetchers = self.__fetchers.keys()
-        if self.__mode not in supp_fetchers:
-            raise ValueError("Index fetcher '{}' for weights erasure not supported! Supported fetchers: {}"
-                             .format(self.__mode, supp_fetchers))
-        return self.__fetchers[self.__mode](x)[:, :n]
+        supp_rankings = self.__rankings.keys()
+        if self.__mode not in supp_rankings:
+            raise ValueError("'{}' ranking for weights erasure not supported! Supported rankings: {}"
+                             .format(self.__mode, supp_rankings))
+        return self.__rankings[self.__mode](x)[:n]
 
     @staticmethod
-    def __indices_rand(x: Tensor) -> Tensor:
+    def __rand_ranking(x: Tensor) -> Tensor:
         indices = []
         for i in enumerate(range(x.shape[0])):
-            item_indices = list(range(x.shape[1]))
+            item_indices = list(range(x.shape[0]))
             random.Random(i).shuffle(indices)
             indices.append(item_indices)
         return torch.LongTensor(indices)
 
     @staticmethod
-    def __indices_max(x: Tensor) -> Tensor:
+    def __max_ranking(x: Tensor) -> Tensor:
         _, indices = torch.sort(x, descending=True)
         return indices
 
-    def __indices_grad(self, x: Tensor) -> Tensor:
-        return self.__indices_max(self.__load_grad(x))
+    def __grad_ranking(self, x: Tensor) -> Tensor:
+        return self.__max_ranking(self.__load_grad(x))
 
-    def __indices_grad_prod(self, x: Tensor) -> Tensor:
+    def __grad_prod_ranking(self, x: Tensor) -> Tensor:
         grad = self.__load_grad(x)
         grad_prod = grad * x
-        return self.__indices_max(grad_prod)
+        return self.__max_ranking(grad_prod)

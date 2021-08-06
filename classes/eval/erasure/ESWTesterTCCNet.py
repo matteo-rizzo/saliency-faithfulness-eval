@@ -1,8 +1,8 @@
 import os
-from math import prod
 from typing import Dict, List
 
 import pandas as pd
+from numpy import prod
 from torch import Tensor
 from torch.utils.data import DataLoader
 
@@ -32,10 +32,9 @@ class ESWTesterTCCNet(ESWTester):
         err = self._model.get_loss(pred, y).item()
         pred = pred.detach().squeeze().cpu().numpy()
         self._save_pred(pred, filename=log_base["filename"][0], pred_type=mode + "_erasure")
-        log_mode = {"pred_erasure": [pred], "err_erasure": [err], "mode": [mode]}
-        self._logs.append(pd.DataFrame({**log_base, **log_mode, "sal_type": ["spat"], "n": [self._num_weights[0]]}))
-        for _ in range(x.shape[1]):
-            self._logs.append(pd.DataFrame({**log_base, **log_mode, "sal_type": ["temp"], "n": [self._num_weights[1]]}))
+        log_mode = {"pred_erasure": [pred], "err_erasure": [err], "ranking": [mode],
+                    "n_spat": [self._num_weights[0]], "n_temp": [self._num_weights[1]]}
+        self._logs.append(pd.DataFrame({**log_base, **log_mode}))
         return err
 
     def _predict_baseline(self, x: Tensor, y: Tensor, filename: str, *args, **kwargs) -> Dict:
@@ -48,8 +47,8 @@ class ESWTesterTCCNet(ESWTester):
 
     def __select_mask_size(self, spat_mask: Tensor, temp_mask: Tensor) -> Dict:
         if self.__sal_type == "spatiotemp":
-            return {"spat_mask_size": prod(spat_mask.shape[1:]), "temp_mask_size": temp_mask.shape[1]}
-        return {"mask_size": prod(spat_mask.shape[1:]) if self.__sal_type == "spat" else temp_mask.shape[1]}
+            return {"spat_mask_size": prod(spat_mask.shape), "temp_mask_size": prod(temp_mask.shape)}
+        return {"mask_size": prod(spat_mask.shape) if self.__sal_type == "spat" else prod(temp_mask.shape)}
 
     def __run_erasure_modes(self, x: Tensor, y: Tensor, modes: List, log_base: Dict):
         logs = []
@@ -79,7 +78,7 @@ class ESWTesterTCCNet(ESWTester):
             else:
                 n = (0, n) if self.__sal_type == "spat" else (n, 0)
 
-            print("\n  * N: {}/{}".format(n, mask_size))
+            print("\n  * N: (s: {}, t: {}) / {}".format(*n, mask_size))
             self._set_num_weights(n)
 
             # Erase weights for each supported modality
