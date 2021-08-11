@@ -40,7 +40,6 @@ class TrainerLinearSaliencyTCCNet(TrainerCCC):
             self._train_loss.update(tl)
             if i % 5 == 0:
                 print("[ Epoch: {} - Batch: {} ] | Loss: {:.4f} ]".format(epoch + 1, i, tl))
-                exit()
 
     def _eval_epoch(self, model: ModelLinearSaliencyTCCNet, data: DataLoader, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
