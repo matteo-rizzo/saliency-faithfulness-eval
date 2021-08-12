@@ -13,7 +13,7 @@ class WeightsEraser:
     def __init__(self):
         self.__device = DEVICE
         self.__path_to_model_dir, self.__path_to_val, self.__path_to_indices = "", "", ""
-        self.__curr_filename, self.__sal_type, self.__mode = "", "", ""
+        self.__curr_filename, self.__sal_type, self.__mode, self.__save_val = "", "", "", True
         self.__rankings = {"max": self.__max_ranking, "rand": self.__rand_ranking,
                            "grad": self.__grad_ranking, "grad_prod": self.__grad_prod_ranking}
 
@@ -25,6 +25,9 @@ class WeightsEraser:
 
     def set_path_to_model_dir(self, path: str):
         self.__path_to_model_dir = path
+
+    def set_save_val_state(self, state: bool):
+        self.__save_val = state
 
     def set_curr_filename(self, filename: str):
         self.__curr_filename = filename
@@ -66,7 +69,8 @@ class WeightsEraser:
 
         saliency_mask = saliency_mask.view(s)
 
-        self.__log_erasure(val, indices, n)
+        if self.__save_val:
+            self.__log_erasure(val, indices, n)
 
         return saliency_mask
 

@@ -51,6 +51,9 @@ class ESWModule(nn.Module):
         self._we.set_curr_filename(filename)
         self._curr_filename = filename
 
+    def set_save_val_state(self, save_val: bool):
+        self._we.set_save_val_state(save_val)
+
     def set_we_state(self, state: Union[bool, Tuple]):
         self._we_state = state
 

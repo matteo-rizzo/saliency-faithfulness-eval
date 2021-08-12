@@ -43,3 +43,6 @@ class ESWModel(Model, ABC):
 
     def set_curr_filename(self, filename):
         self._network.set_curr_filename(filename)
+
+    def set_save_val_state(self, state: bool):
+        self._network.set_save_val_state(state)
