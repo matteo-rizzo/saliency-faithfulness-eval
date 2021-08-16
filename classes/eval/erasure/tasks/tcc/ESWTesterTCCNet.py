@@ -2,13 +2,14 @@ import os
 from typing import Dict, List, Tuple
 
 import pandas as pd
+import torch
 from numpy import prod
 from torch import Tensor
 from torch.utils.data import DataLoader
 
 from auxiliary.utils import SEPARATOR
-from classes.eval.erasure.ESWModel import ESWModel
-from classes.eval.erasure.ESWTester import ESWTester
+from classes.eval.erasure.core.ESWModel import ESWModel
+from classes.eval.erasure.core.ESWTester import ESWTester
 
 
 class ESWTesterTCCNet(ESWTester):
@@ -70,13 +71,14 @@ class ESWTesterTCCNet(ESWTester):
         else:
             mask_size = log_base["mask_size"]
 
-        for n in range(1, mask_size):
+        ts = x.shape[1]
+        for n in range(1, mask_size) if mask_size <= ts else range(mask_size // ts, mask_size, mask_size // ts):
             # Set the number of weights to be erased
             if self.__sal_type == "spatiotemp":
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
             else:
-                n = (0, n) if self.__sal_type == "spat" else (n, 0)
+                n = (n, 0) if self.__sal_type == "spat" else (0, n)
 
             print("\n  * N: (s: {}, t: {}) / {}".format(*n, mask_size))
             self._set_num_weights(n)
@@ -102,27 +104,27 @@ class ESWTesterTCCNet(ESWTester):
         """
         self._set_path_to_test_log(test_type)
 
-        for i, (x, _, y, path_to_x) in enumerate(self._data):
-            x, y, filename = x.to(self._device), y.to(self._device), path_to_x[0].split(os.sep)[-1]
+        with torch.no_grad():
+            for i, (x, _, y, path_to_x) in enumerate(self._data):
+                x, y, filename = x.to(self._device), y.to(self._device), path_to_x[0].split(os.sep)[-1]
+                self._model.set_curr_filename(filename)
 
-            self._model.set_curr_filename(filename)
+                # Predict without modifications
+                pred, err, mask_size = self._predict_baseline(x, y)
 
-            # Predict without modifications
-            pred, err, mask_size = self._predict_baseline(x, y, filename)
+                print("Testing item {}/{} ({}) - Base err: {:.4f}".format(i + 1, len(self._data), filename, err))
+                log_base = {"filename": [filename], **mask_size, "err_base": [err],
+                            "pred_base": [pred.detach().squeeze().cpu().numpy().flatten()]}
 
-            print("Testing item {}/{} ({}) - Base err: {:.4f}".format(i + 1, len(self._data), filename, err))
-            log_base = {"filename": [filename], **mask_size, "err_base": [err],
-                        "pred_base": [pred.detach().squeeze().cpu().numpy().flatten()]}
+                # Activate weights erasure
+                self._model.activate_we(state=self.__we_state)
 
-            # Activate weights erasure
-            self._model.activate_we(state=self.__we_state)
+                # Run the test
+                self._test(x, y, pred, log_base, test_type)
 
-            # Run the test
-            self._test(x, y, pred, log_base, test_type)
+                # Deactivate weights erasure
+                self._model.deactivate_we()
 
-            # Deactivate weights erasure
-            self._model.deactivate_we()
-
-            print(SEPARATOR["dashes"])
+                print(SEPARATOR["dashes"])
 
         self._write_logs()

@@ -7,7 +7,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE
-from classes.eval.erasure.ESWModel import ESWModel
+from classes.eval.erasure.core.ESWModel import ESWModel
 
 """ Abstract class for Erasable Saliency Weights (ESW) tester """
 

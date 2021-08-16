@@ -1,4 +1,4 @@
-from classes.eval.erasure.ESWModel import ESWModel
+from classes.eval.erasure.core.ESWModel import ESWModel
 from classes.losses.AngularLoss import AngularLoss
 
 

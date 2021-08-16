@@ -7,7 +7,7 @@ from torch.nn.functional import normalize
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import overload
-from classes.eval.erasure.EMultiSWModule import EMultiSWModule
+from classes.eval.erasure.core.EMultiSWModule import EMultiSWModule
 from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
 
 

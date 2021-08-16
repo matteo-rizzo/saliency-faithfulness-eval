@@ -30,12 +30,9 @@ class TemporalDataset(DatasetCCC):
 
         m = torch.from_numpy(hwc_to_chw(self._da.augment_mimic(x)).copy())
 
-        if self._train:
-            if self._augment:
-                x, color_bias = self._da.augment_sequence(x, y)
-                m = torch.mul(m, torch.from_numpy(color_bias).view(1, 3, 1, 1))
-            else:
-                x = self._da.resize_sequence(x, self.__input_size)
+        if self._train and self._augment:
+            x, color_bias = self._da.augment_sequence(x, y)
+            m = torch.mul(m, torch.from_numpy(color_bias).view(1, 3, 1, 1))
         else:
             x = self._da.resize_sequence(x, self.__input_size)
 

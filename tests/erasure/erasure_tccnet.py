@@ -4,7 +4,7 @@ import time
 
 from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, infer_path, experiment_header
-from classes.eval.erasure.ESWTesterTCCNet import ESWTesterTCCNet
+from classes.eval.erasure.tasks.tcc.ESWTesterTCCNet import ESWTesterTCCNet
 from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
@@ -24,6 +24,7 @@ def main(ns: argparse.Namespace):
 
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     model.load(path_to_pretrained)
+    model.evaluation_mode()
     model.set_path_to_model_dir(path_to_pretrained)
 
     dataloader = DataHandlerTCC().get_loader(train=use_train_set, data_folder=data_folder)

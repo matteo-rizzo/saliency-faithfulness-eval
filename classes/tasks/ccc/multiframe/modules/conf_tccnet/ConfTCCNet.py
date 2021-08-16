@@ -22,7 +22,7 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
 
     @overloads(SaliencyTCCNet._weight_spat)
     def _weight_spat(self, x: Tensor, spat_conf: Tensor, *args, **kwargs) -> Tensor:
-        if not self._is_saliency_active("temp"):
+        if not self._is_saliency_active("spat"):
             return scale(x).clone()
         spat_conf = self._spat_we_check(spat_conf)
         spat_conf = self._spat_save_grad_check(spat_conf)
@@ -34,7 +34,7 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
 
     @overloads(SaliencyTCCNet._weight_temp)
     def _weight_temp(self, x: Tensor, conf: Tensor, *args, **kwargs) -> Tuple:
-        if not self._is_saliency_active("spat"):
+        if not self._is_saliency_active("temp"):
             return x, Tensor()
         temp_conf = F.softmax(torch.mean(torch.mean(conf.squeeze(1), dim=1), dim=1), dim=0).unsqueeze(1)
         temp_conf = self._temp_we_check(temp_conf)
@@ -78,4 +78,4 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
         y = self.fc(out)
         pred = normalize(torch.sum(torch.sum(y, 2), 2), dim=1)
 
-        return pred, spat_mask, temp_mask
+        return pred, spat_mask if self._is_saliency_active("spat") else Tensor(), temp_mask

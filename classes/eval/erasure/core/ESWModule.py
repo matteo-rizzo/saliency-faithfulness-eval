@@ -3,7 +3,7 @@ from typing import Tuple, Union, List
 
 from torch import nn
 
-from classes.eval.erasure.WeightsEraser import WeightsEraser
+from classes.eval.erasure.core.WeightsEraser import WeightsEraser
 
 
 class ESWModule(nn.Module):

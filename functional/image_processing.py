@@ -48,13 +48,21 @@ def rgb_to_bgr(x: np.ndarray) -> np.ndarray:
     return x[::-1]
 
 
-def bgr_to_rgb(x: np.ndarray) -> np.ndarray:
-    return x[:, :, ::-1]
+def bgr_to_rgb(img: np.ndarray) -> np.ndarray:
+    if len(img.shape) == 4:
+        return img[:, :, :, ::-1]
+    elif len(img.shape) == 3:
+        return img[:, :, ::-1]
+    raise ValueError("Bad image shape detected in BRG to RGB conversion: {}".format(img.shape))
 
 
-def hwc_to_chw(x: np.ndarray) -> np.ndarray:
+def hwc_to_chw(img: np.ndarray) -> np.ndarray:
     """ Converts an image from height x width x channels to channels x height x width """
-    return x.transpose((0, 3, 1, 2))
+    if len(img.shape) == 4:
+        return img.transpose((0, 3, 1, 2))
+    elif len(img.shape) == 3:
+        return img.transpose((2, 0, 1))
+    raise ValueError("Bad image shape detected in HWC to CHW conversion: {}".format(img.shape))
 
 
 def scale(x: Tensor) -> Tensor:

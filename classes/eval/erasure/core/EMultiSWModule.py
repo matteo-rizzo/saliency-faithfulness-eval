@@ -6,7 +6,8 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from classes.eval.erasure.ESWModule import ESWModule
+from auxiliary.utils import overloads
+from classes.eval.erasure.core.ESWModule import ESWModule
 
 
 class EMultiSWModule(ESWModule):
@@ -40,6 +41,7 @@ class EMultiSWModule(ESWModule):
     def _temp_we_check(self, temp_weights: Tensor, *args, **kwargs) -> Tensor:
         pass
 
+    @overloads(ESWModule._save_grad)
     def _save_grad(self, grad: List, saliency_type: str, *args, **kwargs):
         grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).numpy()
 
