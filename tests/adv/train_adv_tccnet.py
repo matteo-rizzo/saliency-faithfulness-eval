@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument("--hidden_size", type=int, default=128)
     parser.add_argument("--kernel_size", type=int, default=5)
     parser.add_argument("--epochs", type=int, default=1000)
-    parser.add_argument('--lr', type=float, default=0.0003)
+    parser.add_argument('--lr', type=float, default=0.00003)
     parser.add_argument('--path_to_pretrained', type=str, default=PATH_TO_PRETRAINED)
     parser.add_argument('--infer_path', action="store_true")
     namespace = parser.parse_args()

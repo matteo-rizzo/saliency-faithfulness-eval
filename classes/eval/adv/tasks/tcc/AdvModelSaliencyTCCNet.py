@@ -46,5 +46,4 @@ class AdvModelSaliencyTCCNet(AdvModel, ABC):
         return {"adv": self._sc_loss(att_base, att_adv), **self._sc_loss.get_factors()}
 
     def get_adv_temp_loss(self, att_base: Tensor, att_adv: Tensor) -> Dict:
-        att_base, att_adv = scale(att_base), scale(att_adv)
         return {"adv": self._kldiv_loss(att_base, att_adv)}
