@@ -10,7 +10,7 @@ from torch import Tensor
 from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header
 from classes.core.LossTracker import LossTracker
-from classes.eval.adv.tasks.tcc.AdvModelTCCNet import AdvModelTCCNet
+from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
 from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
 from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
@@ -38,7 +38,7 @@ def main(ns: argparse.Namespace):
     path_to_log = os.path.join("tests", "adv", "analysis", log_folder)
     os.makedirs(path_to_log)
 
-    adv_model = AdvModelTCCNet(network=NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type))
+    adv_model = AdvModelSaliencyTCCNet(network=NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type))
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     model.print_network()
     model.evaluation_mode()

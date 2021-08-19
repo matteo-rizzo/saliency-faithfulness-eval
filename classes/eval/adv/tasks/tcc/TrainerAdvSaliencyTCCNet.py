@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 import torch
@@ -11,10 +11,11 @@ from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
 from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 
-class TrainerAdvTCCNet(TrainerCCC):
-    def __init__(self, path_to_log: str, path_to_pred: str, path_to_att: str, val_frequency: int = 5):
+class TrainerAdvSaliencyTCCNet(TrainerCCC):
+    def __init__(self, sal_type: str, path_to_log: str, path_to_pred: str, path_to_att: str, val_frequency: int = 5):
         super().__init__(path_to_log, val_frequency)
 
+        self.__sal_type = sal_type
         self.__path_to_pred = path_to_pred
         self.__path_to_spat_att = os.path.join(path_to_att, "spat")
         self.__path_to_temp_att = os.path.join(path_to_att, "temp")
@@ -28,13 +29,16 @@ class TrainerAdvTCCNet(TrainerCCC):
         item = np.load(os.path.join(path_to_item), allow_pickle=True)
         return torch.from_numpy(item).squeeze(0).to(self._device)
 
-    def __load_ground_truths(self, file_name: str):
+    def __load_ground_truths(self, file_name: str) -> Tuple:
         pred_base = self.__load_from_file(os.path.join(self.__path_to_pred, file_name)).unsqueeze(0)
-        spat_att_base = self.__load_from_file(os.path.join(self.__path_to_spat_att, file_name))
-        temp_att_base = self.__load_from_file(os.path.join(self.__path_to_temp_att, file_name))
+        spat_att_base, temp_att_base = Tensor(), Tensor()
+        if self.__sal_type in ["spat", "spatiotemp"]:
+            spat_att_base = self.__load_from_file(os.path.join(self.__path_to_spat_att, file_name))
+        if self.__sal_type in ["temp", "spatiotemp"]:
+            temp_att_base = self.__load_from_file(os.path.join(self.__path_to_temp_att, file_name))
         return pred_base, spat_att_base, temp_att_base
 
-    def __compute_pred(self, x: Tensor, path_to_x: str, model: AdvModel):
+    def __compute_pred(self, x: Tensor, path_to_x: str, model: AdvModel) -> Tuple:
         file_name = path_to_x[0].split(os.sep)[-1]
         pred_base, spat_att_base, temp_att_base = self.__load_ground_truths(file_name)
 

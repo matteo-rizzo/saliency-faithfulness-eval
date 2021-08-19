@@ -4,8 +4,8 @@ import time
 
 from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header
-from classes.eval.adv.tasks.tcc.AdvModelTCCNet import AdvModelTCCNet
-from classes.eval.adv.tasks.tcc.TrainerAdvTCCNet import TrainerAdvTCCNet
+from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
+from classes.eval.adv.tasks.tcc.TrainerAdvSaliencyTCCNet import TrainerAdvSaliencyTCCNet
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
@@ -25,10 +25,10 @@ def main(ns: argparse.Namespace):
     path_to_att = os.path.join(path_to_pretrained, "att")
 
     network = NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
-    adv_model = AdvModelTCCNet(network, adv_lambda)
+    adv_model = AdvModelSaliencyTCCNet(network, adv_lambda)
     training_loader, test_loader = DataHandlerTCC().train_test_loaders(data_folder)
 
-    trainer = TrainerAdvTCCNet(path_to_log, path_to_pred, path_to_att)
+    trainer = TrainerAdvSaliencyTCCNet(sal_type, path_to_log, path_to_pred, path_to_att)
     trainer.train(adv_model, training_loader, test_loader, lr, epochs)
 
 
