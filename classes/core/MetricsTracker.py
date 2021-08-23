@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from typing import List, Dict
 
 
-class Evaluator(ABC):
+class MetricsTracker(ABC):
 
     def __init__(self):
         super().__init__()

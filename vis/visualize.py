@@ -10,7 +10,7 @@ from torchvision.transforms import transforms
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import correct, rescale, scale
-from ccc.core.EvaluatorCCC import EvaluatorCCC
+from ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from ccc.singleframe.data.ColorChecker import ColorChecker
 
 # Set to -1 to process all the samples in the test set of the current fold
@@ -25,7 +25,7 @@ PATH_TO_SAVED = os.path.join("vis", "plots", "tmp_{}".format(time.time()))
 
 
 def main():
-    evaluator = EvaluatorCCC()
+    metrics_tracker = MetricsTrackerCCC()
     model = ModelFC4()
     os.makedirs(PATH_TO_SAVED)
 
@@ -36,7 +36,7 @@ def main():
         # path_to_pretrained = os.path.join("trained_models", "baseline", "fc4_cwp", "fold_{}".format(num_fold))
         path_to_pretrained = os.path.join("trained_models/variance/seed_0/")
         model.load(path_to_pretrained)
-        model.evaluation_mode()
+        model.eval_mode()
 
         print("\n *** Generating visualizations for FOLD {} *** \n".format(num_fold))
         print(" * Test set size: {}".format(len(test_set)))
@@ -50,7 +50,7 @@ def main():
                 img, label = img.to(DEVICE), label.to(DEVICE)
                 pred, rgb, confidence = model.predict(img, return_steps=True)
                 loss = model.get_loss(pred, label).item()
-                evaluator.add_error(loss)
+                metrics_tracker.add_error(loss)
                 file_name = file_name[0].split(".")[0]
                 print('\t - Input: {} - Batch: {} | Loss: {:f}'.format(file_name, i, loss))
 
@@ -121,7 +121,7 @@ def main():
 
                 plt.clf()
 
-    metrics = evaluator.compute_metrics()
+    metrics = metrics_tracker.compute_metrics()
     print("\n Mean ............ : {}".format(metrics["mean"]))
     print(" Median .......... : {}".format(metrics["median"]))
     print(" Trimean ......... : {}".format(metrics["trimean"]))

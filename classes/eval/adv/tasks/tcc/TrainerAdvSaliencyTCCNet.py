@@ -7,7 +7,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 
 from classes.eval.adv.core.AdvModel import AdvModel
-from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
+from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 
@@ -23,7 +23,7 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
         self.__path_to_vis = os.path.join(path_to_log, "vis")
         os.makedirs(self.__path_to_vis)
 
-        self._evaluator_base = EvaluatorCCC()
+        self._metrics_tracker_base = MetricsTrackerCCC()
 
     def __load_from_file(self, path_to_item: str) -> Tensor:
         item = np.load(os.path.join(path_to_item), allow_pickle=True)
@@ -78,20 +78,20 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
             err_adv = model.get_loss(pred_adv, y).item()
             err_base = model.get_loss(pred_base, y).item()
 
-            self._evaluator.add_error(err_adv)
-            self._evaluator_base.add_error(err_base)
+            self._metrics_tracker.add_error(err_adv)
+            self._metrics_tracker_base.add_error(err_base)
 
             if i % 5 == 0:
                 loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
                 print("[ Batch: {} ] | Loss: [ val: {:.4f} - {} ] | Ang Err: [ base: {:.4f} - adv: {:.4f} ]"
                       .format(i, vl, loss_log, err_base, err_adv))
 
-    def _reset_evaluator(self):
-        self._evaluator.reset_errors()
-        self._evaluator_base.reset_errors()
+    def _reset_metrics_tracker(self):
+        self._metrics_tracker.reset_errors()
+        self._metrics_tracker_base.reset_errors()
 
     def _check_metrics(self):
-        metrics_adv, metrics_base = self._evaluator.compute_metrics(), self._evaluator_base.compute_metrics()
+        metrics_adv, metrics_base = self._metrics_tracker.compute_metrics(), self._metrics_tracker_base.compute_metrics()
         self._print_metrics(metrics_base=metrics_base, metrics_adv=metrics_adv)
         self._log_metrics(metrics_adv)
 

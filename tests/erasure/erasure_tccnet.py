@@ -24,7 +24,7 @@ def main(ns: argparse.Namespace):
 
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     model.load(path_to_pretrained)
-    model.evaluation_mode()
+    model.eval_mode()
     model.set_path_to_model_dir(path_to_pretrained)
 
     dataloader = DataHandlerTCC().get_loader(train=use_train_set, data_folder=data_folder)

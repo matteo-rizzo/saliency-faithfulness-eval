@@ -41,7 +41,7 @@ class Model:
     def train_mode(self):
         self._network = self._network.train()
 
-    def evaluation_mode(self):
+    def eval_mode(self):
         self._network = self._network.eval()
 
     def save(self, path_to_save: str):

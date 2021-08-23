@@ -7,23 +7,23 @@ from torch.utils.data import DataLoader
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import SEPARATOR
-from classes.core.Evaluator import Evaluator
 from classes.core.LossTracker import LossTracker
+from classes.core.MetricsTracker import MetricsTracker
 from classes.core.Model import Model
 
 
 class Trainer:
 
-    def __init__(self, path_to_log: str, evaluator: Evaluator, val_frequency: int = 5):
+    def __init__(self, path_to_log: str, metrics_tracker: MetricsTracker, val_frequency: int = 5):
         self._device = DEVICE
         self._val_frequency = val_frequency
 
         self._path_to_log = path_to_log
         os.makedirs(path_to_log)
 
-        self._evaluator = evaluator
+        self._metrics_tracker = metrics_tracker
         self._train_loss, self._val_loss = LossTracker(), LossTracker()
-        self._best_val_loss, self._best_metrics = 100.0, self._evaluator.get_best_metrics()
+        self._best_val_loss, self._best_metrics = 100.0, self._metrics_tracker.get_best_metrics()
 
     def train(self, model: Model, training_set: DataLoader, test_set: DataLoader, lr: float, epochs: int):
         """
@@ -49,9 +49,9 @@ class Trainer:
             self.print_train_performance(train_time=time() - start)
 
             if epoch % self._val_frequency == 0:
-                model.evaluation_mode()
+                model.eval_mode()
                 self._val_loss.reset()
-                self._reset_evaluator()
+                self._reset_metrics_tracker()
                 self.print_heading("validating", epoch, epochs)
 
                 start = time()
@@ -76,7 +76,7 @@ class Trainer:
     def _eval_epoch(self, model: Model, data: DataLoader, *args, **kwargs) -> any:
         """
         Evaluates the model for one epoch testing it against the provided data. Updates the validation loss (as side
-        effect) and stores metrics/error values in the evaluator (as side effect)
+        effect) and stores metrics/error values in the metrics_tracker (as side effect)
         :param model: the model to be tested (a PyTorch nn.Module)
         :param data: the data loader containing the validation/test data
         """
@@ -84,7 +84,7 @@ class Trainer:
 
     @abstractmethod
     def _check_metrics(self):
-        """ Computes, prints and logs the current metrics using the evaluator """
+        """ Computes, prints and logs the current metrics using the metrics tracker """
         pass
 
     @abstractmethod
@@ -97,9 +97,9 @@ class Trainer:
         """ Prints the current metrics on the standard output """
         pass
 
-    def _reset_evaluator(self):
-        """ Reset the evaluator(s) zeroing out the running values """
-        self._evaluator.reset_errors()
+    def _reset_metrics_tracker(self):
+        """ Reset the metrics_tracker(s) zeroing out the running values """
+        self._metrics_tracker.reset_errors()
 
     def _check_if_best_model(self, model: Model):
         """
@@ -109,7 +109,7 @@ class Trainer:
         """
         if 0 < self._val_loss.avg < self._best_val_loss:
             self._best_val_loss = self._val_loss.avg
-            self._best_metrics = self._evaluator.update_best_metrics()
+            self._best_metrics = self._metrics_tracker.update_best_metrics()
             print("Saving new best model...")
             model.save(self._path_to_log)
 

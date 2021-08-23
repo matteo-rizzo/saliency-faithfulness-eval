@@ -12,15 +12,15 @@ declare path_to_script="tests/adv/train_adv_tccnet.py"
 declare -a lambdas=(0.00005)
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
-declare -a models=("conf_att_tccnet" "att_tccnet" "conf_tccnet")
+declare -a models=("att_tccnet" "conf_tccnet" "conf_att_tccnet")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a modes=("spatiotemp")
+declare -a sal_types=("spat" "temp")
 
 for lambda in "${lambdas[@]}"; do
   for model in "${models[@]}"; do
-    for mode in "${modes[@]}"; do
-      python3 "$path_to_script" --epochs 1000 --model_type "$model" --adv_lambda "$lambda" --sal_type "$mode" --infer_path || exit
+    for sal_type in "${sal_types[@]}"; do
+      python3 "$path_to_script" --epochs 1000 --model_type "$model" --adv_lambda "$lambda" --sal_type "$sal_type" --infer_path || exit
     done
   done
 done

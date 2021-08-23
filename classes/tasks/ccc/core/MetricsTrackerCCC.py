@@ -2,10 +2,10 @@ from typing import Dict
 
 import numpy as np
 
-from classes.core.Evaluator import Evaluator
+from classes.core.MetricsTracker import MetricsTracker
 
 
-class EvaluatorCCC(Evaluator):
+class MetricsTrackerCCC(MetricsTracker):
 
     def __init__(self):
         super().__init__()

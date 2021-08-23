@@ -11,7 +11,7 @@ from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header
 from classes.core.LossTracker import LossTracker
 from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
-from classes.tasks.ccc.core.EvaluatorCCC import EvaluatorCCC
+from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
@@ -41,12 +41,12 @@ def main(ns: argparse.Namespace):
     adv_model = AdvModelSaliencyTCCNet(network=NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type))
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     model.print_network()
-    model.evaluation_mode()
+    model.eval_mode()
 
     data = DataHandlerTCC().get_loader(train=False, data_folder=data_folder)
 
     loss_tracker_base, loss_tracker_adv = LossTracker(), LossTracker()
-    evaluator_base, evaluator_adv = EvaluatorCCC(), EvaluatorCCC()
+    metrics_tracker_base, metrics_tracker_adv = MetricsTrackerCCC(), MetricsTrackerCCC()
     adv_scores = {"pred_divs": [], "spat_divs": [], "temp_divs": []}
 
     for adv_lambda in adv_lambdas:
@@ -76,8 +76,8 @@ def main(ns: argparse.Namespace):
             loss_tracker_base.update(loss_base)
             loss_tracker_adv.update(loss_adv)
 
-            evaluator_base.add_error(loss_base)
-            evaluator_adv.add_error(loss_adv)
+            metrics_tracker_base.add_error(loss_base)
+            metrics_tracker_adv.add_error(loss_adv)
 
             if i % 5 == 0 and i > 0:
                 print("[ Batch: {} ] | Loss Base: {:.4f} - Loss Adv: {:.4f} ]".format(i, loss_base, loss_adv))
@@ -86,7 +86,7 @@ def main(ns: argparse.Namespace):
         adv_scores["spat_divs"].append(np.mean(spat_divs))
         adv_scores["temp_divs"].append(np.mean(temp_divs))
 
-        metrics_base, metrics_adv = evaluator_base.get_metrics(), evaluator_adv.get_metrics()
+        metrics_base, metrics_adv = metrics_tracker_base.get_metrics(), metrics_tracker_adv.get_metrics()
         for (mn, mv_base), mv_adv in zip(metrics_base.items(), metrics_adv.values()):
             print((" {} " + "".join(["."] * (15 - len(mn))) + " : [ Base: {:.4f} - Adv: {:.4f} ]")
                   .format(mn.capitalize(), mv_base, mv_adv))

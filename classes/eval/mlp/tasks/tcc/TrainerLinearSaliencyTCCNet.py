@@ -47,6 +47,6 @@ class TrainerLinearSaliencyTCCNet(TrainerCCC):
             pred = self.__compute_pred(model, x, y, path_to_x)
             vl = model.get_loss(pred, y).item()
             self._val_loss.update(vl)
-            self._evaluator.add_error(vl)
+            self._metrics_tracker.add_error(vl)
             if i % 5 == 0:
                 print("[ Batch: {} ] | Loss: {:.4f} ]".format(i, vl))
