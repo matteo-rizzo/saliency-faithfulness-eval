@@ -18,7 +18,7 @@ def main(ns):
     experiment_header("Training MLP for '{}' - '{}' weights - Data folder {}".format(sal_type, model_type, data_folder))
 
     log_folder = "mlp_{}_{}_{}_{}".format(model_type, data_folder, sal_type, time.time())
-    path_to_log = os.path.join("tests", "mlp", "logs", log_folder)
+    path_to_log = os.path.join("eval", "tests", "mlp", "logs", log_folder)
 
     model = ModelLinearSaliencyTCCNet(sal_type, mode)
     training_loader, test_loader = DataHandlerTCC().train_test_loaders(data_folder)

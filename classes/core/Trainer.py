@@ -34,7 +34,6 @@ class Trainer:
         :param lr: a learning rate as base value for the optimizer
         :param epochs: the number of epochs the model should be trained for
         """
-        model.print_network()
         model.log_network(self._path_to_log)
         model.set_optimizer(lr)
 

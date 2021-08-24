@@ -19,7 +19,7 @@ def main(ns: argparse.Namespace):
     experiment_header(title="WEIGHTS ERASURE (Testing '{}' model - Data folder '{}')".format(model_type, data_folder))
 
     log_folder = "erasure_{}_{}_{}_{}".format(model_type, data_folder, sal_type, time.time())
-    path_to_log = os.path.join("tests", "erasure", "logs", log_folder)
+    path_to_log = os.path.join("eval", "tests", "ers", "logs", log_folder)
     os.makedirs(path_to_log)
 
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)

@@ -6,19 +6,19 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
-declare path_to_script="tests/erasure/erasure_tccnet.py"
+declare path_to_script="tests/scripts/ers/erasure_tccnet.py"
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
-declare -a models=("att_tccnet" "conf_tccnet")
+declare -a models=("conf_tccnet")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
 declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a modes=("spatiotemp")
+declare -a modes=("spat" "temp")
 
 # Values: "single" "multi"
-declare -a erasures=("single" "multi")
+declare -a erasures=("multi")
 
 for model in "${models[@]}"; do
   for dir in "${dirs[@]}"; do

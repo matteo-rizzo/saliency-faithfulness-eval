@@ -860,15 +860,15 @@ FodyWeavers.xsd
 *.tlog
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,pycharm+iml,pycharm+all,jetbrains,jetbrains+iml,visualstudio,visualstudiocode
-/tests/conf/
+/eval/tests/conf/
 /trained_models/
-/tests/results/
+/eval/tests/results/
 /assets/
 /trained_models/
 /dataset/color_checker/
 /dataset/color_checker/coordinates/
 /dataset/color_checker/images/
 /train/logs/
-/tests/erasure/assets/
-/tests/mlp/logs/
+/eval/tests/ers/assets/
+/eval/tests/mlp/logs/
 /results/

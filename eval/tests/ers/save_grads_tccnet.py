@@ -20,7 +20,7 @@ def main(ns):
     experiment_header(title="Saving gradients for model '{}'".format(model_type))
 
     log_dir = "grad_{}_{}_{}_{}".format(model_type, sal_type, data_folder, time())
-    path_to_log = os.path.join("tests", "erasure", "logs", log_dir)
+    path_to_log = os.path.join("eval", "tests", "ers", "logs", log_dir)
     os.makedirs(path_to_log)
 
     model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)

@@ -20,15 +20,15 @@ def main(ns: argparse.Namespace):
     experiment_header("Training adversary '{}' model - Data folder '{}'".format(model_type, data_folder))
 
     log_folder = "adv_{}_{}_{}_{}_{}".format(model_type, sal_type, data_folder, adv_lambda, time.time())
-    path_to_log = os.path.join("tests", "adv", "logs", log_folder)
+    path_to_log = os.path.join("eval", "tests", "adv", "logs", log_folder)
     path_to_pred = os.path.join(path_to_pretrained, "pred")
-    path_to_att = os.path.join(path_to_pretrained, "att")
+    path_to_sal = os.path.join(path_to_pretrained, "att")
 
     network = NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
     adv_model = AdvModelSaliencyTCCNet(network, adv_lambda)
     training_loader, test_loader = DataHandlerTCC().train_test_loaders(data_folder)
 
-    trainer = TrainerAdvSaliencyTCCNet(sal_type, path_to_log, path_to_pred, path_to_att)
+    trainer = TrainerAdvSaliencyTCCNet(sal_type, path_to_log, path_to_pred, path_to_sal)
     trainer.train(adv_model, training_loader, test_loader, lr, epochs)
 
 

@@ -15,7 +15,7 @@ declare -a model_types=("conf_tccnet")
 declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a modes=("spatiotemp")
+declare -a modes=("spat" "temp")
 
 for model_type in "${model_types[@]}"; do
   for dir in "${dirs[@]}"; do

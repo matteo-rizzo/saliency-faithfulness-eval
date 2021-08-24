@@ -15,21 +15,21 @@ class AdvModel(Model):
 
     @overloads(Model.optimize)
     def optimize(self, pred_base: Tensor, pred_adv: Tensor,
-                 att_base: Union[Tensor, Tuple], att_adv: Union[Tensor, Tuple]) -> Tuple:
+                 sal_base: Union[Tensor, Tuple], sal_adv: Union[Tensor, Tuple]) -> Tuple:
         self._optimizer.zero_grad()
-        train_loss, losses = self.get_adv_loss(pred_base, pred_adv, att_base, att_adv)
+        train_loss, losses = self.get_adv_loss(pred_base, pred_adv, sal_base, sal_adv)
         train_loss.backward()
         self._optimizer.step()
         return train_loss.item(), losses
 
-    def get_adv_loss(self, pred_base: Tensor, pred_adv: Tensor, att_base: Tuple, att_adv: Tuple) -> Tuple:
+    def get_adv_loss(self, pred_base: Tensor, pred_adv: Tensor, sal_base: Tuple, sal_adv: Tuple) -> Tuple:
         pred_diff = self._criterion(pred_base, pred_adv)
-        regs = self.get_adv_regs(att_base, att_adv)
-        loss = pred_diff + self._adv_lambda * regs["adv"]
+        regs = self.get_adv_regs(sal_base, sal_adv)
+        loss = pred_diff - self._adv_lambda * regs["adv"]
         return loss, {**{"pred_diff": pred_diff}, **regs}
 
     @abstractmethod
-    def get_adv_regs(self, att_base: Union[Tensor, Tuple], att_adv: Union[Tensor, Tuple]) -> Dict:
+    def get_adv_regs(self, sal_base: Union[Tensor, Tuple], sal_adv: Union[Tensor, Tuple]) -> Dict:
         pass
 
     @staticmethod

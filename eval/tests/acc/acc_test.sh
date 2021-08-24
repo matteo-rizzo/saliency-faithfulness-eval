@@ -2,7 +2,7 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:~/home/matteo/Projects/faithful-attention-eval
 
-declare path_to_script=tests/accuracy/test_tccnet.py
+declare path_to_script=tests/scripts/acc/test_tccnet.py
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
 declare -a models=("att_tccnet" "conf_tccnet" "conf_att_tccnet")

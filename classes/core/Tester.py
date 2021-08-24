@@ -20,7 +20,7 @@ class Tester(ABC):
         self._log_dir = log_dir
         self._log_frequency = log_frequency
 
-        self._base_log_dir = os.path.join("tests", "accuracy", "logs")
+        self._base_log_dir = os.path.join("eval", "tests", "acc", "logs")
         self._save_pred = save_pred
         if save_pred:
             self._path_to_pred = os.path.join(self._base_log_dir, "{}_pred".format(log_dir))
