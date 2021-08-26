@@ -1,78 +1,25 @@
 import argparse
 import os
 from time import time
-from typing import Tuple
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import torch
 
 from auxiliary.settings import RANDOM_SEED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header
-from functional.metrics import angular_error
-
-
-def get_plot_scores(path_to_results: str, filename: str, sal_type: str) -> Tuple:
-    path_to_sal = os.path.join(path_to_results, "val")
-    max_sal = np.load(os.path.join(path_to_sal, "{}_{}_max_1.npy".format(filename, sal_type)))
-    rand_sal = np.load(os.path.join(path_to_sal, "{}_{}_rand_1.npy".format(filename, sal_type)))
-    sal_diff = np.mean(max_sal - rand_sal)
-
-    path_to_preds = os.path.join(path_to_results, "preds")
-    base_filename = "{}_base.npy".format(filename)
-    base_pred = torch.from_numpy(np.load(os.path.join(path_to_preds, base_filename))).view(1, 3)
-    max_filename = "{}_max_erasure_s1_t1"
-    max_pred = torch.from_numpy(np.load(os.path.join(path_to_preds, max_filename))).view(1, 3)
-    err = angular_error(base_pred, max_pred)
-
-    return sal_diff, err
+from eval.analysis.ers.multi_ers_analysis_tccnet import multi_we_analysis
+from eval.analysis.ers.single_ers_analysis_tccnet import single_we_analysis
 
 
 def main(ns: argparse.Namespace):
-    model_type, data_folder, sal_type = ns.model_type, ns.data_folder, ns.sal_type
-    path_to_results = os.path.join("results", "erasure", sal_type, model_type, data_folder)
-    log_dir = "{}_{}_{}_{}".format(model_type, data_folder, sal_type, time())
+    model_type, data_folder, sal_type, test_type = ns.model_type, ns.data_folder, ns.sal_type, ns.test_type
+
+    log_dir = "{}_{}_{}_{}_{}".format(test_type, model_type, sal_type, data_folder, time())
     path_to_log = os.path.join("eval", "analysis", "ers", "logs", log_dir)
+    os.makedirs(path_to_log)
 
-    experiment_header("Single weights erasure")
+    path_to_results = os.path.join("results", "ers", test_type, sal_type, model_type, data_folder)
+    print("\n Fetching test data at ... : {}".format(path_to_results))
 
-    # Single weights erasure
-    path_to_test_results = os.path.join(path_to_results, "single")
-    erasure_data = pd.read_csv(os.path.join(path_to_test_results, "data.csv"))
-    sal_diffs_spat, sal_diffs_temp, errs_spat, errs_temp = [], [], [], []
-
-    print("\n Fetching data at: {} \n".format(path_to_test_results))
-
-    for filename in erasure_data["filename"].tolist():
-        print("\n Processing item: {}".format(filename))
-
-        if sal_type in ["spat", "spatiotemp"]:
-            sal_diff, err = get_plot_scores(path_to_test_results, filename, sal_type="spat")
-            print(sal_diff, err)
-            print("\t -> Spat: [ Diff: {:.4f} - Err: {:.4f} ]".format(sal_diff, err))
-            sal_diffs_spat.append(sal_diff)
-            errs_spat.append(err)
-
-        if sal_type in ["temp", "spatiotemp"]:
-            sal_diff, err = get_plot_scores(path_to_test_results, filename, sal_type="temp")
-            print("\t -> Temp: [ Diff: {:.4f} - Err: {:.4f} ]".format(sal_diff, err))
-            sal_diffs_temp.append(sal_diff)
-            errs_temp.append(err)
-
-    plt.scatter(sal_diffs_spat, errs_spat, color='orange')
-    plt.xlabel("Max vs Rand Attention Difference")
-    plt.ylabel("Max vs Base Predictions Angular Error")
-    plt.savefig(os.path.join(path_to_log, "erasure_spat.png"), bbox_inches='tight')
-    plt.show()
-    plt.clf()
-
-    plt.scatter(sal_diffs_temp, errs_temp, color='blue')
-    plt.xlabel("Max vs Rand Attention Difference")
-    plt.ylabel("Max vs Base Predictions Angular Error")
-    plt.savefig(os.path.join(path_to_log, "erasure_temp.png"), bbox_inches='tight')
-    plt.show()
-    plt.clf()
+    experiment_header("{} weights erasure".format(test_type.capitalize()))
+    {"multi": multi_we_analysis, "single": single_we_analysis}[test_type](sal_type, path_to_results, path_to_log)
 
 
 if __name__ == '__main__':
@@ -81,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument("--model_type", type=str, default="att_tccnet")
     parser.add_argument("--data_folder", type=str, default="tcc_split")
     parser.add_argument("--sal_type", type=str, default="spatiotemp")
+    parser.add_argument("--test_type", type=str, default="multi")
     namespace = parser.parse_args()
     make_deterministic(namespace.random_seed)
     print_namespace(namespace)
