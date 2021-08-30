@@ -12,8 +12,8 @@ from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 
 class TesterCCC(Tester):
 
-    def __init__(self, log_dir: str, log_frequency: int = 5, save_pred: bool = False):
-        super().__init__(log_dir, log_frequency, save_pred, MetricsTrackerCCC())
+    def __init__(self, path_to_log: str, log_frequency: int = 5, save_pred: bool = False):
+        super().__init__(path_to_log, log_frequency, save_pred, MetricsTrackerCCC())
 
     def _eval(self, model: Model, data: DataLoader, *args, **kwargs):
         for i, (x, y, path_to_x) in enumerate(data):

@@ -10,11 +10,11 @@ from classes.tasks.ccc.core.TesterCCC import TesterCCC
 
 class TesterSaliencyTCCNet(TesterCCC):
 
-    def __init__(self, sal_type: str, log_dir: str, log_frequency: int, save_pred: bool, save_sal: bool = False):
-        super().__init__(log_dir, log_frequency, save_pred)
+    def __init__(self, sal_type: str, path_to_log: str, log_frequency: int, save_pred: bool, save_sal: bool = False):
+        super().__init__(path_to_log, log_frequency, save_pred)
         self._sal_type, self._save_sal = sal_type, save_sal
         if save_sal:
-            path_to_sal = os.path.join(self._base_log_dir, "{}_sal".format(log_dir))
+            path_to_sal = os.path.join(path_to_log, "sal")
             print("\n Saving saliency weights at {}".format(path_to_sal))
 
             if self._sal_type in ["spat", "spatiotemp"]:

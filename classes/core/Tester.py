@@ -14,16 +14,13 @@ from classes.core.Model import Model
 
 class Tester(ABC):
 
-    def __init__(self, log_dir: str, log_frequency, save_pred, metrics_tracker: MetricsTracker):
+    def __init__(self, path_to_log: str, log_frequency, save_pred, metrics_tracker: MetricsTracker):
         self._device = DEVICE
-        self._metrics_tracker = metrics_tracker
-        self._log_dir = log_dir
-        self._log_frequency = log_frequency
+        self._metrics_tracker, self._path_to_log, self._log_frequency = metrics_tracker, path_to_log, log_frequency
 
-        self._base_log_dir = os.path.join("eval", "tests", "acc", "logs")
         self._save_pred = save_pred
         if save_pred:
-            self._path_to_pred = os.path.join(self._base_log_dir, "{}_pred".format(log_dir))
+            self._path_to_pred = os.path.join(path_to_log, "pred")
             print("\n Saving predictions at {}".format(self._path_to_pred))
             os.makedirs(self._path_to_pred)
 

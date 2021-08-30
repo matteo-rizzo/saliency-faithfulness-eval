@@ -20,11 +20,11 @@ from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 
 def print_metrics(metrics_base: Dict, metrics_adv: Dict):
-    print("\n" + SEPARATOR)
+    print("\n" + SEPARATOR["dashes"])
     for (mn, mv_base), mv_adv in zip(metrics_base.items(), metrics_adv.values()):
         print((" {} " + "".join(["."] * (15 - len(mn))) + " : [ Base: {:.4f} - Adv: {:.4f} ]")
               .format(mn.capitalize(), mv_base, mv_adv))
-    print(SEPARATOR + "\n")
+    print(SEPARATOR["dashes"] + "\n")
 
 
 def load_from_file(path_to_item: str) -> Tensor:
@@ -41,15 +41,18 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
         pred_adv, spat_sal_adv, temp_sal_adv = adv_model.predict(x, return_steps=True)
 
         pred_base = load_from_file(os.path.join(path_to_pred, file_name)).unsqueeze(0)
-        pred_divs.append(adv_model.get_loss(pred_base, pred_adv).item())
+        pred_div = adv_model.get_loss(pred_base, pred_adv).item()
+        pred_divs.append(pred_div)
 
         div_log = []
 
         if sal_type in ["spat", "spatiotemp"]:
             spat_sal_base = load_from_file(os.path.join(path_to_sal, "spat", file_name))
-            spat_div = adv_model.get_adv_spat_loss(spat_sal_base, spat_sal_adv)["adv"].item()
+            spat_loss = adv_model.get_adv_spat_loss(spat_sal_base, spat_sal_adv)
+            spat_div = spat_loss["adv"].item()
             spat_divs.append(spat_div)
-            div_log += ["spat: {:.4f}".format(spat_div)]
+            spat_log = " - ".join(["{}: {:.4f}".format(k, v.item()) for k, v in spat_loss.items()])
+            div_log += ["spat: ( {} )".format(spat_log)]
 
         if sal_type in ["temp", "spatiotemp"]:
             temp_sal_base = load_from_file(os.path.join(path_to_sal, "temp", file_name))
@@ -63,9 +66,8 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
         mt_adv.add_error(loss_adv)
 
         if i % 5 == 0 and i > 0:
-            print("[ Batch: {} ] |"
-                  " Loss: [ Base: {:.4f} - Adv: {:.4f} ]"
-                  " Div: [ {} ]".format(i, loss_base, loss_adv, " - ".join(div_log)))
+            print("[ Batch: {} ] || Loss: [ Base: {:.4f} - Adv: {:.4f} ] || Div: [ Pred: {:.4f} | {} ]"
+                  .format(i, loss_base, loss_adv, pred_div, " | ".join(div_log)))
 
     print_metrics(mt_base.compute_metrics(), mt_adv.compute_metrics())
 
@@ -91,7 +93,7 @@ def make_plot(adv_scores: Dict, adv_lambdas: List, sal_type: str, path_to_log: s
         plt.show()
     else:
         print("\n Saving plot at: {} \n".format(path_to_log))
-        plt.savefig(os.path.join(path_to_log, "adv_{}.png".format(sal_type)), bbox_inches='tight')
+        plt.savefig(path_to_log, bbox_inches='tight')
     plt.clf()
 
 
@@ -101,9 +103,9 @@ def main(ns: argparse.Namespace):
 
     experiment_header("Analysing adv '{}' - '{}' on '{}'".format(model_type, sal_type, data_folder))
 
-    log_folder = "adv_{}_{}_{}_{}".format(model_type, sal_type, data_folder, time.time())
-    path_to_log = os.path.join("eval", "analysis", "adv", "logs", log_folder)
-    os.makedirs(path_to_log)
+    path_to_log = os.path.join("eval", "analysis", "adv", "logs")
+    os.makedirs(path_to_log, exist_ok=True)
+    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(model_type, sal_type, data_folder, time.time()))
 
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_type, model_type, data_folder)
     path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "att")

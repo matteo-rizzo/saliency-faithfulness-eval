@@ -6,7 +6,7 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
-declare path_to_script="analysis/scripts/adv/adv_analysis_tccnet.py"
+declare path_to_script="eval/analysis/adv/adv_analysis_tccnet.py"
 
 # Values: "att_tccnet" "conf_tccnet" "conf_att_tccnet"
 declare -a models=("att_tccnet")
@@ -15,7 +15,7 @@ declare -a models=("att_tccnet")
 declare -a data_folders=("tcc_split")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_types=("temp" "spat" "spatiotemp")
+declare -a sal_types=("spat" "temp" "spatiotemp")
 
 for model in "${models[@]}"; do
   for sal_type in "${sal_types[@]}"; do

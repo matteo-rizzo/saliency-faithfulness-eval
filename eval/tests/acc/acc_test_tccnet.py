@@ -1,4 +1,5 @@
 import argparse
+import os
 from time import time
 
 from auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
@@ -15,6 +16,8 @@ def main(opt):
     log_frequency = opt.log_frequency
 
     log_dir = "{}_{}_{}_{}".format(model_type, sal_type, data_folder, time())
+    path_to_log = os.path.join("eval", "tests", "acc", "logs", log_dir)
+    os.makedirs(path_to_log)
 
     print("\n Loading data from '{}':".format(data_folder))
     data_loader = DataHandlerTCC().get_loader(train=False, data_folder=data_folder)
