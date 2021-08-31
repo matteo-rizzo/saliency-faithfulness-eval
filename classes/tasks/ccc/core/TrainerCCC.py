@@ -38,7 +38,7 @@ class TrainerCCC(Trainer):
         self._print_metrics(epoch_metrics)
         self._log_metrics(epoch_metrics)
 
-    def _log_metrics(self, metrics: Dict):
+    def _log_metrics(self, metrics: Dict, *args, **kwargs):
         log_data = pd.DataFrame({"train_loss": [self._train_loss.avg], "val_loss": [self._val_loss.avg],
                                  **{"best_" + k: [v] for k, v in self._best_metrics.items()},
                                  **{k: [v] for k, v in metrics.items()}})

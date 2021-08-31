@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict
 
 from torch import Tensor
 
@@ -14,8 +14,7 @@ class AdvModel(Model):
         self._adv_lambda = Tensor([adv_lambda]).to(self._device)
 
     @overloads(Model.optimize)
-    def optimize(self, pred_base: Tensor, pred_adv: Tensor,
-                 sal_base: Union[Tensor, Tuple], sal_adv: Union[Tensor, Tuple]) -> Tuple:
+    def optimize(self, pred_base: Tensor, pred_adv: Tensor, sal_base: Tuple, sal_adv: Tuple) -> Tuple:
         self._optimizer.zero_grad()
         train_loss, losses = self.get_adv_loss(pred_base, pred_adv, sal_base, sal_adv)
         train_loss.backward()
@@ -25,11 +24,12 @@ class AdvModel(Model):
     def get_adv_loss(self, pred_base: Tensor, pred_adv: Tensor, sal_base: Tuple, sal_adv: Tuple) -> Tuple:
         pred_diff = self._criterion(pred_base, pred_adv)
         regs = self.get_adv_regs(sal_base, sal_adv)
-        loss = pred_diff - self._adv_lambda * regs["adv"]
-        return loss, {**{"pred_diff": pred_diff}, **regs}
+        reg = self._adv_lambda * regs["adv"]
+        loss = pred_diff - reg
+        return loss, {**{"pred": pred_diff, "reg": reg}, **regs}
 
     @abstractmethod
-    def get_adv_regs(self, sal_base: Union[Tensor, Tuple], sal_adv: Union[Tensor, Tuple]) -> Dict:
+    def get_adv_regs(self, sal_base: Tuple, sal_adv: Tuple) -> Dict:
         pass
 
     @staticmethod

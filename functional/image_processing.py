@@ -56,13 +56,34 @@ def bgr_to_rgb(img: np.ndarray) -> np.ndarray:
     raise ValueError("Bad image shape detected in BRG to RGB conversion: {}".format(img.shape))
 
 
-def hwc_to_chw(img: np.ndarray) -> np.ndarray:
+def hwc_to_chw(img: Union[np.ndarray, Tensor]) -> Union[np.ndarray, Tensor]:
     """ Converts an image from height x width x channels to channels x height x width """
+    return_tensor = False
+    if isinstance(img, Tensor):
+        img = img.numpy()
+        return_tensor = True
     if len(img.shape) == 4:
-        return img.transpose((0, 3, 1, 2))
+        img = img.transpose((0, 3, 1, 2))
+        return torch.from_numpy(img) if return_tensor else img
     elif len(img.shape) == 3:
-        return img.transpose((2, 0, 1))
+        img = img.transpose((2, 0, 1))
+        return torch.from_numpy(img) if return_tensor else img
     raise ValueError("Bad image shape detected in HWC to CHW conversion: {}".format(img.shape))
+
+
+def chw_to_hwc(img: Union[np.ndarray, Tensor]) -> Union[np.ndarray, Tensor]:
+    """ Converts an image from channels x height x width to height x width x channels """
+    return_tensor = False
+    if isinstance(img, Tensor):
+        img = img.numpy()
+        return_tensor = True
+    if len(img.shape) == 4:
+        img = img.transpose((0, 2, 3, 1))
+        return torch.from_numpy(img) if return_tensor else img
+    elif len(img.shape) == 3:
+        img = img.transpose((1, 2, 0))
+        return torch.from_numpy(img) if return_tensor else img
+    raise ValueError("Bad image shape detected in CHW to HWC conversion: {}".format(img.shape))
 
 
 def scale(x: Tensor) -> Tensor:
