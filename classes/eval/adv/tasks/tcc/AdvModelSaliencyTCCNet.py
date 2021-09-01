@@ -9,6 +9,7 @@ from classes.losses.AngularLoss import AngularLoss
 from classes.losses.KLDivLoss import KLDivLoss
 from classes.losses.StructComplLoss import StructComplLoss
 from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
+from functional.error_handling import check_sal_type_support
 from functional.image_processing import scale
 from functional.vis import plot_adv_spat_sal, plot_adv_temp_sal
 
@@ -21,9 +22,7 @@ class AdvModelSaliencyTCCNet(AdvModel, ABC):
         self._network = network.to(self._device)
 
         self.__sal_type = self._network.get_saliency_type()
-        supp_modes = ["spat", "temp", "spatiotemp"]
-        if self.__sal_type not in supp_modes:
-            raise ValueError("Mode '{}' is not supported! Supported modes: {}".format(self.__sal_type, supp_modes))
+        check_sal_type_support(self.__sal_type)
 
         self._criterion = AngularLoss(self._device)
         self._sc_loss = StructComplLoss(self._device)
@@ -50,9 +49,9 @@ class AdvModelSaliencyTCCNet(AdvModel, ABC):
     def get_adv_temp_loss(self, sal_base: Tensor, sal_adv: Tensor) -> Dict:
         if sal_base.shape[1] > 1:
             sal_base, sal_adv = torch.mean(sal_base, dim=0), torch.mean(sal_adv, dim=0)
-        sal_base, sal_adv = sal_base.squeeze(), sal_adv.squeeze()
-        kl_div = self._kldiv_loss(sal_base, sal_adv)
-        return {"adv": kl_div, "kl_div": kl_div}
+        sal_base, sal_adv = sal_base.squeeze().unsqueeze(0), sal_adv.squeeze().unsqueeze(0)
+        kl_div = self._kldiv_loss(sal_adv, sal_base)
+        return {"adv": -kl_div, "kl_div": kl_div}
 
     def save_vis(self, x: Tensor, sal_base: Tuple, sal_adv: Tuple, path_to_save: str):
         if self.__sal_type in ["spat", "spatiotemp"]:

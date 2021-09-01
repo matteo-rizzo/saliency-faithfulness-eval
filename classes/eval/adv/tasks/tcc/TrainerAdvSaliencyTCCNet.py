@@ -67,7 +67,7 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
 
             if i % 5 == 0:
                 loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
-                print("[ Epoch: {} - Batch: {} ] | Loss: [ train: {:.4f} - {} ] | AE: [ base: {:.4f} - adv: {:.4f} ]"
+                print("[ E: {} - B: {} ] | L: [ train: {:.4f} - {} ] | AE: [ base: {:.4f} - adv: {:.4f} ]"
                       .format(epoch + 1, i, tl, loss_log, err_base, err_adv))
 
             if i == 0 and epoch % 50 == 0:
@@ -92,7 +92,7 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
 
             if i % 5 == 0:
                 loss_log = " - ".join(["{}: {:.4f}".format(lt, lv.item()) for lt, lv in losses.items()])
-                print("[ Batch: {} ] | Loss: [ val: {:.4f} - {} ] | Ang Err: [ base: {:.4f} - adv: {:.4f} ]"
+                print("[ B: {} ] | L: [ val: {:.4f} - {} ] | Ang Err: [ base: {:.4f} - adv: {:.4f} ]"
                       .format(i, vl, loss_log, err_base, err_adv))
 
     def _reset_metrics_tracker(self):

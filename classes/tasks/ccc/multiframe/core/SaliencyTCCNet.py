@@ -9,6 +9,7 @@ from auxiliary.settings import DEVICE
 from auxiliary.utils import overload
 from classes.eval.erasure.core.EMultiSWModule import EMultiSWModule
 from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
+from functional.error_handling import check_sal_type_support
 
 
 class SaliencyTCCNet(EMultiSWModule, ABC):
@@ -20,10 +21,7 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
         self._kernel_size = kernel_size
 
         self._sal_type = sal_type
-        supp_saliency_types = ["spat", "temp", "spatiotemp"]
-        if self._sal_type not in supp_saliency_types:
-            raise ValueError("Saliency type '{}' not supported! Supported saliency types are: {}"
-                             .format(self._sal_type, supp_saliency_types))
+        check_sal_type_support(self._sal_type)
 
         # Recurrent component for aggregating spatial encodings
         self.conv_lstm = ConvLSTMCell(rnn_input_size, hidden_size, kernel_size)

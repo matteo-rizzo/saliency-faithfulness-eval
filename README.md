@@ -18,10 +18,12 @@ A suite of tests to assess attention faithfulness for interpretability.
 | `params_rand`  | A1   | Impact on attention weights of model parameters randomization | [1]       |
 | `labels_rand`  | A2   | Impact on attention weights of training labels randomization | [1]       |
 
-1. Adebayo et al., “Sanity Checks for Saliency Maps”, NIPS (
+1. Adebayo et al., *“Sanity Checks for Saliency Maps”*, NIPS (
    2018) [[Paper](https://dl.acm.org/doi/10.5555/3327546.3327621) - [Code](https://github.com/adebayoj/sanity_checks_saliency)]
-2. Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/) - [Code](https://github.com/successar/AttentionExplanation)] 
-3. Serrano & Smith, *“Is Attention Interpretable?”,* ACL (2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
+2. Jain & Wallace, *“Attention is not Explanation”*, NAACL (2019) [[Paper](https://www.aclweb.org/anthology/N19-1357/)
+   - [Code](https://github.com/successar/AttentionExplanation)] 
+3. Serrano & Smith, *“Is Attention Interpretable?”,* ACL (
+   2019) [[Paper](https://www.aclweb.org/anthology/P19-1282/) - [Code](https://github.com/serrano-s/attn-tests)]
 4. Wiegreffe & Pinter, *“Attention is not not Explanation”*, EMNLP (
    2019) [[Paper](https://www.aclweb.org/anthology/D19-1002/) - [Code](https://github.com/sarahwie/attention)]
 

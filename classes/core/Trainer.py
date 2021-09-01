@@ -109,7 +109,7 @@ class Trainer:
         if 0 < self._val_loss.avg < self._best_val_loss:
             self._best_val_loss = self._val_loss.avg
             self._best_metrics = self._metrics_tracker.update_best_metrics()
-            print("Saving new best model...")
+            print("\n -> Saving new best model...")
             model.save(self._path_to_log)
 
     def print_train_performance(self, train_time: float):
@@ -127,9 +127,10 @@ class Trainer:
         Prints the validation time/loss for the most recent epoch
         :param val_time: the validation time for the most recent epoch
         """
-        print(" Val Time ..... : {:.4f}".format(val_time))
-        print(" Val Loss ..... : {:.4f}".format(self._val_loss.avg))
         print("\n" + SEPARATOR["stars"])
+        print(" Val Time ... : {:.4f}".format(val_time))
+        print(" Val Loss ... : {:.4f}".format(self._val_loss.avg))
+        print(SEPARATOR["stars"] + "\n")
 
     @staticmethod
     def print_heading(mode: str, epoch: int, epochs: int):

@@ -56,6 +56,6 @@ class Model:
         self._network.load_state_dict(torch.load(path_to_pth, map_location=self._device))
         print("... Model loaded successfully!\n")
 
-    def set_optimizer(self, learning_rate: float, optimizer_type: str = "sgd"):
+    def set_optimizer(self, learning_rate: float, optimizer_type: str = "rmsprop"):
         optimizers_map = {"adam": optim.Adam, "rmsprop": optim.RMSprop, "sgd": optim.SGD}
         self._optimizer = optimizers_map[optimizer_type](self._network.parameters(), lr=learning_rate)

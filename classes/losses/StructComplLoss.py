@@ -30,7 +30,7 @@ class StructComplLoss(Loss):
         self.__iou_loss = IoULoss(self._device)
 
         # Complementarity
-        self.__complementary_loss = ComplLoss(self._device)
+        self.__compl_loss = ComplLoss(self._device)
 
     def get_factors(self) -> Dict:
         return self.__factors
@@ -38,6 +38,5 @@ class StructComplLoss(Loss):
     def _compute(self, a1: Tensor, a2: Tensor) -> Tensor:
         a1_compl = torch.ones_like(a1).to(self._device) - a1
         self.__factors = {"bce": self.__bce_loss(a2, a1_compl), "ssim": self.__ssim_loss(a2, a1_compl),
-                          "iou": self.__iou_loss(a2, a1_compl), "comp": self.__complementary_loss(a2, a1)}
-        compl_reg = torch.sum(torch.stack(list(self.__factors.values())))
-        return torch.ones_like(compl_reg).to(self._device) / compl_reg
+                          "iou": self.__iou_loss(a2, a1_compl), "comp": self.__compl_loss(a2, a1)}
+        return torch.sum(torch.stack(list(self.__factors.values())))

@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from auxiliary.utils import SEPARATOR
 from classes.eval.erasure.core.ESWModel import ESWModel
 from classes.eval.erasure.core.ESWTester import ESWTester
+from functional.error_handling import check_sal_type_support
 
 
 class ESWTesterTCCNet(ESWTester):
@@ -22,8 +23,7 @@ class ESWTesterTCCNet(ESWTester):
         :param sal_type: which saliency dimension to sal_type (either "spat", "temp" or None)
         """
         super().__init__(model, data, path_to_log)
-        if sal_type not in ["spat", "temp", "spatiotemp"]:
-            raise ValueError("Invalid saliency type: '{}'!".format(sal_type))
+        check_sal_type_support(sal_type)
         self.__sal_type = sal_type
         self.__we_state = (True, True) if sal_type == "spatiotemp" else (sal_type == "spat", sal_type == "temp")
 

@@ -25,7 +25,7 @@ class AdvModel(Model):
         pred_diff = self._criterion(pred_base, pred_adv)
         regs = self.get_adv_regs(sal_base, sal_adv)
         reg = self._adv_lambda * regs["adv"]
-        loss = pred_diff - reg
+        loss = pred_diff + reg
         return loss, {**{"pred": pred_diff, "reg": reg}, **regs}
 
     @abstractmethod
