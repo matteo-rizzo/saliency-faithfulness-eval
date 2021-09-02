@@ -1,4 +1,3 @@
-import os
 from abc import abstractmethod
 from time import time
 
@@ -17,10 +16,7 @@ class Trainer:
     def __init__(self, path_to_log: str, metrics_tracker: MetricsTracker, val_frequency: int = 5):
         self._device = DEVICE
         self._val_frequency = val_frequency
-
         self._path_to_log = path_to_log
-        os.makedirs(path_to_log)
-
         self._metrics_tracker = metrics_tracker
         self._train_loss, self._val_loss = LossTracker(), LossTracker()
         self._best_val_loss, self._best_metrics = 100.0, self._metrics_tracker.get_best_metrics()

@@ -16,35 +16,28 @@ from functional.image_processing import scale
 
 class ConfTCCNet(SaliencyTCCNet, ABC):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_type: str = None):
-        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, sal_type=sal_type)
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = None):
+        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
         self.fcn = FC4()
 
     @overloads(SaliencyTCCNet._weight_spat)
     def _weight_spat(self, x: Tensor, spat_conf: Tensor, *args, **kwargs) -> Tensor:
         if not self._is_saliency_active("spat"):
             return scale(x).clone()
-        spat_conf = self._spat_we_check(spat_conf)
-        spat_conf = self._spat_save_grad_check(spat_conf)
+        spat_conf = self._spat_save_grad_check(self._spat_we_check(spat_conf))
         return self._apply_spat_weights(x, spat_conf)
 
     @staticmethod
-    def _apply_spat_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
-        return scale(x * mask).clone()
+    def __spat_conf_to_temp_conf(spat_conf: Tensor) -> Tensor:
+        return F.softmax(torch.mean(torch.mean(spat_conf.squeeze(1), dim=1), dim=1), dim=0).unsqueeze(1)
 
     @overloads(SaliencyTCCNet._weight_temp)
     def _weight_temp(self, x: Tensor, conf: Tensor, *args, **kwargs) -> Tuple:
         if not self._is_saliency_active("temp"):
             return x, Tensor()
-        temp_conf = F.softmax(torch.mean(torch.mean(conf.squeeze(1), dim=1), dim=1), dim=0).unsqueeze(1)
-        temp_conf = self._temp_we_check(temp_conf)
-        temp_conf = self._temp_save_grad_check(temp_conf)
+        temp_conf = self._temp_save_grad_check(self._temp_we_check(self.__spat_conf_to_temp_conf(conf)))
         temp_weighted_x = self._apply_temp_weights(x, temp_conf)
         return temp_weighted_x, temp_conf
-
-    @staticmethod
-    def _apply_temp_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
-        return x * mask.unsqueeze(2).unsqueeze(3)
 
     def _spat_comp(self, x: Tensor, *args, **kwargs) -> Tuple:
         _, rgb, spat_conf = self.fcn(x)

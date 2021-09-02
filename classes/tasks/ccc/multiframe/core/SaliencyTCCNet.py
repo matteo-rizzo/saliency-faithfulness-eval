@@ -7,21 +7,21 @@ from torch.nn.functional import normalize
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import overload
-from classes.eval.erasure.core.EMultiSWModule import EMultiSWModule
+from classes.eval.ers.core.EMultiSWModule import EMultiSWModule
 from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
-from functional.error_handling import check_sal_type_support
+from functional.error_handling import check_sal_dim_support
 
 
 class SaliencyTCCNet(EMultiSWModule, ABC):
 
-    def __init__(self, rnn_input_size: int = 512, hidden_size: int = 128, kernel_size: int = 3, sal_type: str = None):
+    def __init__(self, rnn_input_size: int = 512, hidden_size: int = 128, kernel_size: int = 3, sal_dim: str = None):
         super().__init__()
         self.__device = DEVICE
         self._hidden_size = hidden_size
         self._kernel_size = kernel_size
 
-        self._sal_type = sal_type
-        check_sal_type_support(self._sal_type)
+        self._sal_dim = sal_dim
+        check_sal_dim_support(self._sal_dim)
 
         # Recurrent component for aggregating spatial encodings
         self.conv_lstm = ConvLSTMCell(rnn_input_size, hidden_size, kernel_size)
@@ -41,12 +41,12 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
         return hidden_state, cell_state
 
     def get_saliency_type(self) -> str:
-        return self._sal_type
+        return self._sal_dim
 
     def _is_saliency_active(self, saliency_type: str):
-        if self._sal_type == "spatiotemp":
+        if self._sal_dim == "spatiotemp":
             return True
-        return self._sal_type == saliency_type
+        return self._sal_dim == saliency_type
 
     def _spat_save_grad_check(self, spat_weights: Tensor):
         if self.save_sw_grad_active():
@@ -76,9 +76,8 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
         pass
 
     @staticmethod
-    @abstractmethod
     def _apply_spat_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
-        pass
+        return (x * mask).clone()
 
     @abstractmethod
     @overload
@@ -87,9 +86,8 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
 
     @staticmethod
     @overload
-    @abstractmethod
     def _apply_temp_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
-        pass
+        return (x * mask.reshape(tuple([mask.shape[0]] + [1] * (len(x.shape) - 1)))).clone()
 
     def _spat_comp(self, x: Tensor, *args, **kwargs) -> Tuple:
         return self._weight_spat(self.backbone(x))

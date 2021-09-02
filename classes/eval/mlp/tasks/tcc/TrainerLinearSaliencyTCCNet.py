@@ -12,9 +12,9 @@ from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 class TrainerLinearSaliencyTCCNet(TrainerCCC):
 
-    def __init__(self, path_to_log: str, path_to_pretrained: str, sal_type: str):
+    def __init__(self, path_to_log: str, path_to_pretrained: str, sal_dim: str):
         self.__path_to_sw = os.path.join(path_to_pretrained, "att")
-        self.__sal_type = sal_type
+        self.__sal_dim = sal_dim
         super().__init__(path_to_log)
 
     def __load_from_file(self, path_to_file: str) -> Tensor:
@@ -22,11 +22,11 @@ class TrainerLinearSaliencyTCCNet(TrainerCCC):
         return torch.from_numpy(item).squeeze(0).to(self._device)
 
     def __load_sw_from_file(self, filename: str) -> Union[Tensor, Tuple]:
-        if self.__sal_type == "spatiotemp":
+        if self.__sal_dim == "spatiotemp":
             spat_sw = self.__load_from_file(os.path.join(self.__path_to_sw, "spat", filename))
             temp_sw = self.__load_from_file(os.path.join(self.__path_to_sw, "temp", filename))
             return spat_sw, temp_sw
-        return self.__load_from_file(os.path.join(self.__path_to_sw, self.__sal_type, filename))
+        return self.__load_from_file(os.path.join(self.__path_to_sw, self.__sal_dim, filename))
 
     def __compute_pred(self, model: ModelLinearSaliencyTCCNet, x: Tensor, y: Tensor, path_to_x: str):
         w = self.__load_sw_from_file(filename=path_to_x[0].split(os.sep)[-1])

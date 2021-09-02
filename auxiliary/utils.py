@@ -1,5 +1,6 @@
 import argparse
 import functools
+import json
 import os
 import random
 import re
@@ -41,8 +42,12 @@ def print_namespace(namespace: argparse.Namespace):
     print("\n" + SEPARATOR["dashes"] + "\n")
 
 
-def infer_path(namespace: argparse.Namespace) -> str:
-    return os.path.join(namespace.path_to_pretrained, namespace.sal_type, namespace.model_type, namespace.data_folder)
+def infer_path(ns: argparse.Namespace) -> str:
+    return os.path.join(ns.path_to_pretrained, ns.sal_dim, ns.sal_type + "_tccnet", ns.data_folder)
+
+
+def save_settings(settings: argparse.Namespace, path_to_save: str):
+    json.dump(vars(settings), open(os.path.join(path_to_save, "settings.json"), 'w'), indent=2)
 
 
 def experiment_header(title: str):

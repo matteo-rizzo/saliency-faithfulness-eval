@@ -9,7 +9,7 @@ from classes.losses.AngularLoss import AngularLoss
 from classes.losses.KLDivLoss import KLDivLoss
 from classes.losses.StructComplLoss import StructComplLoss
 from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from functional.error_handling import check_sal_type_support
+from functional.error_handling import check_sal_dim_support
 from functional.image_processing import scale
 from functional.vis import plot_adv_spat_sal, plot_adv_temp_sal
 
@@ -21,21 +21,21 @@ class AdvModelSaliencyTCCNet(AdvModel, ABC):
 
         self._network = network.to(self._device)
 
-        self.__sal_type = self._network.get_saliency_type()
-        check_sal_type_support(self.__sal_type)
+        self.__sal_dim = self._network.get_saliency_type()
+        check_sal_dim_support(self.__sal_dim)
 
         self._criterion = AngularLoss(self._device)
         self._sc_loss = StructComplLoss(self._device)
         self._kldiv_loss = KLDivLoss(self._device)
 
     def get_adv_regs(self, sal_base: Tuple, sal_adv: Tuple) -> Dict:
-        if self.__sal_type == "spat":
+        if self.__sal_dim == "spat":
             return self.get_adv_spat_loss(sal_base[0], sal_adv[0])
 
-        if self.__sal_type == "temp":
+        if self.__sal_dim == "temp":
             return self.get_adv_temp_loss(sal_base[1], sal_adv[1])
 
-        if self.__sal_type == "spatiotemp":
+        if self.__sal_dim == "spatiotemp":
             spat_losses = self.get_adv_spat_loss(sal_base[0], sal_adv[0])
             temp_losses = self.get_adv_temp_loss(sal_base[1], sal_adv[1])
             spatiotemp_losses = {"adv": spat_losses.pop("adv") + temp_losses.pop("adv")}
@@ -54,7 +54,7 @@ class AdvModelSaliencyTCCNet(AdvModel, ABC):
         return {"adv": -kl_div, "kl_div": kl_div}
 
     def save_vis(self, x: Tensor, sal_base: Tuple, sal_adv: Tuple, path_to_save: str):
-        if self.__sal_type in ["spat", "spatiotemp"]:
+        if self.__sal_dim in ["spat", "spatiotemp"]:
             plot_adv_spat_sal(x, sal_base[0], sal_adv[0], path_to_save=path_to_save + "_spat")
-        if self.__sal_type in ["temp", "spatiotemp"]:
+        if self.__sal_dim in ["temp", "spatiotemp"]:
             plot_adv_temp_sal(x, sal_base[1], sal_adv[1], path_to_save=path_to_save + "_temp")

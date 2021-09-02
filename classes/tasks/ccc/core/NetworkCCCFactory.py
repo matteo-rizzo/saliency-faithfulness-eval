@@ -1,8 +1,8 @@
 from torch import nn
 
-from classes.tasks.ccc.multiframe.modules.att_tccnet.AttTCCNet import AttTCCNet
-from classes.tasks.ccc.multiframe.modules.conf_att_tccnet.ConfAttTCCNet import ConfAttTCCNet
-from classes.tasks.ccc.multiframe.modules.conf_tccnet.ConfTCCNet import ConfTCCNet
+from classes.tasks.ccc.multiframe.modules.AttTCCNet import AttTCCNet
+from classes.tasks.ccc.multiframe.modules.ConfAttTCCNet import ConfAttTCCNet
+from classes.tasks.ccc.multiframe.modules.ConfTCCNet import ConfTCCNet
 from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
 
 

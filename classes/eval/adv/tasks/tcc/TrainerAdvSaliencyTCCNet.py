@@ -15,10 +15,10 @@ from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 
 class TrainerAdvSaliencyTCCNet(TrainerCCC):
-    def __init__(self, sal_type: str, path_to_log: str, path_to_pred: str, path_to_sal: str, val_frequency: int = 5):
+    def __init__(self, sal_dim: str, path_to_log: str, path_to_pred: str, path_to_sal: str, val_frequency: int = 5):
         super().__init__(path_to_log, val_frequency)
 
-        self.__sal_type = sal_type
+        self.__sal_dim = sal_dim
         self.__path_to_pred = path_to_pred
         self.__path_to_spat_sal = os.path.join(path_to_sal, "spat")
         self.__path_to_temp_sal = os.path.join(path_to_sal, "temp")
@@ -44,9 +44,9 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
     def __load_ground_truths(self, file_name: str) -> Tuple:
         pred_base = self.__load_from_file(os.path.join(self.__path_to_pred, file_name)).unsqueeze(0)
         spat_sal_base, temp_sal_base = Tensor(), Tensor()
-        if self.__sal_type in ["spat", "spatiotemp"]:
+        if self.__sal_dim in ["spat", "spatiotemp"]:
             spat_sal_base = self.__load_from_file(os.path.join(self.__path_to_spat_sal, file_name))
-        if self.__sal_type in ["temp", "spatiotemp"]:
+        if self.__sal_dim in ["temp", "spatiotemp"]:
             temp_sal_base = self.__load_from_file(os.path.join(self.__path_to_temp_sal, file_name))
         return pred_base, spat_sal_base, temp_sal_base
 

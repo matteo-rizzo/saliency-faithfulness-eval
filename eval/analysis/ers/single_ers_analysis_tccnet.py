@@ -17,11 +17,11 @@ def check_decision_flips(num_flips: Dict, data: pd.DataFrame, rankings: List) ->
     return num_flips
 
 
-def get_sal_diff(path_to_val: str, filename: str, sal_type: str, num_weights: int = 1) -> np.ndarray:
-    max_sal = np.load(os.path.join(path_to_val, "{}_{}_max_{}.npy".format(filename, sal_type, num_weights)))
-    rand_sal = np.load(os.path.join(path_to_val, "{}_{}_rand_{}.npy".format(filename, sal_type, num_weights)))
+def get_sal_diff(path_to_val: str, filename: str, sal_dim: str, num_weights: int = 1) -> np.ndarray:
+    max_sal = np.load(os.path.join(path_to_val, "{}_{}_max_{}.npy".format(filename, sal_dim, num_weights)))
+    rand_sal = np.load(os.path.join(path_to_val, "{}_{}_rand_{}.npy".format(filename, sal_dim, num_weights)))
     sal_diff = np.mean(max_sal - rand_sal)
-    print("\t -> {}: [ num weights: {} - diff: {:.4f} ]".format(sal_type.capitalize(), num_weights, sal_diff))
+    print("\t -> {}: [ num weights: {} - diff: {:.4f} ]".format(sal_dim.capitalize(), num_weights, sal_diff))
     return sal_diff
 
 
@@ -33,14 +33,14 @@ def get_err_diff(data: pd.DataFrame, filename: str) -> float:
     return err_diff
 
 
-def make_plot(sal_diffs: List, errs: List, sal_type: str, color: str, path_to_log: str, show: bool = False):
+def make_plot(sal_diffs: List, errs: List, sal_dim: str, color: str, path_to_log: str, show: bool = False):
     plt.scatter(sal_diffs, errs, color=color)
-    plt.xlabel("{} Sal Weights Difference (Max vs Rand)".format(sal_type.capitalize()))
+    plt.xlabel("{} Sal Weights Difference (Max vs Rand)".format(sal_dim.capitalize()))
     plt.ylabel("Pred Delta AE (AE: Max vs Base - AE: Rand vs Base)")
     if show:
         plt.show()
     else:
-        plt.savefig(os.path.join(path_to_log, "erasure_{}.png".format(sal_type)), bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_log, "erasure_{}.png".format(sal_dim)), bbox_inches='tight')
     plt.clf()
 
 
@@ -56,7 +56,7 @@ def print_stats(num_neg_err_diffs: int, num_flips: Dict, n: int):
     print(SEPARATOR["stars"] + "\n")
 
 
-def single_we_analysis(sal_type: str, path_to_results: str, path_to_log: str):
+def single_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
     data = pd.read_csv(os.path.join(path_to_results, "data.csv"))
     filenames = data["filename"].unique().tolist()
     path_to_val = os.path.join(path_to_results, "val")
@@ -73,14 +73,14 @@ def single_we_analysis(sal_type: str, path_to_results: str, path_to_log: str):
 
         num_flips = check_decision_flips(num_flips, data[data["filename"] == filename], rankings=["max", "rand"])
 
-        if sal_type in ["spat", "spatiotemp"]:
-            sal_diffs_spat.append(get_sal_diff(path_to_val, filename, sal_type="spat"))
-        if sal_type in ["temp", "spatiotemp"]:
-            sal_diffs_temp.append(get_sal_diff(path_to_val, filename, sal_type="temp"))
+        if sal_dim in ["spat", "spatiotemp"]:
+            sal_diffs_spat.append(get_sal_diff(path_to_val, filename, sal_dim="spat"))
+        if sal_dim in ["temp", "spatiotemp"]:
+            sal_diffs_temp.append(get_sal_diff(path_to_val, filename, sal_dim="temp"))
 
-    if sal_type in ["spat", "spatiotemp"]:
-        make_plot(sal_diffs_spat, errs, sal_type, "orange", path_to_log)
-    if sal_type in ["temp", "spatiotemp"]:
-        make_plot(sal_diffs_temp, errs, sal_type, "blue", path_to_log)
+    if sal_dim in ["spat", "spatiotemp"]:
+        make_plot(sal_diffs_spat, errs, sal_dim, "orange", path_to_log)
+    if sal_dim in ["temp", "spatiotemp"]:
+        make_plot(sal_diffs_temp, errs, sal_dim, "blue", path_to_log)
 
     print_stats(num_neg_err_diffs, num_flips, n=len(filenames))

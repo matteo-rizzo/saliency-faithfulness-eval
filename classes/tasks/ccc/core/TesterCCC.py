@@ -2,6 +2,7 @@ import os
 from typing import Dict
 
 import numpy as np
+import pandas as pd
 from torch import Tensor
 from torch.utils.data import DataLoader
 
@@ -14,6 +15,7 @@ class TesterCCC(Tester):
 
     def __init__(self, path_to_log: str, log_frequency: int = 5, save_pred: bool = False):
         super().__init__(path_to_log, log_frequency, save_pred, MetricsTrackerCCC())
+        self._path_to_metrics = os.path.join(path_to_log, "metrics.csv")
 
     def _eval(self, model: Model, data: DataLoader, *args, **kwargs):
         for i, (x, y, path_to_x) in enumerate(data):
@@ -36,10 +38,14 @@ class TesterCCC(Tester):
         np.save(os.path.join(self._path_to_pred, file_name), pred.numpy())
 
     def _check_metrics(self):
-        epoch_metrics = self._metrics_tracker.compute_metrics()
-        self._print_metrics(epoch_metrics)
+        metrics = self._metrics_tracker.compute_metrics()
+        self._print_metrics(metrics)
+        self._log_metrics(metrics)
 
     def _print_metrics(self, metrics: Dict, *args, **kwargs):
         for mn, mv in metrics.items():
-            print((" {} " + "".join(["."] * (15 - len(mn))) + " : {:.4f} (Best: {:.4f})")
-                  .format(mn.capitalize(), mv, self._best_metrics[mn]))
+            print((" {} " + "".join(["."] * (15 - len(mn))) + " : {:.4f}").format(mn.capitalize(), mv))
+
+    def _log_metrics(self, metrics: Dict, *args, **kwargs):
+        log_data = pd.DataFrame({"test_loss": [self._test_loss.avg], **{k: [v] for k, v in metrics.items()}})
+        log_data.to_csv(self._path_to_metrics, mode='a', header=log_data.keys(), index=False)

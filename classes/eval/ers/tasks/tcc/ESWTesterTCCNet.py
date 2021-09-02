@@ -8,24 +8,24 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 
 from auxiliary.utils import SEPARATOR
-from classes.eval.erasure.core.ESWModel import ESWModel
-from classes.eval.erasure.core.ESWTester import ESWTester
-from functional.error_handling import check_sal_type_support
+from classes.eval.ers.core.ESWModel import ESWModel
+from classes.eval.ers.core.ESWTester import ESWTester
+from functional.error_handling import check_sal_dim_support
 
 
 class ESWTesterTCCNet(ESWTester):
 
-    def __init__(self, model: ESWModel, data: DataLoader, path_to_log: str, sal_type: str = None):
+    def __init__(self, model: ESWModel, data: DataLoader, path_to_log: str, sal_dim: str = None):
         """
         :param model: a model to run inference
         :param data: the data the model inference should be run on
         :param path_to_log: the base path to the log file for the tests
-        :param sal_type: which saliency dimension to sal_type (either "spat", "temp" or None)
+        :param sal_dim: which saliency dimension to sal_dim (either "spat", "temp" or None)
         """
         super().__init__(model, data, path_to_log)
-        check_sal_type_support(sal_type)
-        self.__sal_type = sal_type
-        self.__we_state = (True, True) if sal_type == "spatiotemp" else (sal_type == "spat", sal_type == "temp")
+        check_sal_dim_support(sal_dim)
+        self.__sal_dim = sal_dim
+        self.__we_state = (True, True) if sal_dim == "spatiotemp" else (sal_dim == "spat", sal_dim == "temp")
 
     def _erase_weights(self, x: Tensor, y: Tensor, p: Tensor, mode: str, log_base: Dict, *args, **kwargs) -> float:
         self._model.set_we_mode(mode)
@@ -45,9 +45,9 @@ class ESWTesterTCCNet(ESWTester):
         return pred, err, mask_size
 
     def __select_mask_size(self, spat_mask: Tensor, temp_mask: Tensor) -> Dict:
-        if self.__sal_type == "spatiotemp":
+        if self.__sal_dim == "spatiotemp":
             return {"spat_mask_size": prod(spat_mask.shape), "temp_mask_size": prod(temp_mask.shape)}
-        return {"mask_size": prod(spat_mask.shape) if self.__sal_type == "spat" else prod(temp_mask.shape)}
+        return {"mask_size": prod(spat_mask.shape) if self.__sal_dim == "spat" else prod(temp_mask.shape)}
 
     def __run_erasure_modes(self, x: Tensor, y: Tensor, p: Tensor, modes: List, log_base: Dict):
         logs = []
@@ -64,7 +64,7 @@ class ESWTesterTCCNet(ESWTester):
 
         # Set the size of the mask to be considered depending on the deactivated dimension
         spat_mask_size, temp_mask_size, norm_fact = None, None, None
-        if self.__sal_type == "spatiotemp":
+        if self.__sal_dim == "spatiotemp":
             spat_mask_size, temp_mask_size = log_base["spat_mask_size"], log_base["temp_mask_size"]
             mask_size = min(spat_mask_size, temp_mask_size)
             norm_fact = max(spat_mask_size, temp_mask_size) // min(spat_mask_size, temp_mask_size)
@@ -74,11 +74,11 @@ class ESWTesterTCCNet(ESWTester):
         ts = x.shape[1]
         for n in range(1, mask_size) if mask_size <= ts else range(mask_size // ts, mask_size, mask_size // ts):
             # Set the number of weights to be erased
-            if self.__sal_type == "spatiotemp":
+            if self.__sal_dim == "spatiotemp":
                 norm_n = n * norm_fact
                 n = (norm_n, n) if spat_mask_size > temp_mask_size else (n, norm_n)
             else:
-                n = (n, 0) if self.__sal_type == "spat" else (0, n)
+                n = (n, 0) if self.__sal_dim == "spat" else (0, n)
 
             print("\n  * N: (s: {}, t: {}) / {}".format(*n, mask_size))
             self._set_num_weights(n)

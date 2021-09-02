@@ -13,7 +13,6 @@ from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header, SEPARATOR
 from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
-from classes.tasks.ccc.core.ModelCCCFactory import ModelCCCFactory
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
@@ -33,7 +32,7 @@ def load_from_file(path_to_item: str) -> Tensor:
 
 
 def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, data: DataLoader,
-                sal_type: str, path_to_pred: str, path_to_sal: str) -> Dict:
+                sal_dim: str, path_to_pred: str, path_to_sal: str) -> Dict:
     pred_divs, spat_divs, temp_divs, mt_base, mt_adv = [], [], [], MetricsTrackerCCC(), MetricsTrackerCCC()
 
     for i, (x, _, y, path_to_x) in enumerate(data):
@@ -46,7 +45,7 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
 
         div_log = []
 
-        if sal_type in ["spat", "spatiotemp"]:
+        if sal_dim in ["spat", "spatiotemp"]:
             spat_sal_base = load_from_file(os.path.join(path_to_sal, "spat", file_name))
             spat_loss = adv_model.get_adv_spat_loss(spat_sal_base, spat_sal_adv)
             spat_div = spat_loss["adv"].item()
@@ -54,7 +53,7 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
             spat_log = " - ".join(["{}: {:.4f}".format(k, v.item()) for k, v in spat_loss.items()])
             div_log += ["spat: ( {} )".format(spat_log)]
 
-        if sal_type in ["temp", "spatiotemp"]:
+        if sal_dim in ["temp", "spatiotemp"]:
             temp_sal_base = load_from_file(os.path.join(path_to_sal, "temp", file_name))
             temp_div = adv_model.get_adv_temp_loss(temp_sal_base, temp_sal_adv)["adv"].item()
             temp_divs.append(temp_div)
@@ -74,15 +73,15 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
     return {"pred": np.mean(pred_divs), "spat": np.mean(spat_divs), "temp": np.mean(temp_divs)}
 
 
-def make_plot(adv_scores: Dict, adv_lambdas: List, sal_type: str, path_to_log: str, show: bool = True):
+def make_plot(adv_scores: Dict, adv_lambdas: List, sal_dim: str, path_to_log: str, show: bool = True):
     pred_divs = adv_scores["pred_divs"]
 
-    if sal_type in ["spat", "spatiotemp"]:
+    if sal_dim in ["spat", "spatiotemp"]:
         plt.plot(adv_scores["spat_divs"], pred_divs, linestyle='--', marker='o', color='orange', label="spatial")
         for i, l in enumerate(adv_lambdas):
             plt.annotate(l, (adv_scores["spat_divs"][i], pred_divs[i]))
 
-    if sal_type in ["temp", "spatiotemp"]:
+    if sal_dim in ["temp", "spatiotemp"]:
         plt.plot(adv_scores["temp_divs"], pred_divs, linestyle='--', marker='o', color='blue', label="temporal")
         for i, l in enumerate(adv_lambdas):
             plt.annotate(l, (adv_scores["temp_divs"][i], pred_divs[i]))
@@ -98,21 +97,22 @@ def make_plot(adv_scores: Dict, adv_lambdas: List, sal_type: str, path_to_log: s
 
 
 def main(ns: argparse.Namespace):
-    sal_type, model_type, data_folder, use_train_set = ns.sal_type, ns.model_type, ns.data_folder, ns.use_train_set
+    sal_type, sal_dim, data_folder, use_train_set = ns.sal_type, ns.sal_dim, ns.data_folder, ns.use_train_set
     adv_lambdas, show_plot, hidden_size, kernel_size = ns.adv_lambdas, ns.show_plot, ns.hidden_size, ns.kernel_size
 
-    experiment_header("Analysing adv '{}' - '{}' on '{}'".format(model_type, sal_type, data_folder))
+    experiment_header("Analysing adv '{}' - '{}' on '{}'".format(sal_dim, sal_type, data_folder))
 
     path_to_log = os.path.join("eval", "analysis", "adv", "logs")
     os.makedirs(path_to_log, exist_ok=True)
-    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(model_type, sal_type, data_folder, time.time()))
+    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time.time()))
 
-    path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_type, model_type, data_folder)
+    path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
     path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "att")
-    path_to_adv = os.path.join("results", "adv", sal_type, model_type, data_folder)
+    path_to_adv = os.path.join("results", "adv", sal_dim, sal_type + "_tccnet", data_folder)
 
-    adv_model = AdvModelSaliencyTCCNet(network=NetworkCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type))
-    model = ModelCCCFactory().get(model_type)(hidden_size, kernel_size, sal_type)
+    network = NetworkCCCFactory().get(sal_type + "_tccnet")(hidden_size, kernel_size, sal_dim)
+    adv_model = AdvModelSaliencyTCCNet(network)
+    model = ModelSaliencyTCCNet(sal_type, sal_dim, hidden_size, kernel_size)
     model.load(path_to_base)
     model.eval_mode()
 
@@ -126,21 +126,21 @@ def main(ns: argparse.Namespace):
         adv_model.load(os.path.join(path_to_adv, adv_lambda))
         adv_model.eval_mode()
 
-        divergences = test_lambda(model, adv_model, data, sal_type, path_to_pred, path_to_sal)
+        divergences = test_lambda(model, adv_model, data, sal_dim, path_to_pred, path_to_sal)
 
         adv_scores["pred_divs"].append(divergences["pred"])
         adv_scores["spat_divs"].append(divergences["spat"])
         adv_scores["temp_divs"].append(divergences["temp"])
 
-    make_plot(adv_scores, adv_lambdas, sal_type, path_to_log, show_plot)
+    make_plot(adv_scores, adv_lambdas, sal_dim, path_to_log, show_plot)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--random_seed', type=int, default=RANDOM_SEED)
-    parser.add_argument("--model_type", type=str, default="att_tccnet")
     parser.add_argument("--data_folder", type=str, default="tcc_split")
-    parser.add_argument("--sal_type", type=str, default="spatiotemp")
+    parser.add_argument("--sal_type", type=str, default="att")
+    parser.add_argument("--sal_dim", type=str, default="spatiotemp")
     parser.add_argument("--adv_lambdas", type=list, default=["00005", "0005", "005", "05"])
     parser.add_argument("--hidden_size", type=int, default=128)
     parser.add_argument("--kernel_size", type=int, default=5)

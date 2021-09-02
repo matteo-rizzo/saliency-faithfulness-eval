@@ -25,7 +25,6 @@ class Tester(ABC):
             os.makedirs(self._path_to_pred)
 
         self._test_loss = LossTracker()
-        self._best_metrics = self._metrics_tracker.get_best_metrics()
 
     def test(self, model: Model, test_set: DataLoader):
         """
@@ -61,6 +60,11 @@ class Tester(ABC):
         pass
 
     @abstractmethod
+    def _log_metrics(self, *args, **kwargs):
+        """ Saves the metrics on file """
+        pass
+
+    @abstractmethod
     def _print_metrics(self, *args, **kwargs):
         """ Prints the current metrics on the standard output """
         pass
@@ -70,6 +74,7 @@ class Tester(ABC):
         Prints the test time/loss
         :param test_time: the test time for the input test set
         """
+        print("\n" + SEPARATOR["stars"])
         print(" Time ..... : {:.4f}".format(test_time))
         print(" Loss ..... : {:.4f}".format(self._test_loss.avg))
-        print("\n" + SEPARATOR["stars"])
+        print(SEPARATOR["stars"] + "\n")

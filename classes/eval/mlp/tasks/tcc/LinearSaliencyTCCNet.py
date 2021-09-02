@@ -30,8 +30,8 @@ OUTPUT_SIZE_TEMP = prod((NUM_TEMP_DIM, prod(ENCODING_SIZE)))
 
 class LinearSaliencyTCCNet(SaliencyTCCNet):
 
-    def __init__(self, sal_type: str, weights_mode: str, hidden_size: int = 128, kernel_size: int = 5):
-        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_type=sal_type)
+    def __init__(self, sal_dim: str, weights_mode: str, hidden_size: int = 128, kernel_size: int = 5):
+        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
 
         self.__weights_mode = weights_mode
         supp_weights_modes = ["imposed", "learned", "deactivate"]
@@ -50,7 +50,7 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
                 self.temp_sal = TemporalAttention(features_size=NUM_TEMP_DIM, hidden_size=NUM_TEMP_DIM)
 
             del self.conv_lstm
-            if sal_type == "temp":
+            if sal_dim == "temp":
                 self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
 
     def _weight_spat(self, x: Tensor, *args, **kwargs) -> Tuple:
@@ -119,10 +119,10 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
         spat_enc_shape = (time_steps, NUM_SPAT_DIM, *ENCODING_SIZE)
         temp_enc_shape = (time_steps, NUM_TEMP_DIM, *ENCODING_SIZE)
 
-        if self._sal_type == "spatiotemp":
+        if self._sal_dim == "spatiotemp":
             sw, tw = weights
         else:
-            sw, tw = (weights, Tensor()) if self._sal_type == "spat" else (Tensor(), weights)
+            sw, tw = (weights, Tensor()) if self._sal_dim == "spat" else (Tensor(), weights)
 
         x = self.__encode_spat(x, spat_enc_shape, sw)
         x = self.__encode_temp(x, temp_enc_shape, tw, time_steps, batch_size)

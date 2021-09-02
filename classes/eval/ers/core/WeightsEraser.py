@@ -14,7 +14,7 @@ class WeightsEraser:
     def __init__(self):
         self.__device = DEVICE
         self.__path_to_model_dir, self.__path_to_val, self.__path_to_indices = "", "", ""
-        self.__curr_filename, self.__sal_type, self.__mode, self.__save_val = "", "", "", True
+        self.__curr_filename, self.__sal_dim, self.__mode, self.__save_val = "", "", "", True
         self.__rankings = {"max": self.__max_ranking, "rand": self.__rand_ranking,
                            "grad": self.__grad_ranking, "grad_prod": self.__grad_prod_ranking}
 
@@ -34,27 +34,27 @@ class WeightsEraser:
         self.__curr_filename = filename
 
     def set_saliency_type(self, saliency_type: str):
-        self.__sal_type = saliency_type
+        self.__sal_dim = saliency_type
 
     def set_erasure_mode(self, mode: str):
         self.__mode = mode
 
     def __load_grad(self, x: torch.Tensor) -> Tensor:
-        path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__sal_type, self.__curr_filename)
+        path_to_grad = os.path.join(self.__path_to_model_dir, "grad", self.__sal_dim, self.__curr_filename)
         grad = torch.flatten(torch.from_numpy(np.load(path_to_grad)))
         if x.shape != grad.shape:
             raise ValueError("Input-gradient shapes mismatch! Received input: {}, grad: {}".format(x.shape, grad.shape))
         return grad.to(self.__device)
 
     def __load_saliency_mask(self) -> Tensor:
-        path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__sal_type, self.__curr_filename)
+        path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__sal_dim, self.__curr_filename)
         return torch.from_numpy(np.load(path_to_mask, allow_pickle=True)).to(self.__device)
 
     def __check_n(self, sal_mask: Tensor, n: int):
         mask_size = prod(sal_mask.shape)
         if n is None or n < 1 or n >= mask_size:
             raise ValueError("Cannot remove n = {} weights from {} saliency mask! Mask size is: {}"
-                             .format(n, self.__sal_type, mask_size))
+                             .format(n, self.__sal_dim, mask_size))
 
     def erase(self, saliency_mask: Tensor = None, n: int = 1) -> Tensor:
         """
@@ -84,7 +84,7 @@ class WeightsEraser:
         return saliency_mask
 
     def __log_erasure(self, val: Tensor, indices: Tensor, n: int):
-        filename = "{}_{}_{}_{}".format(self.__curr_filename, self.__sal_type, self.__mode, n)
+        filename = "{}_{}_{}_{}".format(self.__curr_filename, self.__sal_dim, self.__mode, n)
         np.save(os.path.join(self.__path_to_val, filename), val.detach().cpu().numpy())
         np.save(os.path.join(self.__path_to_indices, filename), indices.detach().cpu().numpy())
 

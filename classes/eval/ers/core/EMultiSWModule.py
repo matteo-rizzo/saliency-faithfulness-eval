@@ -7,7 +7,7 @@ import torch
 from torch import Tensor
 
 from auxiliary.utils import overloads
-from classes.eval.erasure.core.ESWModule import ESWModule
+from classes.eval.ers.core.ESWModule import ESWModule
 
 
 class EMultiSWModule(ESWModule):

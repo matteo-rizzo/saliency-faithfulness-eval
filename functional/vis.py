@@ -4,14 +4,17 @@ from math import floor
 import matplotlib.pyplot as plt
 import seaborn
 import torch
+import torch.nn.functional as F
 from torch import Tensor
+from torchvision.transforms import transforms
 
-from functional.image_processing import rescale, chw_to_hwc
+from functional.image_processing import chw_to_hwc, correct, rescale, scale
+from functional.metrics import angular_error
 
 
 def plot_sequence(x: Tensor, path_to_save: str = None, show: bool = False):
     time_steps = x.shape[1]
-    x = chw_to_hwc(x.detach().squeeze(0))
+    x = chw_to_hwc(x.squeeze(0).detach().cpu())
     fig, axis = plt.subplots(1, time_steps, sharex="all", sharey="all")
     for t in range(time_steps):
         axis[t].imshow(x[t, :, :, :])
@@ -23,12 +26,13 @@ def plot_sequence(x: Tensor, path_to_save: str = None, show: bool = False):
     else:
         fig.savefig(path_to_save + ".png", bbox_inches='tight', dpi=200)
     plt.clf()
+    plt.close('all')
 
 
 def plot_adv_spat_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save: str = None, show: bool = False):
     size = (x.shape[-2], x.shape[-1])
-    sal_base, sal_adv = rescale(sal_base.detach(), size), rescale(sal_adv.detach(), size)
-    x, sal_base, sal_adv = chw_to_hwc(x.detach().squeeze(0)), chw_to_hwc(sal_base), chw_to_hwc(sal_adv)
+    sal_base, sal_adv = rescale(sal_base.detach().cpu(), size), rescale(sal_adv.detach().cpu(), size)
+    x, sal_base, sal_adv = chw_to_hwc(x.detach().cpu().squeeze(0)), chw_to_hwc(sal_base), chw_to_hwc(sal_adv)
 
     time_steps = x.shape[0]
     n_rows, n_cols = floor(time_steps * 2 / 3), floor(time_steps / 3 * 2)
@@ -57,6 +61,7 @@ def plot_adv_spat_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save
     else:
         fig.savefig(path_to_save + ".png", bbox_inches='tight', dpi=200)
     plt.clf()
+    plt.close('all')
 
 
 def plot_adv_temp_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save: str = None, show: bool = False):
@@ -64,7 +69,7 @@ def plot_adv_temp_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save
 
     if sal_base.shape[1] > 1:
         sal_base, sal_adv = torch.mean(sal_base, dim=0), torch.mean(sal_adv, dim=0)
-    sal_base, sal_adv = sal_base.squeeze().detach().numpy(), sal_adv.squeeze().detach().numpy()
+    sal_base, sal_adv = sal_base.squeeze().detach().cpu().numpy(), sal_adv.squeeze().detach().cpu().numpy()
 
     fig, axis = plt.subplots(2, sharex="all", sharey="all")
     color_bar_ax = fig.add_axes([.91, 0.05, .03, 0.75])
@@ -85,3 +90,40 @@ def plot_adv_temp_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save
     else:
         fig.savefig(path_to_save + ".png", bbox_inches='tight', dpi=200)
     plt.clf()
+    plt.close('all')
+
+
+def plot_frame_confidence(model_output: dict, path_to_plot: str):
+    model_output = {k: v.clone().detach().cpu() for k, v in model_output.items()}
+
+    x, y, pred = model_output["x"], model_output["y"], model_output["pred"]
+    rgb, c = model_output["rgb"], model_output["c"]
+
+    original = transforms.ToPILImage()(x.squeeze()).convert("RGB")
+    est_corrected = correct(original, pred)
+
+    size = original.size[::-1]
+    weighted_est = rescale(scale(rgb * c), size).squeeze().permute(1, 2, 0)
+    rgb = rescale(rgb, size).squeeze(0).permute(1, 2, 0)
+    c = rescale(c, size).squeeze(0).permute(1, 2, 0)
+    masked_original = scale(F.to_tensor(original).cpu().permute(1, 2, 0) * c)
+
+    plots = [(original, "original"), (masked_original, "masked_original"), (est_corrected, "correction"),
+             (rgb, "per_patch_estimate"), (c, "confidence"), (weighted_est, "weighted_estimate")]
+
+    stages, axs = plt.subplots(2, 3)
+    for i in range(2):
+        for j in range(3):
+            plot, text = plots[i * 3 + j]
+            if isinstance(plot, Tensor):
+                plot = plot.cpu()
+            axs[i, j].imshow(plot, cmap="gray" if "confidence" in text else None)
+            axs[i, j].set_title(text)
+            axs[i, j].axis("off")
+
+    os.makedirs(os.sep.join(path_to_plot.split(os.sep)[:-1]), exist_ok=True)
+    epoch, loss = path_to_plot.split(os.sep)[-1].split("_")[-1].split(".")[0], angular_error(pred, y)
+    stages.suptitle("EPOCH {} - ERROR: {:.4f}".format(epoch, loss))
+    stages.savefig(os.path.join(path_to_plot), bbox_inches='tight', dpi=200)
+    plt.clf()
+    plt.close('all')
