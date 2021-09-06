@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 
@@ -10,8 +10,11 @@ class MetricsTrackerCCC(MetricsTracker):
     def __init__(self):
         super().__init__()
         self._errors = []
-        monitored_metrics = ["mean", "median", "trimean", "bst25", "wst25", "wst5"]
-        self._metrics, self._best_metrics = {}, {m: 100.0 for m in monitored_metrics}
+        self.__monitored_metrics = ["mean", "median", "trimean", "bst25", "wst25", "wst5"]
+        self._metrics, self._best_metrics = {}, {m: 100.0 for m in self.__monitored_metrics}
+
+    def get_metrics_names(self) -> List:
+        return self.__monitored_metrics
 
     def compute_metrics(self) -> Dict:
         self._errors = sorted(self._errors)

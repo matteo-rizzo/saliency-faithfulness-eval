@@ -89,9 +89,7 @@ def chw_to_hwc(img: Union[np.ndarray, Tensor]) -> Union[np.ndarray, Tensor]:
 def scale(x: Tensor) -> Tensor:
     """ Scales all values of a tensor between 0 and 1 """
     x = x - x.min()
-    if not x.max().item():
-        return x
-    return x / x.max()
+    return x / (x.max() + Tensor([0.000000000000001]).to(DEVICE))
 
 
 def rescale(x: Tensor, size: Tuple) -> Tensor:

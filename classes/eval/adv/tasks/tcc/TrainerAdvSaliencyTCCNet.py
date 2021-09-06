@@ -15,7 +15,8 @@ from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 
 class TrainerAdvSaliencyTCCNet(TrainerCCC):
-    def __init__(self, sal_dim: str, path_to_log: str, path_to_pred: str, path_to_sal: str, val_frequency: int = 5):
+    def __init__(self, sal_dim: str, path_to_log: str, path_to_pred: str, path_to_sal: str,
+                 val_frequency: int = 5, save_vis: bool = False):
         super().__init__(path_to_log, val_frequency)
 
         self.__sal_dim = sal_dim
@@ -23,8 +24,10 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
         self.__path_to_spat_sal = os.path.join(path_to_sal, "spat")
         self.__path_to_temp_sal = os.path.join(path_to_sal, "temp")
 
-        self.__path_to_vis = os.path.join(path_to_log, "vis")
-        os.makedirs(self.__path_to_vis)
+        self.__save_vis = save_vis
+        if self.__save_vis:
+            self.__path_to_vis = os.path.join(path_to_log, "vis")
+            os.makedirs(self.__path_to_vis)
 
         self._metrics_tracker_base = MetricsTrackerCCC()
         self.__train_regs, self.__val_regs = {}, {}
@@ -70,7 +73,7 @@ class TrainerAdvSaliencyTCCNet(TrainerCCC):
                 print("[ E: {} - B: {} ] | L: [ train: {:.4f} - {} ] | AE: [ base: {:.4f} - adv: {:.4f} ]"
                       .format(epoch + 1, i, tl, loss_log, err_base, err_adv))
 
-            if i == 0 and epoch % 50 == 0:
+            if self.__save_vis and i == 0 and epoch % 50 == 0:
                 path_to_save = os.path.join(self.__path_to_vis, "{}_epoch_{}".format(file_name, epoch))
                 print("\n Saving vis at: {} \n".format(path_to_save))
                 model.save_vis(x, sal_base, sal_adv, path_to_save)

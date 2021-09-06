@@ -13,7 +13,7 @@ from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 
 def main(ns: argparse.Namespace):
-    data_folder, path_to_pretrained = ns.data_folder, ns.path_to_pretrained
+    data_folder, path_to_pretrained, save_vis = ns.data_folder, ns.path_to_pretrained, ns.save_vis
     hidden_size, kernel_size, sal_type, sal_dim = ns.hidden_size, ns.kernel_size, ns.sal_type, ns.sal_dim
     epochs, lr, adv_lambda = ns.epochs, ns.lr, ns.adv_lambda
 
@@ -31,7 +31,7 @@ def main(ns: argparse.Namespace):
     adv_model = AdvModelSaliencyTCCNet(network, adv_lambda)
     training_loader, test_loader = DataHandlerTCC().train_test_loaders(data_folder)
 
-    trainer = TrainerAdvSaliencyTCCNet(sal_dim, path_to_log, path_to_pred, path_to_sal)
+    trainer = TrainerAdvSaliencyTCCNet(sal_dim, path_to_log, path_to_pred, path_to_sal, save_vis)
     trainer.train(adv_model, training_loader, test_loader, lr, epochs)
 
 
@@ -47,6 +47,7 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, default=1000)
     parser.add_argument('--lr', type=float, default=0.00003)
     parser.add_argument('--path_to_pretrained', type=str, default=PATH_TO_PRETRAINED)
+    parser.add_argument('--save_vis', action="store_true")
     parser.add_argument('--infer_path', action="store_true")
     namespace = parser.parse_args()
 

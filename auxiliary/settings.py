@@ -13,3 +13,5 @@ DEVICE = get_device(DEVICE_TYPE)
 
 PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc"
 PATH_TO_PRETRAINED = "trained_models"
+PATH_TO_RESULTS = "results"
+PATH_TO_PLOTS = "plots"
