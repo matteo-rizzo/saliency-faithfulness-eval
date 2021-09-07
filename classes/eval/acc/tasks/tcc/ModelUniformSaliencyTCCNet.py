@@ -1,5 +1,5 @@
 from classes.eval.acc.tasks.tcc.NetworkUniformSaliencyTCCNetFactory import NetworkUniformSaliencyTCCNetFactory
-from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from functional.error_handling import check_sal_type_support, check_sal_dim_support
 
 

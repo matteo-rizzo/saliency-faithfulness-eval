@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from torchvision.transforms import transforms
 
-from functional.image_processing import chw_to_hwc, correct, rescale, scale
+from functional.image_processing import chw_to_hwc, correct, resample, scale
 from functional.metrics import angular_error
 
 
@@ -31,7 +31,7 @@ def plot_sequence(x: Tensor, path_to_save: str = None, show: bool = False):
 
 def plot_adv_spat_sal(x: Tensor, sal_base: Tensor, sal_adv: Tensor, path_to_save: str = None, show: bool = False):
     size = (x.shape[-2], x.shape[-1])
-    sal_base, sal_adv = rescale(sal_base.detach().cpu(), size), rescale(sal_adv.detach().cpu(), size)
+    sal_base, sal_adv = resample(sal_base.detach().cpu(), size), resample(sal_adv.detach().cpu(), size)
     x, sal_base, sal_adv = chw_to_hwc(x.detach().cpu().squeeze(0)), chw_to_hwc(sal_base), chw_to_hwc(sal_adv)
 
     time_steps = x.shape[0]
@@ -103,9 +103,9 @@ def plot_frame_confidence(model_output: dict, path_to_plot: str):
     est_corrected = correct(original, pred)
 
     size = original.size[::-1]
-    weighted_est = rescale(scale(rgb * c), size).squeeze().permute(1, 2, 0)
-    rgb = rescale(rgb, size).squeeze(0).permute(1, 2, 0)
-    c = rescale(c, size).squeeze(0).permute(1, 2, 0)
+    weighted_est = resample(scale(rgb * c), size).squeeze().permute(1, 2, 0)
+    rgb = resample(rgb, size).squeeze(0).permute(1, 2, 0)
+    c = resample(c, size).squeeze(0).permute(1, 2, 0)
     masked_original = scale(F.to_tensor(original).cpu().permute(1, 2, 0) * c)
 
     plots = [(original, "original"), (masked_original, "masked_original"), (est_corrected, "correction"),

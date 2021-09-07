@@ -1,3 +1,4 @@
+from abc import ABC
 from math import prod
 from typing import Tuple, Union
 
@@ -7,10 +8,10 @@ from torch.nn.functional import normalize
 
 from auxiliary.utils import overloads
 from classes.eval.mlp.core.LinearEncoder import LinearEncoder
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from classes.tasks.ccc.multiframe.submodules.attention.SpatialAttention import SpatialAttention
-from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
-from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.submodules.attention.SpatialAttention import SpatialAttention
+from classes.tasks.ccc.submodules.attention.TemporalAttention import TemporalAttention
+from classes.tasks.ccc.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
 
 # ---------------------------------------
 
@@ -28,7 +29,7 @@ OUTPUT_SIZE_TEMP = prod((NUM_TEMP_DIM, prod(ENCODING_SIZE)))
 # ---------------------------------------
 
 
-class LinearSaliencyTCCNet(SaliencyTCCNet):
+class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
 
     def __init__(self, sal_dim: str, weights_mode: str, hidden_size: int = 128, kernel_size: int = 5):
         super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
@@ -51,7 +52,7 @@ class LinearSaliencyTCCNet(SaliencyTCCNet):
 
             del self.conv_lstm
             if sal_dim == "temp":
-                self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
+                self.fcn = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
 
     def _weight_spat(self, x: Tensor, *args, **kwargs) -> Tuple:
         return x, Tensor()

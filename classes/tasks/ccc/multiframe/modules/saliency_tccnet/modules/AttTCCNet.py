@@ -1,22 +1,20 @@
 from typing import Tuple
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor
 
 from auxiliary.utils import overloads
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from classes.tasks.ccc.multiframe.submodules.attention.SpatialAttention import SpatialAttention
-from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
-from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.submodules.attention.SpatialAttention import SpatialAttention
+from classes.tasks.ccc.submodules.attention.TemporalAttention import TemporalAttention
 
 """ Spatial attention + Temporal attention """
 
 
 class AttTCCNet(SaliencyTCCNet):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = ""):
-        super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
-        self.backbone = nn.Sequential(*list(SqueezeNetLoader().load(pretrained=True).children())[0][:12])
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = "spatiotemp"):
+        super().__init__(hidden_size, kernel_size, sal_dim, rnn_input_size=512)
 
         if self._sal_dim in ["spat", "spatiotemp"]:
             self.spat_att = SpatialAttention(input_size=512)

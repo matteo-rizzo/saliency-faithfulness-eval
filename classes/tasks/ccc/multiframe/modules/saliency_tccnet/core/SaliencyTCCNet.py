@@ -2,43 +2,20 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Union
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor
 from torch.nn.functional import normalize
 
-from auxiliary.settings import DEVICE
 from auxiliary.utils import overload
-from classes.eval.ers.core.EMultiSWModule import EMultiSWModule
-from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
+from classes.tasks.ccc.multiframe.modules.tccnet.TCCNet import TCCNet
 from functional.error_handling import check_sal_dim_support
 
 
-class SaliencyTCCNet(EMultiSWModule, ABC):
+class SaliencyTCCNet(TCCNet, ABC):
 
-    def __init__(self, rnn_input_size: int = 512, hidden_size: int = 128, kernel_size: int = 3, sal_dim: str = None):
-        super().__init__()
-        self.__device = DEVICE
-        self._hidden_size = hidden_size
-        self._kernel_size = kernel_size
-
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 3, sal_dim: str = None, rnn_input_size: int = 512):
+        super().__init__(hidden_size, kernel_size, rnn_input_size)
         self._sal_dim = sal_dim
         check_sal_dim_support(self._sal_dim)
-
-        # Recurrent component for aggregating spatial encodings
-        self.conv_lstm = ConvLSTMCell(rnn_input_size, hidden_size, kernel_size)
-
-        # Final classifier
-        self.fc = nn.Sequential(
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(hidden_size, hidden_size, kernel_size=(6, 6), stride=(1, 1), padding=3),
-            nn.Sigmoid(),
-            nn.Conv2d(hidden_size, 3, kernel_size=(1, 1), stride=(1, 1)),
-            nn.Sigmoid()
-        )
-
-    def init_hidden(self, batch_size: int, h: int, w: int) -> Tuple:
-        hidden_state = torch.zeros((batch_size, self._hidden_size, h, w)).to(self.__device)
-        cell_state = torch.zeros((batch_size, self._hidden_size, h, w)).to(self.__device)
-        return hidden_state, cell_state
 
     def get_saliency_type(self) -> str:
         return self._sal_dim
@@ -90,12 +67,12 @@ class SaliencyTCCNet(EMultiSWModule, ABC):
         return (x * mask.reshape(tuple([mask.shape[0]] + [1] * (len(x.shape) - 1)))).clone()
 
     def _spat_comp(self, x: Tensor, *args, **kwargs) -> Tuple:
-        return self._weight_spat(self.backbone(x))
+        return self._weight_spat(self.fcn(x))
 
     def _temp_comp(self, x: Tensor, batch_size: int, *args, **kwargs) -> Tuple:
         time_steps, _, h, w = x.shape
         self.conv_lstm.init_hidden(self._hidden_size, (h, w))
-        hidden, cell = self.init_hidden(batch_size, h, w)
+        hidden, cell = self._init_hidden(batch_size, h, w)
 
         hidden_states, temp_mask = [], []
         for t in range(time_steps):

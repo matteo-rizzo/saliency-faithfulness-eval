@@ -14,8 +14,8 @@ from auxiliary.utils import make_deterministic, print_namespace, experiment_head
 from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
-from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 
 
 def print_metrics(metrics_base: Dict, metrics_adv: Dict):

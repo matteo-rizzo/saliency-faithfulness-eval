@@ -1,15 +1,17 @@
 from torch import nn
 
-from classes.tasks.ccc.multiframe.modules.AttTCCNet import AttTCCNet
-from classes.tasks.ccc.multiframe.modules.ConfAttTCCNet import ConfAttTCCNet
-from classes.tasks.ccc.multiframe.modules.ConfTCCNet import ConfTCCNet
-from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.modules.AttTCCNet import AttTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.modules.ConfAttTCCNet import ConfAttTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.modules.ConfTCCNet import ConfTCCNet
+from classes.tasks.ccc.multiframe.modules.tccnet.TCCNet import TCCNet
+from classes.tasks.ccc.singleframe.fc4.FC4 import FC4
 
 
 class NetworkCCCFactory:
     def __init__(self):
         self.__networks = {
             "fc4": FC4,
+            "tccnet": TCCNet,
             "att_tccnet": AttTCCNet,
             "conf_tccnet": ConfTCCNet,
             "conf_att_tccnet": ConfAttTCCNet

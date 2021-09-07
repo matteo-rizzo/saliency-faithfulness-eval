@@ -7,8 +7,8 @@ from torch import Tensor
 from torch.nn.functional import normalize
 
 from auxiliary.utils import overloads
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.singleframe.fc4.FC4 import FC4
 from functional.image_processing import scale
 
 """ Confidence as spatial attention + Confidence as temporal attention """
@@ -16,8 +16,8 @@ from functional.image_processing import scale
 
 class ConfTCCNet(SaliencyTCCNet, ABC):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = None):
-        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = "spatiotemp"):
+        super().__init__(hidden_size, kernel_size, sal_dim, rnn_input_size=3)
         self.fcn = FC4()
 
     @overloads(SaliencyTCCNet._weight_spat)
@@ -48,7 +48,7 @@ class ConfTCCNet(SaliencyTCCNet, ABC):
     def _temp_comp(self, x: Tensor, batch_size: int, spat_mask: Tensor, *args, **kwargs) -> Tuple:
         time_steps, _, h, w = x.shape
         self.conv_lstm.init_hidden(self._hidden_size, (h, w))
-        hidden, cell = self.init_hidden(batch_size, h, w)
+        hidden, cell = self._init_hidden(batch_size, h, w)
 
         temp_weighted_x, temp_mask = self._weight_temp(x, spat_mask)
 

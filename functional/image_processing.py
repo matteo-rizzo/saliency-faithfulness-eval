@@ -87,11 +87,18 @@ def chw_to_hwc(img: Union[np.ndarray, Tensor]) -> Union[np.ndarray, Tensor]:
 
 
 def scale(x: Tensor) -> Tensor:
-    """ Scales all values of a tensor between 0 and 1 """
-    x = x - x.min()
-    return x / (x.max() + Tensor([0.000000000000001]).to(DEVICE))
+    """
+    Scales all values of a batched tensor between 0 and 1. Source:
+    https://discuss.pytorch.org/t/how-to-efficiently-normalize-a-batch-of-tensor-to-0-1/65122/10
+    """
+    shape = x.shape
+    x = x.view(x.shape[0], -1)
+    x = x - x.min(1, keepdim=True)[0]
+    x = x / (x.max(1, keepdim=True)[0] + Tensor([0.0000000000001]).to(DEVICE))
+    x = x.view(shape)
+    return x
 
 
-def rescale(x: Tensor, size: Tuple) -> Tensor:
-    """ Rescale tensor to image size for better visualization """
+def resample(x: Tensor, size: Tuple) -> Tensor:
+    """ Upsample or downsample tensor to size for better visualization """
     return interpolate(x, size, mode='bilinear')

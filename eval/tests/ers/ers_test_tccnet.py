@@ -5,8 +5,8 @@ import time
 from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
 from auxiliary.utils import make_deterministic, print_namespace, infer_path, experiment_header, save_settings
 from classes.eval.ers.tasks.tcc.ESWTesterTCCNet import ESWTesterTCCNet
-from classes.tasks.ccc.multiframe.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 
 """ Run test SS1/SS2 """
 

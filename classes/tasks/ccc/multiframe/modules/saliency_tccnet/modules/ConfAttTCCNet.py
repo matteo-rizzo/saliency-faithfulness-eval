@@ -4,17 +4,17 @@ import torch
 from torch import Tensor
 
 from auxiliary.utils import overloads
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
-from classes.tasks.ccc.multiframe.submodules.attention.TemporalAttention import TemporalAttention
-from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.singleframe.fc4.FC4 import FC4
+from classes.tasks.ccc.submodules.attention.TemporalAttention import TemporalAttention
 
 """ Confidence as spatial attention + Temporal attention """
 
 
 class ConfAttTCCNet(SaliencyTCCNet):
 
-    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = ""):
-        super().__init__(rnn_input_size=3, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
+    def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = "spatiotemp"):
+        super().__init__(hidden_size, kernel_size, sal_dim, rnn_input_size=3)
         self.fcn = FC4(use_cwp=self._sal_dim != "temp")
         if self._sal_dim in ["temp", "spatiotemp"]:
             self.temp_att = TemporalAttention(features_size=3, hidden_size=hidden_size)

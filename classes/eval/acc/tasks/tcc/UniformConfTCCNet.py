@@ -1,10 +1,12 @@
+from abc import ABC
+
 from torch import Tensor
 
-from classes.tasks.ccc.multiframe.modules.ConfTCCNet import ConfTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.modules.ConfTCCNet import ConfTCCNet
 from functional.utils import rand_uniform
 
 
-class UniformConfTCCNet(ConfTCCNet):
+class UniformConfTCCNet(ConfTCCNet, ABC):
 
     def __init__(self, hidden_size: int = 128, kernel_size: int = 5, sal_dim: str = ""):
         super().__init__(hidden_size, kernel_size, sal_dim)

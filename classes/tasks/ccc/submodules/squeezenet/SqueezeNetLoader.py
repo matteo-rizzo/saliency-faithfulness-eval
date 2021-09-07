@@ -2,7 +2,7 @@ import os
 
 from torch.utils import model_zoo
 
-from classes.tasks.ccc.singleframe.submodules.squeezenet.SqueezeNet import SqueezeNet
+from classes.tasks.ccc.submodules.squeezenet.SqueezeNet import SqueezeNet
 
 model_urls = {
     1.0: 'https://download.pytorch.org/models/squeezenet1_0-a815701f.pth',

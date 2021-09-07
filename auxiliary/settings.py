@@ -1,3 +1,5 @@
+import os
+
 from auxiliary.utils import get_device
 
 # --- Random seed (for reproducibility) ---
@@ -11,7 +13,8 @@ DEVICE = get_device(DEVICE_TYPE)
 
 # --- PATHS ---
 
-PATH_TO_DATASET = "/media/matteo/Extreme SSD/dataset/ccc"
-PATH_TO_PRETRAINED = "trained_models"
-PATH_TO_RESULTS = "results"
+BASE_PATH = os.path.join("/media", "matteo", "Extreme SSD")
+PATH_TO_RESULTS = os.path.join(BASE_PATH, "results", "faithful-attention-eval")
+PATH_TO_DATASET = os.path.join(BASE_PATH, "dataset", "ccc")
+PATH_TO_PRETRAINED = os.path.join("trained_models")
 PATH_TO_PLOTS = "plots"

@@ -2,7 +2,7 @@ from typing import Tuple
 
 import torch.nn as nn
 
-from classes.tasks.ccc.multiframe.submodules.conv_lstm.ConvLSTMCell import ConvLSTMCell
+from ConvLSTMCell import ConvLSTMCell
 
 """
 A multi-layer convolutional LSTM module based on: https://arxiv.org/abs/1506.04214,

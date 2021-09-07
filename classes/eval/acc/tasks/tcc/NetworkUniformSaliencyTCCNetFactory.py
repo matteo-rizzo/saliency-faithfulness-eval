@@ -1,7 +1,7 @@
 from classes.eval.acc.tasks.tcc.UniformAttTCCNet import UniformAttTCCNet
 from classes.eval.acc.tasks.tcc.UniformConfAttTCCNet import UniformConfAttTCCNet
 from classes.eval.acc.tasks.tcc.UniformConfTCCNet import UniformConfTCCNet
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
 
 
 class NetworkUniformSaliencyTCCNetFactory:

@@ -8,7 +8,7 @@ from classes.eval.adv.core.AdvModel import AdvModel
 from classes.losses.AngularLoss import AngularLoss
 from classes.losses.KLDivLoss import KLDivLoss
 from classes.losses.StructComplLoss import StructComplLoss
-from classes.tasks.ccc.multiframe.core.SaliencyTCCNet import SaliencyTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet import SaliencyTCCNet
 from functional.error_handling import check_sal_dim_support
 from functional.image_processing import scale
 from functional.vis import plot_adv_spat_sal, plot_adv_temp_sal

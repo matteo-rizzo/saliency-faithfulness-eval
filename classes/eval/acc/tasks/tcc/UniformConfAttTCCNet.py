@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 
-from classes.tasks.ccc.multiframe.modules.ConfAttTCCNet import ConfAttTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.modules.ConfAttTCCNet import ConfAttTCCNet
 from functional.utils import rand_uniform
 
 

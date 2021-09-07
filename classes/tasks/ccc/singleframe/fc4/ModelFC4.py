@@ -4,7 +4,7 @@ from typing import Union, Tuple
 from torch import Tensor
 
 from classes.core.Model import Model
-from classes.tasks.ccc.singleframe.modules.fc4.FC4 import FC4
+from fc4.FC4 import FC4
 
 
 class ModelFC4(Model, ABC):
