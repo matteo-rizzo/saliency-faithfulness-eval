@@ -16,7 +16,7 @@ from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 
 class TrainerAdvSaliencyTCCNet(TrainerCCC):
     def __init__(self, sal_dim: str, path_to_log: str, path_to_pred: str, path_to_sal: str,
-                 val_frequency: int = 5, save_vis: bool = False):
+                 save_vis: bool = False, val_frequency: int = 5):
         super().__init__(path_to_log, val_frequency)
 
         self.__sal_dim = sal_dim
