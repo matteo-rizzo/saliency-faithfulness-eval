@@ -11,5 +11,5 @@ class ComplLoss(Loss):
 
     def _compute(self, img1: Tensor, img2: Tensor) -> Tensor:
         one = torch.ones_like(img1).to(self._device)
-        compl = one - (img1 + img2)
-        return torch.mean(LA.matrix_norm(compl, ord=1).to(self._device), dim=0)
+        compl = (one - (img1 + img2)).to(self._device)
+        return LA.matrix_norm(compl, ord=1).sum().unsqueeze(0)

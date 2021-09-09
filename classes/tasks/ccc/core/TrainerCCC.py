@@ -21,7 +21,6 @@ class TrainerCCC(Trainer):
             self._train_loss.update(tl)
             if i % 5 == 0:
                 print("[ Epoch: {} - Batch: {} ] | Loss: {:.4f} ".format(epoch + 1, i, tl))
-                break
 
     def _eval_epoch(self, model: ModelCCC, data: DataLoader, *args, **kwargs):
         for i, (x, y, _) in enumerate(data):
@@ -32,7 +31,6 @@ class TrainerCCC(Trainer):
             self._metrics_tracker.add_error(vl)
             if i % 5 == 0:
                 print("[ Batch: {} ] | Loss: {:.4f} ]".format(i, vl))
-                break
 
     def _check_metrics(self):
         """ Computes, prints and logs the current metrics using the metrics tracker """

@@ -9,7 +9,7 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 declare path_to_script="eval/tests/adv/adv_test_tccnet.py"
 
 # Values: 0.00005 0.0005 0.005 0.05
-declare -a lambdas=(0.005 0.05)
+declare -a lambdas=(0.005)
 
 # Values: "att" "conf" "conf_att"
 declare -a sal_types=("att")

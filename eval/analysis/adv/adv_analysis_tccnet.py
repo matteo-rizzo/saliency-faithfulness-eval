@@ -15,7 +15,8 @@ from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTC
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from functional.metrics import spat_divergence, temp_divergence
 
 
 def print_metrics(metrics_base: Dict, metrics_adv: Dict):
@@ -48,16 +49,18 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
         if sal_dim in ["spat", "spatiotemp"]:
             spat_sal_base = load_from_file(os.path.join(path_to_sal, "spat", file_name))
             spat_loss = adv_model.get_adv_spat_loss(spat_sal_base, spat_sal_adv)
-            spat_div = spat_loss["adv"].item()
+            spat_div = spat_divergence(spat_sal_base, spat_sal_adv)
             spat_divs.append(spat_div)
             spat_log = " - ".join(["{}: {:.4f}".format(k, v.item()) for k, v in spat_loss.items()])
-            div_log += ["spat: ( {} )".format(spat_log)]
+            div_log += ["spat_div: {:.4f} ( {} )".format(spat_div, spat_log)]
 
         if sal_dim in ["temp", "spatiotemp"]:
             temp_sal_base = load_from_file(os.path.join(path_to_sal, "temp", file_name))
-            temp_div = adv_model.get_adv_temp_loss(temp_sal_base, temp_sal_adv)["adv"].item()
+            temp_loss = adv_model.get_adv_temp_loss(temp_sal_base, temp_sal_adv)
+            temp_div = temp_divergence(temp_sal_base, temp_sal_adv)
             temp_divs.append(temp_div)
-            div_log += ["temp: {:.4f}".format(temp_div)]
+            temp_log = " - ".join(["{}: {:.4f}".format(k, v.item()) for k, v in temp_loss.items()])
+            div_log += ["temp_div: {:.4f} ( {} )".format(temp_div, temp_log)]
 
         loss_base, loss_adv = model.get_loss(pred_base, y).item(), model.get_loss(pred_adv, y).item()
 

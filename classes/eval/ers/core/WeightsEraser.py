@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from numpy import prod
 from torch import Tensor
+from torch.nn.functional import normalize
 
 from auxiliary.settings import DEVICE
 
@@ -75,6 +76,7 @@ class WeightsEraser:
         indices = self.__fetch_indices(saliency_mask, n)
         val = saliency_mask[indices]
         saliency_mask[indices] = 0
+        saliency_mask = normalize(saliency_mask, p=1, dim=0)
 
         saliency_mask = saliency_mask.view(s)
 

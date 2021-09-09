@@ -9,16 +9,16 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 declare path_to_script="eval/tests/ers/ers_test_tccnet.py"
 
 # Values: "att" "conf" "conf_att"
-declare -a sal_types=("conf")
+declare -a sal_types=("conf" "conf_att")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
-declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
+declare -a dirs=("tcc_split")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("spat" "temp")
+declare -a sal_dims=("spatiotemp")
 
 # Values: "single" "multi"
-declare -a erasures=("multi")
+declare -a erasures=("single")
 
 for sal_type in "${sal_types[@]}"; do
   for dir in "${dirs[@]}"; do
