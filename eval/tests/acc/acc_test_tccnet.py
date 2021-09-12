@@ -21,7 +21,7 @@ def main(ns: argparse.Namespace):
     save_settings(ns, path_to_log)
 
     print("\n Loading data from '{}':".format(data_folder))
-    data_loader = DataHandlerTCC().get_loader(train=False, data_folder=data_folder)
+    data_loader = DataHandlerTCC().get_loader(train=use_train_set, data_folder=data_folder)
 
     model = ModelUniformSaliencyTCCNet if use_uniform else ModelSaliencyTCCNet
     model = model(sal_type, sal_dim, hidden_size, kernel_size)

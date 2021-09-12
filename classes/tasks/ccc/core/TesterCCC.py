@@ -35,7 +35,7 @@ class TesterCCC(Tester):
                 print("[ Batch: {} ] | Loss: {:.4f} ]".format(i, tl))
 
     def _save_pred2npy(self, pred: Tensor, file_name: str):
-        np.save(os.path.join(self._path_to_pred, file_name), pred.numpy())
+        np.save(os.path.join(self._path_to_pred, file_name), pred.cpu().numpy())
 
     def _check_metrics(self):
         metrics = self._metrics_tracker.compute_metrics()

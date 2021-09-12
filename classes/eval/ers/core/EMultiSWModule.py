@@ -43,7 +43,7 @@ class EMultiSWModule(ESWModule):
 
     @overloads(ESWModule._save_grad)
     def _save_grad(self, grad: List, saliency_type: str, *args, **kwargs):
-        grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).numpy()
+        grad = torch.cat([grad[j].view(1, -1) for j in range(len(grad))], dim=0).cpu().numpy()
 
         base_path_to_grad = os.path.join(self._path_to_sw_grad_log, saliency_type)
         os.makedirs(base_path_to_grad, exist_ok=True)

@@ -48,6 +48,6 @@ class TesterSaliencyTCCNet(TesterTCCNet):
 
     def _save_sal2npy(self, sal: Tuple, file_name: str):
         if self._sal_dim in ["spat", "spatiotemp"]:
-            np.save(os.path.join(self._path_to_spat_sal, file_name), sal[0].numpy())
+            np.save(os.path.join(self._path_to_spat_sal, file_name), sal[0].cpu().numpy())
         if self._sal_dim in ["temp", "spatiotemp"]:
-            np.save(os.path.join(self._path_to_temp_sal, file_name), sal[1].numpy())
+            np.save(os.path.join(self._path_to_temp_sal, file_name), sal[1].cpu().numpy())
