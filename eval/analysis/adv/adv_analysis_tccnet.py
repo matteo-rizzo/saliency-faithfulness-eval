@@ -110,7 +110,7 @@ def main(ns: argparse.Namespace):
     path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time.time()))
 
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
-    path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "att")
+    path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "sal")
     path_to_adv = os.path.join("results", "adv", sal_dim, sal_type + "_tccnet", data_folder)
 
     network = NetworkCCCFactory().get(sal_type + "_tccnet")(hidden_size, kernel_size, sal_dim)

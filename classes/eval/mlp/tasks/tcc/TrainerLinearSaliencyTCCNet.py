@@ -13,7 +13,7 @@ from classes.tasks.ccc.core.TrainerCCC import TrainerCCC
 class TrainerLinearSaliencyTCCNet(TrainerCCC):
 
     def __init__(self, path_to_log: str, path_to_pretrained: str, sal_dim: str):
-        self.__path_to_sw = os.path.join(path_to_pretrained, "att")
+        self.__path_to_sw = os.path.join(path_to_pretrained, "sal")
         self.__sal_dim = sal_dim
         super().__init__(path_to_log)
 

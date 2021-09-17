@@ -9,7 +9,7 @@ from classes.eval.adv.tasks.tcc.TrainerAdvSaliencyTCCNet import TrainerAdvSalien
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
-""" Run test JW1/WP3 """
+""" Run test WP3 """
 
 
 def main(ns: argparse.Namespace):
@@ -25,7 +25,7 @@ def main(ns: argparse.Namespace):
     save_settings(ns, path_to_log)
 
     path_to_pred = os.path.join(path_to_pretrained, "pred")
-    path_to_sal = os.path.join(path_to_pretrained, "att")
+    path_to_sal = os.path.join(path_to_pretrained, "sal")
 
     network = NetworkCCCFactory().get(sal_type + "_tccnet")(hidden_size, kernel_size, sal_dim)
     adv_model = AdvModelSaliencyTCCNet(network, adv_lambda)

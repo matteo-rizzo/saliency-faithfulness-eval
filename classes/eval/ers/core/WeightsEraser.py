@@ -48,7 +48,7 @@ class WeightsEraser:
         return grad.to(self.__device)
 
     def __load_saliency_mask(self) -> Tensor:
-        path_to_mask = os.path.join(self.__path_to_model_dir, "att", self.__sal_dim, self.__curr_filename)
+        path_to_mask = os.path.join(self.__path_to_model_dir, "sal", self.__sal_dim, self.__curr_filename)
         return torch.from_numpy(np.load(path_to_mask, allow_pickle=True)).to(self.__device)
 
     def __check_n(self, sal_mask: Tensor, n: int):
