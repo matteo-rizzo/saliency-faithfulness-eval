@@ -9,7 +9,7 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED
+from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED, PATH_TO_RESULTS
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header, SEPARATOR
 from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
@@ -111,7 +111,7 @@ def main(ns: argparse.Namespace):
 
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
     path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "sal")
-    path_to_adv = os.path.join("results", "adv", sal_dim, sal_type + "_tccnet", data_folder)
+    path_to_adv = os.path.join(PATH_TO_RESULTS, "adv", sal_dim, sal_type, data_folder)
 
     network = NetworkCCCFactory().get(sal_type + "_tccnet")(hidden_size, kernel_size, sal_dim)
     adv_model = AdvModelSaliencyTCCNet(network)

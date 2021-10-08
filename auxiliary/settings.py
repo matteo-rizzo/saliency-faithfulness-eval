@@ -14,7 +14,7 @@ DEVICE = get_device(DEVICE_TYPE)
 # --- PATHS ---
 
 BASE_PATH = os.path.join("/media", "matteo", "Extreme SSD")
-PATH_TO_RESULTS = os.path.join(BASE_PATH, "results", "faithful-attention-eval")
 PATH_TO_DATASET = os.path.join(BASE_PATH, "dataset", "ccc")
-PATH_TO_PRETRAINED = os.path.join("trained_models")
+PATH_TO_PRETRAINED = os.path.join(BASE_PATH, "models", "ccc", "500epochs")
+PATH_TO_RESULTS = os.path.join(BASE_PATH, "results", "500epochs")
 PATH_TO_PLOTS = "plots"

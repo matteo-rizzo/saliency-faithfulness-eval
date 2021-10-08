@@ -1,6 +1,7 @@
 import math
 from typing import List
 
+import numpy as np
 import torch
 from pytorch_msssim import SSIM
 from scipy.spatial.distance import jensenshannon
@@ -10,6 +11,7 @@ from torch import linalg as LA
 from torch.nn.functional import interpolate, binary_cross_entropy
 
 from auxiliary.settings import DEVICE
+from functional.image_processing import scale
 
 
 def angular_error(x: Tensor, y: Tensor, safe_v: float = 0.999999) -> Tensor:
@@ -50,12 +52,18 @@ def iou(a1: Tensor, a2: Tensor, eps: float = 0.000000000000001) -> float:
 
 def spat_divergence(a1: Tensor, a2: Tensor) -> float:
     """ Divergence between two sets of spatial saliency weights """
+    a1, a2 = scale(a1), scale(a2)
     a1_compl = torch.ones_like(a1).to(DEVICE) - a1
-    bce_val, ssim_val, iou_val = binary_cross_entropy(a2, a1_compl).item(), SSIM(a2, a1_compl).item(), iou(a2, a1_compl)
+    bce_val = binary_cross_entropy(a2, a1_compl).item()
+    ssim_val = SSIM(data_range=1, channel=1)(a2, a1_compl).item()
+    iou_val = iou(a2, a1_compl)
     compl_val = complementarity(a1, a2)
     return bce_val + ssim_val + iou_val + compl_val
 
 
 def temp_divergence(a1: Tensor, a2: Tensor) -> float:
     """ Divergence between two sets of temporal saliency weights """
-    return entropy(a1, a2)
+    e = entropy(a1.detach(), a2.detach(), axis=-1 if a1.shape[-1] != 1 else 0)
+    if isinstance(e, np.ndarray):
+        e = e.mean()
+    return e

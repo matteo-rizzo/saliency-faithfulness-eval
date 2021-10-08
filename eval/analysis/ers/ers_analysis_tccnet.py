@@ -2,7 +2,7 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import RANDOM_SEED
+from auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
 from auxiliary.utils import make_deterministic, print_namespace, experiment_header, save_settings
 from eval.analysis.ers.multi_ers_analysis_tccnet import multi_we_analysis
 from eval.analysis.ers.single_ers_analysis_tccnet import single_we_analysis
@@ -16,7 +16,7 @@ def main(ns: argparse.Namespace):
     os.makedirs(path_to_log)
     save_settings(ns, path_to_log)
 
-    path_to_results = os.path.join("results", "ers", test_type, sal_dim, sal_type + "_tccnet", data_folder)
+    path_to_results = os.path.join(PATH_TO_RESULTS, "ers", test_type, sal_dim, sal_type, data_folder)
     print("\n Fetching test data at ... : {}".format(path_to_results))
 
     experiment_header("{} weights erasure".format(test_type.capitalize()))
