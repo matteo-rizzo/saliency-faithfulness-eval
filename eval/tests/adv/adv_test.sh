@@ -1,10 +1,6 @@
-#!/bin/bash
-
-# This script runs the training of the adversarial model for each of the selected lambda values (JW1-WP3)
-
 pwd
 source venv/bin/activate
-export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
+export PYTHONPATH=$PYTHONPATH:/projects/def-conati/marizzo/xai/adv-faithful-attention-eval/
 
 declare path_to_script="eval/tests/adv/adv_test_tccnet.py"
 
@@ -12,7 +8,7 @@ declare path_to_script="eval/tests/adv/adv_test_tccnet.py"
 declare -a lambdas=(0.005)
 
 # Values: "att" "conf" "conf_att"
-declare -a sal_types=("att")
+declare -a sal_types=("conf")
 
 # Values: "spatiotemp" "spat" "temp"
 declare -a sal_dims=("spatiotemp")

@@ -44,16 +44,20 @@ def make_plot(sal_diffs: List, errs: List, sal_dim: str, color: str, path_to_log
     plt.clf()
 
 
-def print_stats(num_neg_err_diffs: int, num_flips: Dict, n: int):
+def print_stats(num_neg_err_diffs: int, num_flips: Dict, path_to_log: str, n: int):
+    data = {
+        "neg_diffs": [num_neg_err_diffs / n * 100],
+        "flip_max_math": [num_flips["max"]["math"] / n * 100], "flip_max_perc": [num_flips["max"]["perc"] / n * 100],
+        "flip_rand_math": [num_flips["rand"]["math"] / n * 100], "flip_rand_perc": [num_flips["rand"]["perc"] / n * 100]
+    }
     print("\n" + SEPARATOR["stars"])
-    print(" Num neg err diff (max - rand): {}%".format(num_neg_err_diffs / n * 100))
+    print(" Num neg err diff (max - rand): {}%".format(data["neg_diffs"]))
     print("\n" + SEPARATOR["dots"])
     print(" Decision flips:")
-    max_math, max_perc = num_flips["max"]["math"] / n * 100, num_flips["max"]["perc"] / n * 100
-    print(" \t Max: .... [ math: {}% - perc: {}% ]".format(max_math, max_perc))
-    rand_math, rand_perc = num_flips["rand"]["math"] / n * 100, num_flips["rand"]["perc"] / n * 100
-    print(" \t Rand: ... [ math: {}% - perc: {}% ]".format(rand_math, rand_perc))
+    print(" \t Max: .... [ math: {}% - perc: {}% ]".format(data["flip_max_math"], data["flip_max_perc"]))
+    print(" \t Rand: ... [ math: {}% - perc: {}% ]".format(data["flip_rand_math"], data["flip_rand_perc"]))
     print(SEPARATOR["stars"] + "\n")
+    pd.DataFrame(data).to_csv(os.path.join(path_to_log, "data.csv"), index=False)
 
 
 def single_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
@@ -83,4 +87,4 @@ def single_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
     if sal_dim in ["temp", "spatiotemp"]:
         make_plot(sal_diffs_temp, errs, sal_dim, "blue", path_to_log)
 
-    print_stats(num_neg_err_diffs, num_flips, n=len(filenames))
+    print_stats(num_neg_err_diffs, num_flips, path_to_log, n=len(filenames))

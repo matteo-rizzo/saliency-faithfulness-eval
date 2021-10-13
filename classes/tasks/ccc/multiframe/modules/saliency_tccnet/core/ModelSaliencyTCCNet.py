@@ -9,7 +9,7 @@ from functional.error_handling import check_sal_type_support, check_sal_dim_supp
 
 class ModelSaliencyTCCNet(ModelCCC):
 
-    def __init__(self, sal_type: str, sal_dim: str, hidden_size: int, kernel_size: int):
+    def __init__(self, sal_type: str, sal_dim: str, hidden_size: int = 128, kernel_size: int = 5):
         super().__init__()
         check_sal_type_support(sal_type)
         check_sal_dim_support(sal_dim)

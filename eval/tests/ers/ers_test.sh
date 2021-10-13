@@ -1,10 +1,6 @@
-#!/bin/bash
-
-# This script runs the intermediate representation erasure tests (SS1-SS2)
-
 pwd
 source venv/bin/activate
-export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
+export PYTHONPATH=$PYTHONPATH:/projects/def-conati/marizzo/xai/ers-faithful-attention-eval/
 
 declare path_to_script="eval/tests/ers/ers_test_tccnet.py"
 

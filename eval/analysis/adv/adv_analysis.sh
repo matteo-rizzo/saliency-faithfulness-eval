@@ -13,7 +13,7 @@ declare -a sal_types=("conf" "conf_att")
 declare -a data_folders=("tcc_split")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("spatiotemp")
+declare -a sal_dims=("temp")
 
 for sal_type in "${sal_types[@]}"; do
   for sal_dim in "${sal_dims[@]}"; do

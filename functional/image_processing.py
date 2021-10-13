@@ -92,10 +92,10 @@ def scale(x: Tensor) -> Tensor:
     https://discuss.pytorch.org/t/how-to-efficiently-normalize-a-batch-of-tensor-to-0-1/65122/10
     """
     shape = x.shape
-    x = x.view(x.shape[0], -1)
+    x = x.reshape(x.shape[0], -1)
     x = x - x.min(1, keepdim=True)[0]
     x = x / (x.max(1, keepdim=True)[0] + Tensor([0.0000000000001]).to(DEVICE))
-    x = x.view(shape)
+    x = x.reshape(shape)
     return x
 
 

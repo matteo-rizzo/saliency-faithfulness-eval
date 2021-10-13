@@ -1,7 +1,9 @@
+import json
 import os
 from typing import List, Dict
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 
@@ -18,7 +20,7 @@ def check_decision_flips(num_flips: Dict, item_data: pd.DataFrame, rankings: Lis
 def update_percents(data: pd.DataFrame, sal_dim: str, ranking: str, wp: Dict, ns: int, nt: int, ft: str) -> Dict:
     if sal_dim in ["spat", "temp"]:
         mask_size = data["mask_size"].unique().item()
-        wp[sal_dim][ranking][ft] = ns if sal_dim == "spat" else nt / mask_size * 100
+        wp[sal_dim][ranking][ft] = nt / mask_size * 100
     else:
         spat_mask_size = data["spat_mask_size"].unique().item()
         wp["spat"][ranking][ft] = ns / spat_mask_size * 100
@@ -76,7 +78,7 @@ def make_plot(sal_dim: str, weights_percents: Dict, rankings: List, path_to_log:
         if show:
             plt.show()
         else:
-            plt.savefig(os.path.join(path_to_log, "spat"))
+            plt.savefig(os.path.join(path_to_log, "spat"), bbox_inches="tight")
         plt.clf()
     if sal_dim in ["temp", "spatiotemp"]:
         pd.DataFrame(temp_data).boxplot(column=list(temp_data.keys()))
@@ -84,7 +86,7 @@ def make_plot(sal_dim: str, weights_percents: Dict, rankings: List, path_to_log:
         if show:
             plt.show()
         else:
-            plt.savefig(os.path.join(path_to_log, "temp"))
+            plt.savefig(os.path.join(path_to_log, "temp"), bbox_inches="tight")
         plt.clf()
         plt.close("all")
 
@@ -110,3 +112,12 @@ def multi_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
                 weights_percents["temp"][ranking]["perc"].append(item_weights_percents["temp"][ranking]["perc"])
 
     make_plot(sal_dim, weights_percents, rankings, path_to_log)
+
+    for ranking in rankings:
+        if sal_dim in ["spat", "spatiotemp"]:
+            weights_percents["spat"][ranking]["math"] = np.mean(weights_percents["spat"][ranking]["math"])
+            weights_percents["spat"][ranking]["perc"] = np.mean(weights_percents["spat"][ranking]["perc"])
+        if sal_dim in ["temp", "spatiotemp"]:
+            weights_percents["temp"][ranking]["math"] = np.mean(weights_percents["temp"][ranking]["math"])
+            weights_percents["temp"][ranking]["perc"] = np.mean(weights_percents["temp"][ranking]["perc"])
+    json.dump(weights_percents, open(os.path.join(path_to_log, "weights_percents.json"), 'w'), indent=2)

@@ -2,7 +2,7 @@ import os
 from typing import Union, Tuple
 
 import torch
-from torch import Tensor, optim
+from torch import Tensor, optim, nn
 
 from auxiliary.settings import DEVICE
 from auxiliary.utils import SEPARATOR, overload
@@ -34,6 +34,9 @@ class Model:
 
     def log_network(self, path_to_log: str):
         open(os.path.join(path_to_log, "network.txt"), 'a+').write(str(self._network))
+
+    def get_network(self) -> nn.Module:
+        return self._network
 
     def get_loss(self, pred: Tensor, label: Tensor) -> Tensor:
         return self._criterion(pred, label)
