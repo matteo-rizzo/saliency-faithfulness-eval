@@ -1,35 +1,21 @@
 import argparse
 import os
-import time
+from time import time
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
-from torch import Tensor
 from torch.utils.data import DataLoader
 
 from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED, PATH_TO_RESULTS
-from auxiliary.utils import make_deterministic, print_namespace, experiment_header, SEPARATOR
+from auxiliary.utils import make_deterministic, print_namespace, experiment_header
 from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
-from functional.metrics import spat_divergence, temp_divergence
-
-
-def print_metrics(metrics_base: Dict, metrics_adv: Dict):
-    print("\n" + SEPARATOR["dashes"])
-    for (mn, mv_base), mv_adv in zip(metrics_base.items(), metrics_adv.values()):
-        print((" {} " + "".join(["."] * (15 - len(mn))) + " : [ Base: {:.4f} - Adv: {:.4f} ]")
-              .format(mn.capitalize(), mv_base, mv_adv))
-    print(SEPARATOR["dashes"] + "\n")
-
-
-def load_from_file(path_to_item: str) -> Tensor:
-    item = np.load(os.path.join(path_to_item), allow_pickle=True)
-    return torch.from_numpy(item).squeeze(0).to(DEVICE)
+from functional.metrics import spat_divergence, temp_divergence, print_metrics_comparison
+from functional.utils import load_from_file
 
 
 def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, data: DataLoader,
@@ -71,7 +57,7 @@ def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, d
             print("[ Batch: {} ] || Loss: [ Base: {:.4f} - Adv: {:.4f} ] || Div: [ Pred: {:.4f} | {} ]"
                   .format(i, loss_base, loss_adv, pred_div, " | ".join(div_log)))
 
-    print_metrics(mt_base.compute_metrics(), mt_adv.compute_metrics())
+    print_metrics_comparison(mt_base.compute_metrics(), mt_adv.compute_metrics())
 
     return {"pred": np.mean(pred_divs), "spat": np.mean(spat_divs), "temp": np.mean(temp_divs)}
 
@@ -89,7 +75,7 @@ def make_plot(adv_scores: Dict, adv_lambdas: List, sal_dim: str, path_to_log: st
         for i, l in enumerate(adv_lambdas):
             plt.annotate(l, (adv_scores["temp_divs"][i], pred_divs[i]))
 
-    plt.xlabel("Attention Divergence")
+    plt.xlabel("Saliency Divergence")
     plt.ylabel("Predictions Angular Error")
     if show:
         plt.show()
@@ -107,7 +93,7 @@ def main(ns: argparse.Namespace):
 
     path_to_log = os.path.join("eval", "analysis", "adv", "logs")
     os.makedirs(path_to_log, exist_ok=True)
-    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time.time()))
+    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time()))
 
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
     path_to_pred, path_to_sal = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "sal")

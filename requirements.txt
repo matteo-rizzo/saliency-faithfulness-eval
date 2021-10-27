@@ -1,11 +1,11 @@
-numpy==1.21.2
+numpy==1.21.3
 torch==1.9.1
-pandas==1.3.3
+pandas==1.3.4
 torchvision==0.10.1
-pillow==8.3.2
+pillow==8.4.0
 scipy~=1.7.0
 matplotlib~=3.4.2
 pytorch-msssim
-opencv-python==4.5.3.56
+opencv-python==4.5.4.58
 seaborn~=0.11.1
 tqdm~=4.62.2

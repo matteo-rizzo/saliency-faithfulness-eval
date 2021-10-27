@@ -6,6 +6,7 @@ import pandas as pd
 from torch import Tensor
 from torch.utils.data import DataLoader
 
+from auxiliary.settings import DEFAULT_METRICS_FILE
 from classes.core.Model import Model
 from classes.core.Tester import Tester
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
@@ -15,7 +16,7 @@ class TesterCCC(Tester):
 
     def __init__(self, path_to_log: str, log_frequency: int = 5, save_pred: bool = False):
         super().__init__(path_to_log, log_frequency, save_pred, MetricsTrackerCCC())
-        self._path_to_metrics = os.path.join(path_to_log, "metrics.csv")
+        self._path_to_metrics = os.path.join(path_to_log, DEFAULT_METRICS_FILE)
 
     def _eval(self, model: Model, data: DataLoader, *args, **kwargs):
         for i, (x, y, path_to_x) in enumerate(data):

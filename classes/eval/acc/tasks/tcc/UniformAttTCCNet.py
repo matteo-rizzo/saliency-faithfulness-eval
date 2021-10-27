@@ -12,7 +12,7 @@ class UniformAttTCCNet(AttTCCNet):
 
     @staticmethod
     def _apply_spat_weights(x: Tensor, mask: Tensor, *args, **kwargs) -> Tensor:
-        return (x * rand_uniform(mask)).clone()
+        return (x * rand_uniform(mask, apply_softmax=False)).clone()
 
     @staticmethod
     def _apply_temp_weights(x: Tensor, mask: Tensor, time_steps: int, *args, **kwargs) -> Tensor:

@@ -4,6 +4,7 @@ from typing import Dict
 import pandas as pd
 from torch.utils.data import DataLoader
 
+from auxiliary.settings import DEFAULT_METRICS_FILE
 from classes.core.Trainer import Trainer
 from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 from classes.tasks.ccc.core.ModelCCC import ModelCCC
@@ -12,7 +13,7 @@ from classes.tasks.ccc.core.ModelCCC import ModelCCC
 class TrainerCCC(Trainer):
     def __init__(self, path_to_log: str, val_frequency: int = 5):
         super().__init__(path_to_log=path_to_log, metrics_tracker=MetricsTrackerCCC(), val_frequency=val_frequency)
-        self._path_to_metrics = os.path.join(path_to_log, "metrics.csv")
+        self._path_to_metrics = str(os.path.join(path_to_log, DEFAULT_METRICS_FILE))
 
     def _train_epoch(self, model: ModelCCC, data: DataLoader, epoch: int, *args, **kwargs):
         for i, (x, y, _) in enumerate(data):

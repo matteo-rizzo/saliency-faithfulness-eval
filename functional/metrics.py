@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import torch
@@ -11,10 +11,11 @@ from torch import linalg as LA
 from torch.nn.functional import interpolate, binary_cross_entropy
 
 from auxiliary.settings import DEVICE
+from auxiliary.utils import SEPARATOR
 from functional.image_processing import scale
 
 
-def angular_error(x: Tensor, y: Tensor, safe_v: float = 0.999999) -> Tensor:
+def angular_error(x: Tensor, y: Tensor, safe_v: float = 0.999999) -> float:
     x, y = torch.nn.functional.normalize(x, dim=1), torch.nn.functional.normalize(y, dim=1)
     dot = torch.clamp(torch.sum(x * y, dim=1), -safe_v, safe_v)
     angle = torch.acos(dot) * (180 / math.pi)
@@ -50,7 +51,7 @@ def iou(a1: Tensor, a2: Tensor, eps: float = 0.000000000000001) -> float:
     return torch.mean(intersection / (union + eps)).item()
 
 
-def spat_divergence(a1: Tensor, a2: Tensor) -> float:
+def spat_divergence(a1: Tensor, a2: Tensor, use_compl: bool = True) -> float:
     """ Divergence between two sets of spatial saliency weights """
     a1, a2 = scale(a1), scale(a2)
     a1_compl = torch.ones_like(a1).to(DEVICE) - a1
@@ -58,7 +59,7 @@ def spat_divergence(a1: Tensor, a2: Tensor) -> float:
     ssim_val = SSIM(data_range=1, channel=1)(a2, a1_compl).item()
     iou_val = iou(a2, a1_compl)
     compl_val = complementarity(a1, a2)
-    return bce_val + ssim_val + iou_val + compl_val
+    return bce_val + ssim_val + iou_val + compl_val if use_compl else 0
 
 
 def temp_divergence(a1: Tensor, a2: Tensor) -> float:
@@ -67,3 +68,16 @@ def temp_divergence(a1: Tensor, a2: Tensor) -> float:
     if isinstance(e, np.ndarray):
         e = e.mean()
     return e
+
+
+def print_metrics(metrics: Dict):
+    for mn, mv in metrics.items():
+        print((" {} " + "".join(["."] * (15 - len(mn))) + " : {:.4f}").format(mn.capitalize(), mv))
+
+
+def print_metrics_comparison(m1: Dict, m2: Dict):
+    print("\n" + SEPARATOR["dashes"])
+    for (mn, mv1), mv2 in zip(m1.items(), m2.values()):
+        print((" {} " + "".join(["."] * (15 - len(mn))) + " : [ Base: {:.4f} - Comparing: {:.4f} ]")
+              .format(mn.capitalize(), mv1, mv2))
+    print(SEPARATOR["dashes"] + "\n")

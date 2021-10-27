@@ -18,3 +18,4 @@ PATH_TO_DATASET = os.path.join(BASE_PATH, "dataset", "ccc")
 PATH_TO_PRETRAINED = os.path.join(BASE_PATH, "models", "faithful-attention-eval")
 PATH_TO_RESULTS = os.path.join(BASE_PATH, "results", "faithful-attention-eval", "tests")
 PATH_TO_PLOTS = "plots"
+DEFAULT_METRICS_FILE = "metrics.csv"
