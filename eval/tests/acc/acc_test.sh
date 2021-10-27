@@ -5,13 +5,13 @@ export PYTHONPATH=$PYTHONPATH:/projects/def-conati/marizzo/xai/ers-faithful-atte
 declare path_to_script=eval/tests/acc/acc_test_tccnet.py
 
 # Values: "att" "conf" "conf_att"
-declare -a sal_types=("att")
+declare -a sal_types=("att" "conf" "conf_att")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
-declare -a data_folders=("tcc_split")
+declare -a data_folders=("tcc_split" "fold_0" "fold_1" "fold_2")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("spat")
+declare -a sal_dims=("spatiotemp" "spat" "temp")
 
 for sal_type in "${sal_types[@]}"; do
   for data_folder in "${data_folders[@]}"; do
