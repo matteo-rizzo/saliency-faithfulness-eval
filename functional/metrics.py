@@ -59,7 +59,7 @@ def spat_divergence(a1: Tensor, a2: Tensor, use_compl: bool = True) -> float:
     ssim_val = SSIM(data_range=1, channel=1)(a2, a1_compl).item()
     iou_val = iou(a2, a1_compl)
     compl_val = complementarity(a1, a2)
-    return bce_val + ssim_val + iou_val + compl_val if use_compl else 0
+    return bce_val + ssim_val + iou_val + (compl_val if use_compl else 0)
 
 
 def temp_divergence(a1: Tensor, a2: Tensor) -> float:

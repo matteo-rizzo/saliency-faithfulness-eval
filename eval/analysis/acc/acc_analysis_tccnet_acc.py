@@ -46,7 +46,7 @@ def main(ns: argparse.Namespace):
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
     path_to_pred_base, path_to_sal_base = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "sal")
 
-    path_to_rand = os.path.join(PATH_TO_RESULTS, "uniform", sal_dim, sal_type, data_folder)
+    path_to_rand = os.path.join(PATH_TO_RESULTS, "acc", sal_dim, sal_type, data_folder)
     path_to_pred_rand, path_to_sal_rand = os.path.join(path_to_rand, "pred"), os.path.join(path_to_rand, "sal")
 
     data = DataHandlerTCC().get_loader(train=False, data_folder=data_folder)

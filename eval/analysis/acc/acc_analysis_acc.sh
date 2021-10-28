@@ -10,7 +10,7 @@ declare path_to_script="eval/analysis/acc/acc_analysis_tccnet_acc.py"
 declare -a sal_types=("att" "conf" "conf_att")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("spat")
+declare -a sal_dims=("spatiotemp" "spat" "temp")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
 declare -a splits=("tcc_split" "fold_0" "fold_1" "fold_2")
