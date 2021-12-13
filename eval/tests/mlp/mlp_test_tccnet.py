@@ -3,7 +3,8 @@ import os
 import time
 
 from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import make_deterministic, print_namespace, infer_path, experiment_header, save_settings
+from auxiliary.utils import make_deterministic, print_namespace, infer_path_to_pretrained, experiment_header, \
+    save_settings
 from classes.eval.mlp.tasks.tcc.ModelLinearSaliencyTCCNet import ModelLinearSaliencyTCCNet
 from classes.eval.mlp.tasks.tcc.TrainerLinearSaliencyTCCNet import TrainerLinearSaliencyTCCNet
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
@@ -35,16 +36,16 @@ if __name__ == '__main__':
     parser.add_argument("--data_folder", type=str, default="tcc_split")
     parser.add_argument("--sal_type", type=str, default="att")
     parser.add_argument('--sal_dim', type=str, default="spat")
-    parser.add_argument("--mode", type=str, default="deactivate")
+    parser.add_argument("--mode", type=str, default="baseline")
     parser.add_argument("--epochs", type=int, default="1000")
     parser.add_argument('--lr', type=float, default="0.0003")
     parser.add_argument('--path_to_pretrained', type=str, default=PATH_TO_PRETRAINED)
-    parser.add_argument('--infer_path', action="store_true")
+    parser.add_argument('--infer_path_to_pretrained', action="store_true")
     namespace = parser.parse_args()
 
     make_deterministic(namespace.random_seed)
-    if namespace.infer_path:
-        namespace.path_to_pretrained = infer_path(namespace)
+    if namespace.infer_path_to_pretrained:
+        namespace.path_to_pretrained = infer_path_to_pretrained(namespace)
     print_namespace(namespace)
 
     main(namespace)

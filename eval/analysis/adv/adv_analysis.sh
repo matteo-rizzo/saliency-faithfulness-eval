@@ -7,13 +7,13 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 declare path_to_script="eval/analysis/adv/adv_analysis_tccnet.py"
 
 # Values: "att" "conf" "conf_att"
-declare -a sal_types=("conf" "conf_att")
+declare -a sal_types=("att" "conf" "conf_att")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
-declare -a data_folders=("tcc_split")
+declare -a data_folders=("tcc_split" "fold_0" "fold_1" "fold_2")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("temp")
+declare -a sal_dims=("spatiotemp" "spat" "temp")
 
 for sal_type in "${sal_types[@]}"; do
   for sal_dim in "${sal_dims[@]}"; do

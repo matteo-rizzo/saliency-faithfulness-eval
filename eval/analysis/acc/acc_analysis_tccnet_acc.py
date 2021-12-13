@@ -13,6 +13,8 @@ from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 from functional.metrics import angular_error, spat_divergence, temp_divergence
 from functional.utils import load_from_file
 
+DATA_FOLDERS = ["tcc_split", "fold_0", "fold_1", "fold_2"]
+
 
 def make_plot(pred_divs: List, sal_divs: Tuple, sal_dim: str, path_to_log: str, show: bool = True):
     if sal_dim in ["spat", "spatiotemp"]:
@@ -33,16 +35,7 @@ def make_plot(pred_divs: List, sal_divs: Tuple, sal_dim: str, path_to_log: str, 
     plt.clf()
 
 
-def main(ns: argparse.Namespace):
-    sal_type, sal_dim, data_folder = ns.sal_type, ns.sal_dim, ns.data_folder
-    show_plot, hidden_size, kernel_size = ns.show_plot, ns.hidden_size, ns.kernel_size
-
-    experiment_header("Analysing Divergence in Saliency for '{}' - '{}' on '{}'".format(sal_dim, sal_type, data_folder))
-
-    path_to_log = os.path.join("eval", "analysis", "acc", "logs")
-    os.makedirs(path_to_log, exist_ok=True)
-    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time()))
-
+def data_folder_divs(data_folder: str, sal_dim: str, sal_type: str):
     path_to_base = os.path.join(PATH_TO_PRETRAINED, sal_dim, sal_type + "_tccnet", data_folder)
     path_to_pred_base, path_to_sal_base = os.path.join(path_to_base, "pred"), os.path.join(path_to_base, "sal")
 
@@ -78,6 +71,29 @@ def main(ns: argparse.Namespace):
 
         if i % 5 == 0 and i > 0:
             print("[ Batch: {} ] - Div: [ Pred: {:.4f} | {} ]".format(i, pred_div, " | ".join(div_log)))
+
+    return pred_divs, spat_divs, temp_divs
+
+
+def main(ns: argparse.Namespace):
+    sal_type, sal_dim, data_folder = ns.sal_type, ns.sal_dim, ns.data_folder
+    show_plot, hidden_size, kernel_size = ns.show_plot, ns.hidden_size, ns.kernel_size
+
+    experiment_header("Analysing Divergence in Saliency for '{}' - '{}' on '{}'".format(sal_dim, sal_type, data_folder))
+
+    path_to_log = os.path.join("eval", "analysis", "acc", "logs")
+    os.makedirs(path_to_log, exist_ok=True)
+    path_to_log = os.path.join(path_to_log, "{}_{}_{}_{}.png".format(sal_dim, sal_type, data_folder, time()))
+
+    if data_folder == "all":
+        pred_divs, spat_divs, temp_divs = [], [], []
+        for data_folder in DATA_FOLDERS:
+            pd, sd, td = data_folder_divs(data_folder, sal_dim, sal_type)
+            pred_divs += pd
+            spat_divs += sd
+            temp_divs += td
+    else:
+        pred_divs, spat_divs, temp_divs = data_folder_divs(data_folder, sal_dim, sal_type)
 
     make_plot(pred_divs, (spat_divs, temp_divs), sal_dim, path_to_log, show_plot)
 

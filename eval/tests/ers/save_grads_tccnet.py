@@ -5,7 +5,7 @@ from time import time
 import torch
 
 from auxiliary.settings import DEVICE, RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import print_namespace, make_deterministic, infer_path, experiment_header, save_settings
+from auxiliary.utils import print_namespace, make_deterministic, infer_path_to_pretrained, experiment_header, save_settings
 from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 
@@ -48,12 +48,12 @@ if __name__ == '__main__':
     parser.add_argument('--kernel_size', type=int, default=5)
     parser.add_argument('--use_train_set', action="store_true")
     parser.add_argument('--path_to_pretrained', type=str, default=PATH_TO_PRETRAINED)
-    parser.add_argument('--infer_path', action="store_true")
+    parser.add_argument('--infer_path_to_pretrained', action="store_true")
     namespace = parser.parse_args()
 
     make_deterministic(namespace.random_seed)
-    if namespace.infer_path:
-        namespace.path_to_pretrained = infer_path(namespace)
+    if namespace.infer_path_to_pretrained:
+        namespace.path_to_pretrained = infer_path_to_pretrained(namespace)
     print_namespace(namespace)
 
     main(namespace)

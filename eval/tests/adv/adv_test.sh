@@ -16,7 +16,7 @@ declare -a sal_dims=("spatiotemp")
 for lambda in "${lambdas[@]}"; do
   for sal_type in "${sal_types[@]}"; do
     for sal_dim in "${sal_dims[@]}"; do
-      python3 "$path_to_script" --sal_type "$sal_type" --sal_dim "$sal_dim" --adv_lambda "$lambda" --epochs 500 --infer_path || exit
+      python3 "$path_to_script" --sal_type "$sal_type" --sal_dim "$sal_dim" --adv_lambda "$lambda" --epochs 500 --infer_path_to_pretrained || exit
     done
   done
 done

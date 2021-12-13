@@ -72,23 +72,27 @@ def make_plot(sal_dim: str, weights_percents: Dict, rankings: List, path_to_log:
             temp_data = {**temp_data,
                          ranking + "_math": weights_percents["temp"][ranking]["math"],
                          ranking + "_perc": weights_percents["temp"][ranking]["perc"]}
+
     if sal_dim in ["spat", "spatiotemp"]:
         pd.DataFrame(spat_data).boxplot(column=list(spat_data.keys()))
         plt.xticks(rotation=90)
+        plt.tight_layout()
         if show:
             plt.show()
         else:
-            plt.savefig(os.path.join(path_to_log, "spat"), bbox_inches="tight")
+            plt.savefig(os.path.join(path_to_log, "spat"))
         plt.clf()
     if sal_dim in ["temp", "spatiotemp"]:
         pd.DataFrame(temp_data).boxplot(column=list(temp_data.keys()))
         plt.xticks(rotation=90)
+        plt.tight_layout()
         if show:
             plt.show()
         else:
-            plt.savefig(os.path.join(path_to_log, "temp"), bbox_inches="tight")
+            plt.savefig(os.path.join(path_to_log, "temp"))
         plt.clf()
         plt.close("all")
+        exit()
 
 
 def multi_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
@@ -120,4 +124,4 @@ def multi_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
         if sal_dim in ["temp", "spatiotemp"]:
             weights_percents["temp"][ranking]["math"] = np.mean(weights_percents["temp"][ranking]["math"])
             weights_percents["temp"][ranking]["perc"] = np.mean(weights_percents["temp"][ranking]["perc"])
-    json.dump(weights_percents, open(os.path.join(path_to_log, "weights_percents.json"), 'w'), indent=2)
+    pd.DataFrame(weights_percents).to_csv(os.path.join(path_to_log, "analysis.csv"))

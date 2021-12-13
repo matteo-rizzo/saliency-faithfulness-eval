@@ -15,8 +15,11 @@ class ModelLinearSaliencyTCCNet(ModelCCC):
         self._network = LinearSaliencyTCCNet(sal_dim, weights_mode).to(self._device)
 
     @overloads(Model.predict)
-    def predict(self, x: Tensor, w: Union[Tensor, Tuple], *args, **kwargs) -> Tensor:
-        return self._network(x, w)
+    def predict(self, x: Tensor, w: Union[Tensor, Tuple], return_steps: bool = False) -> Union[Tensor, Tuple]:
+        x, sw, tw = self._network(x, w)
+        if return_steps:
+            return x, sw, tw
+        return x
 
     @overloads(Model.optimize)
     def optimize(self, pred: Tensor, y: Tensor, *args, **kwargs) -> float:

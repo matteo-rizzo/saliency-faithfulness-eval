@@ -1,5 +1,6 @@
 import argparse
 import functools
+import gc
 import json
 import os
 import random
@@ -21,6 +22,8 @@ def get_device(device_type: str) -> torch.device:
             print("\n WARNING: running on cpu since device {} is not available \n".format(device_type))
             return torch.device("cpu")
 
+        gc.collect()
+        torch.cuda.empty_cache()
         print("\n Running on device '{}' \n".format(device_type))
         return torch.device(device_type)
 
@@ -42,7 +45,7 @@ def print_namespace(namespace: argparse.Namespace):
     print("\n" + SEPARATOR["dashes"] + "\n")
 
 
-def infer_path(ns: argparse.Namespace) -> str:
+def infer_path_to_pretrained(ns: argparse.Namespace) -> str:
     return os.path.join(ns.path_to_pretrained, ns.sal_dim, ns.sal_type + "_tccnet", ns.data_folder)
 
 

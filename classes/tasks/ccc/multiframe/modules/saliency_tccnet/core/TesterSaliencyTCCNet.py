@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from torch.utils.data import DataLoader
@@ -11,10 +11,11 @@ from functional.error_handling import check_sal_dim_support
 
 class TesterSaliencyTCCNet(TesterTCCNet):
 
-    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int, save_pred: bool, save_sal: bool = False):
+    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int,
+                 save_pred: bool = False, save_sal: bool = False, vis: List = None):
         super().__init__(path_to_log, log_frequency, save_pred)
         check_sal_dim_support(sal_dim)
-        self._sal_dim, self._save_sal = sal_dim, save_sal
+        self._sal_dim, self._save_sal, self.__vis = sal_dim, save_sal, vis
         if save_sal:
             path_to_sal = os.path.join(path_to_log, "sal")
             print("\n Saving saliency weights at {}".format(path_to_sal))

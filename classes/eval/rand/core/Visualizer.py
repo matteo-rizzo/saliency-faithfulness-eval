@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch.utils.data
 import torchvision.transforms.functional as F
+from matplotlib.figure import Figure
 from torch import Tensor
 from torchvision.transforms import transforms
 from tqdm import tqdm
@@ -28,7 +29,34 @@ class Visualizer:
               .format(self.__sal_type, self.__sal_dim, self.__data_folder))
 
     def visualize(self, paths_to_pretrained: List, dir_name: str = "model_vis"):
-        self.__generate_vis(paths_to_pretrained, dir_name)
+        for path_to_model in tqdm(paths_to_pretrained):
+            model = ModelSaliencyTCCNet(self.__sal_type, self.__sal_dim)
+            model.load(path_to_model)
+            model.eval_mode()
+
+            path_to_save_dir = os.path.join(path_to_model, self.__sal_type, self.__sal_dim, self.__data_folder)
+            path_to_save = os.path.join(path_to_save_dir, dir_name)
+            os.makedirs(path_to_save, exist_ok=True)
+
+            with torch.no_grad():
+                for i, (x, _, y, path_to_seq) in enumerate(self.__dataloader):
+                    if not self.__vis_data:
+                        break
+
+                    file_name = path_to_seq[0].split(os.sep)[-1]
+                    if file_name in self.__vis_data:
+                        self.__vis_data.remove(file_name)
+                        fig = self.__vis_sequence(x, y, model)
+                        fig.suptitle("file: {} from '{}' \n sal type: '{}' - sal dim: '{}'"
+                                     .format(file_name, self.__data_folder, self.__sal_type, self.__sal_dim),
+                                     fontsize=12)
+
+                        print("\n\n Done processing...")
+                        fig.savefig(os.path.join(path_to_save, file_name + '.png'))
+                        print("\n\n Figure saved successfully at {}! ", path_to_save)
+
+                        plt.clf()
+                        plt.close("all")
 
     @staticmethod
     def __get_sal(x: Tensor, model: SaliencyTCCNet) -> Tuple:
@@ -63,7 +91,7 @@ class Visualizer:
         return ax, frame_idx
 
     @staticmethod
-    def __vis_temp_heatmap(temp_att, fig, grid_view, n_rows):
+    def __vis_temp_heatmap(temp_att, fig, grid_view, n_rows) -> Figure:
         ax = fig.add_subplot(grid_view[n_rows - 1, :])
         heatmap = ax.imshow(np.transpose(temp_att.reshape((-1, 1))), cmap='greys', interpolation='none')
         title = "Temporal attention mask \n (Importance of each frame displayed above)"
@@ -75,7 +103,7 @@ class Visualizer:
         fig.colorbar(heatmap, orientation="horizontal", pad=0.2)
         return fig
 
-    def __vis_sequence(self, x: Tensor, y: Tensor, model: SaliencyTCCNet):
+    def __vis_sequence(self, x: Tensor, y: Tensor, model: SaliencyTCCNet) -> Figure:
         x, y = x.to(DEVICE), y.to(DEVICE)
         spat_att, temp_att = self.__get_sal(x, model)
         seq_len = len(torch.squeeze(x).cpu())
@@ -88,49 +116,19 @@ class Visualizer:
         n_rows, n_cols = self.plt_dims(seq_len)
 
         grid_view = fig.add_gridspec(30, 30)
-        frame_idx, heatmap_idx = 1, 1
+        frame_idx, heatmap_idx = 1, True
 
         for j, (indices) in enumerate([[i, j] for j in range(0, n_cols) for i in range(0, n_rows)]):
             if j < seq_len:
                 masked_x, original_x = masked_inputs[j], torch.squeeze(x)[j].permute(1, 2, 0)
-                ax, frame_idx = self.__vis_spat_frame(masked_x, original_x, frame_idx, fig, grid_view, indices)
+                _, frame_idx = self.__vis_spat_frame(masked_x, original_x, frame_idx, fig, grid_view, indices)
             else:
                 if self.__sal_dim in ["spatiotemp", "temp"] and heatmap_idx:
                     fig = self.__vis_temp_heatmap(temp_att, fig, grid_view, n_rows)
-                    heatmap_idx = 0
+                    heatmap_idx = False
             return fig
 
-    def __generate_vis(self, paths_to_models: List = None, dir_name: str = None):
-        for path_to_model in tqdm(paths_to_models):
-            model = ModelSaliencyTCCNet(self.__sal_type, self.__sal_dim)
-            model.load(path_to_model)
-            model.eval_mode()
-
-            path_to_save_dir = os.path.join(path_to_model, self.__sal_type, self.__sal_dim, self.__data_folder)
-            path_to_save = os.path.join(path_to_save_dir, dir_name)
-            os.makedirs(path_to_save, exist_ok=True)
-
-            with torch.no_grad():
-                for i, (x, _, y, path_to_seq) in enumerate(self.__dataloader):
-                    if not self.__vis_data:
-                        break
-
-                    file_name = path_to_seq[0].split(os.sep)[-1]
-                    if file_name in self.__vis_data:
-                        self.__vis_data.remove(file_name)
-                        fig = self.__vis_sequence(x, y, model)
-                        fig.suptitle("file: {} from '{}' \n sal type: '{}' - sal dim: '{}'"
-                                     .format(file_name, self.__data_folder, self.__sal_type, self.__sal_dim),
-                                     fontsize=12)
-
-                        print("\n\n Done processing...")
-                        fig.savefig(os.path.join(path_to_save, file_name + '.png'))
-                        print("\n\n Figure saved successfully at {}! ", path_to_save)
-
-                        plt.clf()
-                        plt.close("all")
-
-    def plt_dims(self, seq_len: int = 6, n_rows: int = 0, n_cols: int = 3):
+    def plt_dims(self, seq_len: int = 6, n_rows: int = 0, n_cols: int = 3) -> Tuple:
         """
         @param seq_len: number of images in a sequence
         @param n_rows: optimal number of rows (determined recursively, no need to explicitly specify)

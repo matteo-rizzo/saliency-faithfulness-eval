@@ -40,7 +40,7 @@ def make_plot(sal_diffs: List, errs: List, sal_dim: str, color: str, path_to_log
     if show:
         plt.show()
     else:
-        plt.savefig(os.path.join(path_to_log, "erasure_{}.png".format(sal_dim)), bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_log, "erasure_{}.png".format(sal_dim)))
     plt.clf()
 
 
@@ -57,7 +57,7 @@ def print_stats(num_neg_err_diffs: int, num_flips: Dict, path_to_log: str, n: in
     print(" \t Max: .... [ math: {}% - perc: {}% ]".format(data["flip_max_math"], data["flip_max_perc"]))
     print(" \t Rand: ... [ math: {}% - perc: {}% ]".format(data["flip_rand_math"], data["flip_rand_perc"]))
     print(SEPARATOR["stars"] + "\n")
-    pd.DataFrame(data).to_csv(os.path.join(path_to_log, "data.csv"), index=False)
+    pd.DataFrame(data).to_csv(os.path.join(path_to_log, "analysis.csv"), index=False)
 
 
 def single_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):

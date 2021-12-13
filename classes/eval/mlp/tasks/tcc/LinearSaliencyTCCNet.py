@@ -12,8 +12,9 @@ from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.SaliencyTCCNet im
 from classes.tasks.ccc.submodules.attention.SpatialAttention import SpatialAttention
 from classes.tasks.ccc.submodules.attention.TemporalAttention import TemporalAttention
 from classes.tasks.ccc.submodules.squeezenet.SqueezeNetLoader import SqueezeNetLoader
-
-# ---------------------------------------
+from functional.error_handling import check_weights_mode_support
+# ------------------------------------------------------------------------------
+from functional.utils import rand_uniform
 
 INPUT_SIZE = (3, 512, 512)
 ENCODING_SIZE = (31, 31)
@@ -26,7 +27,7 @@ INPUT_SIZE_TEMP = OUTPUT_SIZE_SPAT
 OUTPUT_SIZE_TEMP = prod((NUM_TEMP_DIM, prod(ENCODING_SIZE)))
 
 
-# ---------------------------------------
+# ------------------------------------------------------------------------------
 
 
 class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
@@ -34,21 +35,16 @@ class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
     def __init__(self, sal_dim: str, weights_mode: str, hidden_size: int = 128, kernel_size: int = 5):
         super().__init__(rnn_input_size=512, hidden_size=hidden_size, kernel_size=kernel_size, sal_dim=sal_dim)
 
+        check_weights_mode_support(weights_mode)
         self.__weights_mode = weights_mode
-        supp_weights_modes = ["imposed", "learned", "deactivate"]
-        if self.__weights_mode not in supp_weights_modes:
-            raise ValueError("Weights mode {} not supported! Supported modes are: {}"
-                             .format(self.__weights_mode, supp_weights_modes))
 
         if self._is_saliency_active("spat"):
             self.spat_enc = LinearEncoder(input_size=INPUT_SIZE_SPAT, output_size=OUTPUT_SIZE_SPAT)
-            if weights_mode == "learned":
-                self.spat_sal = SpatialAttention(input_size=NUM_SPAT_DIM)
+            self.spat_sal = SpatialAttention(input_size=NUM_SPAT_DIM)
 
         if self._is_saliency_active("temp"):
             self.temp_enc = LinearEncoder(input_size=INPUT_SIZE_TEMP, output_size=OUTPUT_SIZE_TEMP)
-            if weights_mode == "learned":
-                self.temp_sal = TemporalAttention(features_size=NUM_TEMP_DIM, hidden_size=NUM_TEMP_DIM)
+            self.temp_sal = TemporalAttention(features_size=NUM_TEMP_DIM, hidden_size=NUM_TEMP_DIM)
 
             del self.conv_lstm
             if sal_dim == "temp":
@@ -77,20 +73,22 @@ class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
     def __learn_spat_sal(self, x: Tensor) -> Tensor:
         return self.spat_sal(x)
 
-    def __encode_spat(self, x: Tensor, enc_shape: Tuple, w: Union[Tensor, Tuple]) -> Tensor:
+    def __encode_spat(self, x: Tensor, enc_shape: Tuple, w: Union[Tensor, Tuple]) -> Tuple:
         # Linear encoder
         if self._is_saliency_active("spat"):
             x = self.spat_enc(x).view(*enc_shape)
 
-            if self.__weights_mode == "deactivate":
-                return x
+            spat_weights = w
+            if self.__weights_mode == "baseline":
+                spat_weights = rand_uniform(x)
+            elif self.__weights_mode == "learned":
+                spat_weights = self.__learn_spat_sal(x)
 
-            spat_weights = w if self.__weights_mode == "imposed" else self.__learn_spat_sal(x)
-            return self._apply_spat_weights(x, spat_weights)
+            x = self._apply_spat_weights(x, spat_weights)
+            return x, spat_weights
 
         # Convolutional encoder
-        x, _ = self._spat_comp(x)
-        return x
+        return self._spat_comp(x)
 
     def __learn_temp_sal(self, x: Tensor, ts: int) -> Tensor:
         temp_weights = []
@@ -98,23 +96,25 @@ class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
             temp_weights.append(self.temp_sal(x, x[t, :, :, :].unsqueeze(0)))
         return torch.stack(temp_weights).squeeze()
 
-    def __encode_temp(self, x: Tensor, enc_shape: Tuple, w: Tensor, ts: int, bs: int) -> Tensor:
+    def __encode_temp(self, x: Tensor, enc_shape: Tuple, w: Tensor, ts: int, bs: int) -> Tuple:
         # Linear encoder
         if self._is_saliency_active("temp"):
             x = self.temp_enc(x).view(*enc_shape)
 
-            if self.__weights_mode == "deactivate":
-                return x
+            temp_weights = w
+            if self.__weights_mode == "baseline":
+                temp_weights = rand_uniform(x)
+            elif self.__weights_mode == "learned":
+                temp_weights = self.__learn_temp_sal(x, ts)
 
-            temp_weights = w if self.__weights_mode == "imposed" else self.__learn_temp_sal(x, ts)
-            return self._apply_temp_weights(x, temp_weights, ts)
+            x = self._apply_temp_weights(x, temp_weights, ts).squeeze()
+            return x, temp_weights
 
         # Recurrent encoder
-        x, _ = self._temp_comp(x, bs)
-        return x
+        return self._temp_comp(x, bs)
 
     @overloads(SaliencyTCCNet.forward)
-    def forward(self, x: Tensor, weights: Tensor) -> Tensor:
+    def forward(self, x: Tensor, weights: Tensor) -> Tuple:
         batch_size, time_steps, num_channels, h, w = x.shape
         x = x.view(batch_size * time_steps, num_channels, h, w)
         spat_enc_shape = (time_steps, NUM_SPAT_DIM, *ENCODING_SIZE)
@@ -125,9 +125,9 @@ class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
         else:
             sw, tw = (weights, Tensor()) if self._sal_dim == "spat" else (Tensor(), weights)
 
-        x = self.__encode_spat(x, spat_enc_shape, sw)
-        x = self.__encode_temp(x, temp_enc_shape, tw, time_steps, batch_size)
+        x, sw = self.__encode_spat(x, spat_enc_shape, sw)
+        x, tw = self.__encode_temp(x, temp_enc_shape, tw, time_steps, batch_size)
         x = self.fc(x)
         pred = normalize(torch.sum(torch.sum(x, 2), 2), dim=1)
 
-        return pred
+        return pred, sw, tw
