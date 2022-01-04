@@ -51,11 +51,11 @@ def print_stats(num_neg_err_diffs: int, num_flips: Dict, path_to_log: str, n: in
         "flip_rand_math": [num_flips["rand"]["math"] / n * 100], "flip_rand_perc": [num_flips["rand"]["perc"] / n * 100]
     }
     print("\n" + SEPARATOR["stars"])
-    print(" Num neg err diff (max - rand): {}%".format(data["neg_diffs"]))
-    print("\n" + SEPARATOR["dots"])
+    print(" Num neg err diff (max - rand): {}%".format(data["neg_diffs"][0]))
+    print(SEPARATOR["dots"])
     print(" Decision flips:")
-    print(" \t Max: .... [ math: {}% - perc: {}% ]".format(data["flip_max_math"], data["flip_max_perc"]))
-    print(" \t Rand: ... [ math: {}% - perc: {}% ]".format(data["flip_rand_math"], data["flip_rand_perc"]))
+    print(" \t Max: .... [ math: {}% - perc: {}% ]".format(data["flip_max_math"][0], data["flip_max_perc"][0]))
+    print(" \t Rand: ... [ math: {}% - perc: {}% ]".format(data["flip_rand_math"][0], data["flip_rand_perc"][0]))
     print(SEPARATOR["stars"] + "\n")
     pd.DataFrame(data).to_csv(os.path.join(path_to_log, "analysis.csv"), index=False)
 
@@ -82,9 +82,12 @@ def single_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
         if sal_dim in ["temp", "spatiotemp"]:
             sal_diffs_temp.append(get_sal_diff(path_to_val, filename, sal_dim="temp"))
 
+    np.save(os.path.join(path_to_log, "errs"), errs)
     if sal_dim in ["spat", "spatiotemp"]:
-        make_plot(sal_diffs_spat, errs, sal_dim, "orange", path_to_log)
+        np.save(os.path.join(path_to_log, "sal_diffs_spat"), sal_diffs_spat)
+        make_plot(sal_diffs_spat, errs, "spat", "orange", path_to_log)
     if sal_dim in ["temp", "spatiotemp"]:
-        make_plot(sal_diffs_temp, errs, sal_dim, "blue", path_to_log)
+        np.save(os.path.join(path_to_log, "sal_diffs_temp"), sal_diffs_temp)
+        make_plot(sal_diffs_temp, errs, "temp", "blue", path_to_log)
 
     print_stats(num_neg_err_diffs, num_flips, path_to_log, n=len(filenames))
