@@ -37,6 +37,8 @@ def make_plot(sal_diffs: List, errs: List, sal_dim: str, color: str, path_to_log
     plt.scatter(sal_diffs, errs, color=color)
     plt.xlabel("{} Sal Weights Difference (Max vs Rand)".format(sal_dim.capitalize()))
     plt.ylabel("Pred Delta AE (AE: Max vs Base - AE: Rand vs Base)")
+    plt.xlim(0, 1)
+    plt.ylim(-25, 10)
     if show:
         plt.show()
     else:

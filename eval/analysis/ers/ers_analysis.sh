@@ -18,7 +18,7 @@ declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")
 declare -a sal_dims=("spatiotemp" "spat" "temp")
 
 # Values: "single" "multi"
-declare -a test_types=("single" "multi")
+declare -a test_types=("multi")
 
 for sal_type in "${sal_types[@]}"; do
   for dir in "${dirs[@]}"; do

@@ -6,7 +6,7 @@ pwd
 source venv/bin/activate
 export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 
-declare path_to_script="eval/analysis/ers/single_ers_agg_results_tccnet.py"
+declare path_to_script="eval/analysis/ers/multi_ers_agg_results_tccnet.py"
 
 # Values: "att" "conf" "conf_att"
 declare -a sal_types=("att" "conf" "conf_att")

@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List, Dict
 
@@ -67,10 +68,12 @@ def make_plot(sal_dim: str, weights_percents: Dict, rankings: List, path_to_log:
             spat_data = {**spat_data,
                          ranking + "_math": weights_percents["spat"][ranking]["math"],
                          ranking + "_perc": weights_percents["spat"][ranking]["perc"]}
+            pd.DataFrame(spat_data).to_csv(os.path.join(path_to_log, "spat_data.csv"))
         if sal_dim in ["temp", "spatiotemp"]:
             temp_data = {**temp_data,
                          ranking + "_math": weights_percents["temp"][ranking]["math"],
                          ranking + "_perc": weights_percents["temp"][ranking]["perc"]}
+            pd.DataFrame(temp_data).to_csv(os.path.join(path_to_log, "temp_data.csv"))
 
     if sal_dim in ["spat", "spatiotemp"]:
         pd.DataFrame(spat_data).boxplot(column=list(spat_data.keys()))
@@ -113,6 +116,7 @@ def multi_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
                 weights_percents["temp"][ranking]["math"].append(item_weights_percents["temp"][ranking]["math"])
                 weights_percents["temp"][ranking]["perc"].append(item_weights_percents["temp"][ranking]["perc"])
 
+    json.dump(weights_percents, open(os.path.join(path_to_log, "weights_percents.json"), 'w'), indent=2)
     make_plot(sal_dim, weights_percents, rankings, path_to_log)
 
     for ranking in rankings:
@@ -123,5 +127,5 @@ def multi_we_analysis(sal_dim: str, path_to_results: str, path_to_log: str):
             weights_percents["temp"][ranking]["math"] = np.mean(weights_percents["temp"][ranking]["math"])
             weights_percents["temp"][ranking]["perc"] = np.mean(weights_percents["temp"][ranking]["perc"])
 
-    print("\n -> Saving analysis at {}...".format(os.path.join(path_to_log, "analysis.csv")))
-    pd.DataFrame(weights_percents).to_csv(os.path.join(path_to_log, "analysis.csv"))
+    print("\n -> Saving analysis at {}...".format(os.path.join(path_to_log, "analysis.json")))
+    json.dump(weights_percents, open(os.path.join(path_to_log, "analysis.json"), 'w'), indent=2)

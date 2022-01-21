@@ -25,6 +25,7 @@ def main(ns: argparse.Namespace):
     model = ModelSaliencyTCCNet(sal_type, sal_dim, hidden_size, kernel_size)
     if reload_checkpoint:
         model.load(path_to_pretrained)
+    model.print_network()
 
     print("\n------------------------------------------------------------------------------------------")
     print("\t\t Training '{}' - '{}' on '{}'".format(sal_type, sal_dim, data_folder))

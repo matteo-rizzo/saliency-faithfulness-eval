@@ -9,7 +9,7 @@ export PYTHONPATH=$PYTHONPATH:/home/matteo/Projects/faithful-attention-eval/
 declare path_to_script="eval/tests/mlp/mlp_test_tccnet.py"
 
 # Values: "att" "conf" "conf_att"
-declare -a sal_types=("att" "conf" "conf_att")
+declare -a sal_types=("conf" "conf_att")
 
 # Values: "tcc_split" "fold_0" "fold_1" "fold_2"
 declare -a dirs=("tcc_split" "fold_0" "fold_1" "fold_2")

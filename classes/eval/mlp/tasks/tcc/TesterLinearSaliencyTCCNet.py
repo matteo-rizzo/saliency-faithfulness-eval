@@ -12,8 +12,8 @@ from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.TesterSaliencyTCC
 
 class TesterLinearSaliencyTCCNet(TesterSaliencyTCCNet):
 
-    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int, save_pred: bool = False,
-                 save_sal: bool = False, path_to_sw: str = None):
+    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int = 5,
+                 save_pred: bool = False, save_sal: bool = False, path_to_sw: str = None):
         super().__init__(sal_dim, path_to_log, log_frequency, save_pred, save_sal, vis=None)
         self.__path_to_sw = path_to_sw
 

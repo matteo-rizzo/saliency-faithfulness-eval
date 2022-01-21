@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser.add_argument("--data_folder", type=str, default="tcc_split")
     parser.add_argument("--sal_type", type=str, default="att")
     parser.add_argument("--sal_dim", type=str, default="spatiotemp")
-    parser.add_argument("--test_type", type=str, default="single")
+    parser.add_argument("--test_type", type=str, default="multi")
     namespace = parser.parse_args()
     make_deterministic(namespace.random_seed)
     print_namespace(namespace)

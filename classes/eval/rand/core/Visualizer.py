@@ -19,7 +19,7 @@ from functional.image_processing import scale, resample
 
 class Visualizer:
 
-    def __init__(self, vis_data: list, path_to_log: str, sal_type: str, sal_dim: str, data_folder: str):
+    def __init__(self, vis_data: List, path_to_log: str, sal_type: str, sal_dim: str, data_folder: str):
 
         self.__vis_data, self.__sal_type, self.__sal_dim = vis_data, sal_type, sal_dim
         self.__data_folder = data_folder

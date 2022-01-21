@@ -107,7 +107,7 @@ class LinearSaliencyTCCNet(SaliencyTCCNet, ABC):
             elif self.__weights_mode == "learned":
                 temp_weights = self.__learn_temp_sal(x, ts)
 
-            x = self._apply_temp_weights(x, temp_weights, ts).squeeze()
+            x = self._apply_temp_weights(x, temp_weights, ts)
             return x, temp_weights
 
         # Recurrent encoder
