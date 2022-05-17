@@ -5,9 +5,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
-from auxiliary.utils import make_deterministic, print_namespace
 from eval.analysis.ers.multi_ers_analysis_tccnet import make_plot
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
+from src.auxiliary.utils import make_deterministic, print_namespace
 
 
 def main(ns: argparse.Namespace):

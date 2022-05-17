@@ -4,10 +4,11 @@ from time import time
 
 import torch
 
-from auxiliary.settings import DEVICE, RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import print_namespace, make_deterministic, infer_path_to_pretrained, experiment_header, save_settings
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from src.auxiliary.settings import DEVICE, RANDOM_SEED, PATH_TO_PRETRAINED
+from src.auxiliary.utils import print_namespace, make_deterministic, infer_path_to_pretrained, experiment_header, \
+    save_settings
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 
 """ Save gradients of output w.r.t. saliency weights """
 

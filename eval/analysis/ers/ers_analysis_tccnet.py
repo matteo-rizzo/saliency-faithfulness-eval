@@ -2,10 +2,10 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
-from auxiliary.utils import make_deterministic, print_namespace, experiment_header, save_settings
 from eval.analysis.ers.multi_ers_analysis_tccnet import multi_we_analysis
 from eval.analysis.ers.single_ers_analysis_tccnet import single_we_analysis
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
+from src.auxiliary.utils import make_deterministic, print_namespace, experiment_header, save_settings
 
 
 def main(ns: argparse.Namespace):

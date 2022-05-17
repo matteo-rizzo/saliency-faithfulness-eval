@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from auxiliary.utils import SEPARATOR
+from src.auxiliary.utils import SEPARATOR
 
 
 def check_decision_flips(num_flips: Dict, data: pd.DataFrame, rankings: List) -> Dict:

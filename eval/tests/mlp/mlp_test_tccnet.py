@@ -2,12 +2,12 @@ import argparse
 import os
 import time
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import make_deterministic, print_namespace, infer_path_to_pretrained, experiment_header, \
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
+from src.auxiliary.utils import make_deterministic, print_namespace, infer_path_to_pretrained, experiment_header, \
     save_settings
-from classes.eval.mlp.tasks.tcc.ModelLinearSaliencyTCCNet import ModelLinearSaliencyTCCNet
-from classes.eval.mlp.tasks.tcc.TrainerLinearSaliencyTCCNet import TrainerLinearSaliencyTCCNet
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.eval.mlp.tasks.tcc.ModelLinearSaliencyTCCNet import ModelLinearSaliencyTCCNet
+from src.classes.eval.mlp.tasks.tcc.TrainerLinearSaliencyTCCNet import TrainerLinearSaliencyTCCNet
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 """ Runs test WP2 """
 

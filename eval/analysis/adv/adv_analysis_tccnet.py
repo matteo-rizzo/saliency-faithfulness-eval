@@ -7,15 +7,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader
 
-from auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED, PATH_TO_RESULTS
-from auxiliary.utils import make_deterministic, print_namespace, experiment_header
-from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
-from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
-from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
-from functional.metrics import spat_divergence, temp_divergence, print_metrics_comparison
-from functional.utils import load_from_file
+from src.auxiliary.settings import RANDOM_SEED, DEVICE, PATH_TO_PRETRAINED, PATH_TO_RESULTS
+from src.auxiliary.utils import make_deterministic, print_namespace, experiment_header
+from src.classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
+from src.classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
+from src.classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from src.functional.metrics import spat_divergence, temp_divergence, print_metrics_comparison
+from src.functional.utils import load_from_file
 
 
 def test_lambda(model: ModelSaliencyTCCNet, adv_model: AdvModelSaliencyTCCNet, data: DataLoader,

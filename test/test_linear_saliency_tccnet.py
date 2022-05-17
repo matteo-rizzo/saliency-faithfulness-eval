@@ -2,11 +2,11 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
-from auxiliary.utils import make_deterministic, print_namespace, save_settings
-from classes.eval.mlp.tasks.tcc.ModelLinearSaliencyTCCNet import ModelLinearSaliencyTCCNet
-from classes.eval.mlp.tasks.tcc.TesterLinearSaliencyTCCNet import TesterLinearSaliencyTCCNet
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
+from src.auxiliary.utils import make_deterministic, print_namespace, save_settings
+from src.classes.eval.mlp.tasks.tcc.ModelLinearSaliencyTCCNet import ModelLinearSaliencyTCCNet
+from src.classes.eval.mlp.tasks.tcc.TesterLinearSaliencyTCCNet import TesterLinearSaliencyTCCNet
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 
 def main(ns: argparse.Namespace):

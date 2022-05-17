@@ -2,11 +2,11 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
-from auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
-from classes.tasks.ccc.multiframe.core.TrainerTCCNet import TrainerTCCNet
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from classes.tasks.ccc.multiframe.modules.tccnet.ModelTCCNet import ModelTCCNet
+from src.auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
+from src.auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
+from src.classes.tasks.ccc.multiframe.core.TrainerTCCNet import TrainerTCCNet
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.tasks.ccc.multiframe.modules.tccnet.ModelTCCNet import ModelTCCNet
 
 
 def main(ns: argparse.Namespace):

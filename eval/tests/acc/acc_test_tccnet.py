@@ -2,12 +2,12 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
-from auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
-from classes.eval.acc.tasks.tcc.ModelUniformSaliencyTCCNet import ModelUniformSaliencyTCCNet
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.TesterSaliencyTCCNet import TesterSaliencyTCCNet
+from src.auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED
+from src.auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
+from src.classes.eval.acc.tasks.tcc.ModelUniformSaliencyTCCNet import ModelUniformSaliencyTCCNet
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.TesterSaliencyTCCNet import TesterSaliencyTCCNet
 
 
 def main(ns: argparse.Namespace):

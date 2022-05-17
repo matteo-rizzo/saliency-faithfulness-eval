@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
-from auxiliary.utils import make_deterministic, print_namespace
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_RESULTS
+from src.auxiliary.utils import make_deterministic, print_namespace
 
 
 def make_plot(sal_diffs: List, errs: List, sal_dim: str, color: str, path_to_log: str,

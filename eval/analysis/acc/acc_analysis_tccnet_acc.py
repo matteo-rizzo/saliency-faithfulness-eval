@@ -6,12 +6,12 @@ from typing import Tuple, List
 import numpy as np
 from matplotlib import pyplot as plt
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED, PATH_TO_RESULTS, DEVICE
-from auxiliary.utils import make_deterministic, print_namespace, experiment_header
-from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from functional.metrics import angular_error, spat_divergence, temp_divergence
-from functional.utils import load_from_file
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED, PATH_TO_RESULTS, DEVICE
+from src.auxiliary.utils import make_deterministic, print_namespace, experiment_header
+from src.classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.functional.metrics import angular_error, spat_divergence, temp_divergence
+from src.functional.utils import load_from_file
 
 DATA_FOLDERS = ["tcc_split", "fold_0", "fold_1", "fold_2"]
 

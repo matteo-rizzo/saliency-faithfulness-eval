@@ -2,17 +2,15 @@ import argparse
 import os
 from time import time
 
-import numpy as np
-import torch
-from matplotlib import pyplot as plt
+import matplotlib
+import pandas as pd
+from matplotlib import pyplot as plt, gridspec
 
-from auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED, DEVICE
-from auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
-from functional.image_processing import chw_to_hwc
-
-VIS = ["test13", "test38", "test43"]
+from src.auxiliary.settings import PATH_TO_PRETRAINED, RANDOM_SEED, DEVICE
+from src.auxiliary.utils import make_deterministic, infer_path_to_pretrained, print_namespace, save_settings
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from src.functional.image_processing import chw_to_hwc
 
 
 def main(ns: argparse.Namespace):
@@ -34,49 +32,55 @@ def main(ns: argparse.Namespace):
     print("\t\t Visualizing data for '{}' - '{}' on '{}'".format(sal_type, sal_dim, data_folder))
     print("------------------------------------------------------------------------------------------\n")
 
+    filenames, errors = [], []
+    color_map = matplotlib.cm.get_cmap('gray')
+
     for (x, _, y, path_to_x) in data:
-        filename = path_to_x[0].split(os.sep)[-1].split(".")[0]
-        if not VIS:
-            break
-        if filename not in VIS:
-            continue
-        VIS.remove(filename)
 
         x, y = x.to(DEVICE), y.to(DEVICE)
         pred, spat_sal, temp_sal = model.predict(x, return_steps=True)
+
         error = model.get_loss(pred, y).item()
+        errors.append(error)
+
+        filename = path_to_x[0].split(os.sep)[-1].split(".")[0]
+        filenames.append(filename)
 
         print("\n File {} - Err: {:.4f}".format(filename, error))
 
         time_steps, temp_mask = x.shape[1], []
         x = chw_to_hwc(x.squeeze(0).detach().cpu())
-        fig, axis = plt.subplots(3 if sal_dim == "spatiotemp" else 2, time_steps)
+        spat_sal, temp_sal = spat_sal.detach().cpu(), temp_sal.detach().cpu()
+        temp_sal = temp_sal.squeeze() if sal_type == "conf" else temp_sal.unsqueeze(-1).numpy()[0]
+
+        n_rows, n_cols = 3 if sal_dim == "spatiotemp" else 2, time_steps
+        plt.figure(figsize=(n_cols + 1, n_rows + 1))
+        gs = gridspec.GridSpec(n_rows, n_cols, wspace=0.025, hspace=0.0,
+                               top=1. - 0.25 / (n_rows + 1), bottom=0.25 / (n_rows + 1),
+                               left=0.5 / (n_cols + 1), right=1 - 0.5 / (n_cols + 1))
+
         for t in range(time_steps):
-            axis[0, t].imshow(x[t, :, :, :])
-            axis[0, t].set_title(t)
-            axis[0, t].axis("off")
+            ax = plt.subplot(gs[0, t])
+            ax.imshow(x[t, :, :, :])
+            ax.set_title(t)
+            ax.axis("off")
 
-            ss = spat_sal
             if sal_dim in ["spatiotemp", "spat"]:
-                ss = ss[t, :, :, :].permute(1, 2, 0).detach().cpu()
-                axis[1, t].imshow(ss, cmap="gray")
-                axis[1, t].axis("off")
+                ss = spat_sal[t, :, :, :].permute(1, 2, 0)
+                ax = plt.subplot(gs[1, t])
+                ax.imshow(ss, cmap="gray")
+                ax.axis("off")
 
-            ts = temp_sal
             if sal_dim in ["spatiotemp", "temp"]:
-                if sal_type == "conf":
-                    ts = ts.squeeze().detach()[t]
-                else:
-                    ts = torch.from_numpy(ts.unsqueeze(-1).detach().numpy()[0][t])
-                temp_mask.append(ts.unsqueeze(-1).unsqueeze(-1))
+                ts = temp_sal[t].item()
+                ax = plt.subplot(gs[1 if sal_dim == "temp" else 2, t])
+                ax.imshow([[color_map(ts)]], cmap="gray")
+                ax.axis("off")
 
-        if sal_dim in ["spatiotemp", "temp"]:
-            plt.subplot(313)
-            plt.imshow(np.array(temp_mask, dtype=np.float32).reshape(1, len(temp_mask)), cmap="gray")
-            plt.axis("off")
+        plt.savefig(os.path.join(path_to_log, "{}.png".format(filename)), bbox_inches='tight')
+        plt.clf()
 
-        fig.tight_layout()
-        plt.show()
+    pd.DataFrame({"filename": filenames, "error": errors}).to_csv(os.path.join(path_to_log, "errors.csv"))
 
 
 if __name__ == '__main__':

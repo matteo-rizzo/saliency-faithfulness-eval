@@ -5,9 +5,9 @@ from typing import List
 
 import pandas as pd
 
-from auxiliary.settings import PATH_TO_RESULTS, DEFAULT_METRICS_FILE
-from auxiliary.utils import print_namespace, experiment_header
-from classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
+from src.auxiliary.settings import PATH_TO_RESULTS, DEFAULT_METRICS_FILE
+from src.auxiliary.utils import print_namespace, experiment_header
+from src.classes.tasks.ccc.core.MetricsTrackerCCC import MetricsTrackerCCC
 
 
 def update_metrics_adv(metrics: pd.DataFrame, columns: List, path_to_results: str, path_to_split: str) -> pd.DataFrame:

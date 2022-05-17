@@ -2,12 +2,12 @@ import argparse
 import os
 from time import time
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import print_namespace, infer_path_to_pretrained, save_settings, make_deterministic
-from classes.eval.rand.core.Visualizer import Visualizer
-from classes.eval.rand.tasks.tcc.DataHandlerRandLabelsTCC import DataHandlerRandLabelsTCC
-from classes.eval.rand.tasks.tcc.TrainerRandLabelsSaliencyTCCNet import TrainerRandLabelsSaliencyTCCNet
-from classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
+from src.auxiliary.utils import print_namespace, infer_path_to_pretrained, save_settings, make_deterministic
+from src.classes.eval.rand.core.Visualizer import Visualizer
+from src.classes.eval.rand.tasks.tcc.DataHandlerRandLabelsTCC import DataHandlerRandLabelsTCC
+from src.classes.eval.rand.tasks.tcc.TrainerRandLabelsSaliencyTCCNet import TrainerRandLabelsSaliencyTCCNet
+from src.classes.tasks.ccc.multiframe.modules.saliency_tccnet.core.ModelSaliencyTCCNet import ModelSaliencyTCCNet
 
 VIS_DATA = ["test2.npy", "test3.npy"]
 

@@ -2,12 +2,13 @@ import argparse
 import os
 import time
 
-from auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
-from auxiliary.utils import make_deterministic, print_namespace, experiment_header, save_settings, infer_path_to_pretrained
-from classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
-from classes.eval.adv.tasks.tcc.TrainerAdvSaliencyTCCNet import TrainerAdvSaliencyTCCNet
-from classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
-from classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
+from src.auxiliary.settings import RANDOM_SEED, PATH_TO_PRETRAINED
+from src.auxiliary.utils import make_deterministic, print_namespace, experiment_header, save_settings, \
+    infer_path_to_pretrained
+from src.classes.eval.adv.tasks.tcc.AdvModelSaliencyTCCNet import AdvModelSaliencyTCCNet
+from src.classes.eval.adv.tasks.tcc.TrainerAdvSaliencyTCCNet import TrainerAdvSaliencyTCCNet
+from src.classes.tasks.ccc.core.NetworkCCCFactory import NetworkCCCFactory
+from src.classes.tasks.ccc.multiframe.data.DataHandlerTCC import DataHandlerTCC
 
 """ Run test WP3 """
 
