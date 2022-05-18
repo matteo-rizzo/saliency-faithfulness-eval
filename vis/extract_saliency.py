@@ -3,6 +3,7 @@ import os
 from time import time
 
 import cv2
+import matplotlib
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
@@ -54,10 +55,10 @@ def main(ns: argparse.Namespace):
     path_to_spat, path_to_temp = path_to_log, path_to_log
     if sal_dim in ["spat", "spatiotemp"]:
         path_to_spat = os.path.join(path_to_spat, "spat" if sal_dim == "spat" else "")
-        os.makedirs(path_to_spat)
-    if sal_dim in ["spat", "spatiotemp"]:
+        os.makedirs(path_to_spat, exist_ok=True)
+    if sal_dim in ["temp", "spatiotemp"]:
         path_to_temp = os.path.join(path_to_temp, "temp" if sal_dim == "temp" else "")
-        os.makedirs(path_to_temp)
+        os.makedirs(path_to_temp, exist_ok=True)
 
     print("\n Loading data from '{}':".format(data_folder))
     data = DataHandlerTCC().get_loader(train=use_train_set, data_folder=data_folder)
@@ -103,8 +104,8 @@ def main(ns: argparse.Namespace):
                     plt.clf()
 
             mask = temp_sal[0] if sal_type == "att" else temp_sal
-            ts = mask[t].detach().cpu()
-            if sal_dim in ["temp", "spatiotemp"] and ts.item() > torch.mean(mask).item():
+            ts = mask[t].detach().cpu().item()
+            if sal_dim in ["temp", "spatiotemp"] and ts > torch.mean(mask).item():
                 plt.imshow(img)
                 plt.axis("off")
                 path_to_file = os.path.join(path_to_temp, "{}_{}.png".format(filename, t))
