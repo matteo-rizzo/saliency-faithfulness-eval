@@ -14,7 +14,7 @@ class TesterLinearSaliencyTCCNet(TesterSaliencyTCCNet):
 
     def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int = 5,
                  save_pred: bool = False, save_sal: bool = False, path_to_sw: str = None):
-        super().__init__(sal_dim, path_to_log, log_frequency, save_pred, save_sal, vis=None)
+        super().__init__(sal_dim, path_to_log, log_frequency, save_pred, save_sal)
         self.__path_to_sw = path_to_sw
 
     def __load_from_file(self, path_to_file: str) -> Tensor:

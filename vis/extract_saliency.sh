@@ -10,7 +10,7 @@ declare path_to_script="vis/extract_saliency.py"
 declare -a sal_types=("att" "conf")
 
 # Values: "spatiotemp" "spat" "temp"
-declare -a sal_dims=("spatiotemp" "spat" "temp")
+declare -a sal_dims=("spat" "temp")
 
 for sal_dim in "${sal_dims[@]}"; do
   for sal_type in "${sal_types[@]}"; do

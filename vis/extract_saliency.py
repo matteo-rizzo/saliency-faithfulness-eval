@@ -3,7 +3,6 @@ import os
 from time import time
 
 import cv2
-import matplotlib
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
@@ -103,14 +102,15 @@ def main(ns: argparse.Namespace):
                     plt.savefig(path_to_file, bbox_inches='tight', pad_inches=0.0)
                     plt.clf()
 
-            mask = temp_sal[0] if sal_type == "att" else temp_sal
-            ts = mask[t].detach().cpu().item()
-            if sal_dim in ["temp", "spatiotemp"] and ts > torch.mean(mask).item():
-                plt.imshow(img)
-                plt.axis("off")
-                path_to_file = os.path.join(path_to_temp, "{}_{}.png".format(filename, t))
-                plt.savefig(path_to_file, bbox_inches='tight', pad_inches=0.0)
-                plt.clf()
+            if sal_dim in ["temp", "spatiotemp"]:
+                mask = temp_sal[0] if sal_type == "att" else temp_sal
+                ts = mask[t].detach().cpu().item()
+                if ts > torch.mean(mask).item():
+                    plt.imshow(img)
+                    plt.axis("off")
+                    path_to_file = os.path.join(path_to_temp, "{}_{}.png".format(filename, t))
+                    plt.savefig(path_to_file, bbox_inches='tight', pad_inches=0.0)
+                    plt.clf()
 
 
 if __name__ == '__main__':

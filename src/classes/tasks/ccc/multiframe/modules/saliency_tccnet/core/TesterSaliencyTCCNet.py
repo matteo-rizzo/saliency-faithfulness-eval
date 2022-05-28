@@ -1,7 +1,9 @@
+import csv
 import os
-from typing import Tuple, List
+from typing import Tuple
 
 import numpy as np
+from torch import Tensor
 from torch.utils.data import DataLoader
 
 from src.classes.core.Model import Model
@@ -11,11 +13,11 @@ from src.functional.error_handling import check_sal_dim_support
 
 class TesterSaliencyTCCNet(TesterTCCNet):
 
-    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int,
-                 save_pred: bool = False, save_sal: bool = False, vis: List = None):
+    def __init__(self, sal_dim: str, path_to_log: str, log_frequency: int = 5,
+                 save_pred: bool = False, save_sal: bool = False, save_metadata: bool = False):
         super().__init__(path_to_log, log_frequency, save_pred)
         check_sal_dim_support(sal_dim)
-        self._sal_dim, self._save_sal = sal_dim, save_sal
+        self._sal_dim, self._save_sal, self._save_metadata = sal_dim, save_sal, save_metadata
         if save_sal:
             path_to_sal = os.path.join(path_to_log, "sal")
             print("\n Saving saliency weights at {}".format(path_to_sal))
@@ -27,6 +29,10 @@ class TesterSaliencyTCCNet(TesterTCCNet):
             if self._sal_dim in ["temp", "spatiotemp"]:
                 self._path_to_temp_sal = os.path.join(path_to_sal, "temp")
                 os.makedirs(self._path_to_temp_sal)
+        if save_metadata:
+            self._path_to_metadata = os.path.join(path_to_log, "metadata.csv")
+            w = csv.DictWriter(open(self._path_to_metadata, 'a', newline=''), fieldnames=["pred", "gt", "err", "fn"])
+            w.writeheader()
 
     def _eval(self, model: Model, data: DataLoader, *args, **kwargs):
         for i, (x, _, y, path_to_x) in enumerate(data):
@@ -46,6 +52,14 @@ class TesterSaliencyTCCNet(TesterTCCNet):
 
             if self._save_sal:
                 self._save_sal2npy((spat_sal, temp_sal), file_name)
+
+            if self._save_metadata:
+                self._save_metadata2csv(pred, y, tl, file_name)
+
+    def _save_metadata2csv(self, pred: Tensor, ground_truth: Tensor, err: float, file_name: str):
+        pred, ground_truth = pred[0].detach().tolist(), ground_truth[0].detach().tolist()
+        writer = csv.DictWriter(open(self._path_to_metadata, 'a', newline=''), fieldnames=["pred", "gt", "err", "fn"])
+        writer.writerow({"pred": pred, "gt": ground_truth, "err": err, "fn": file_name})
 
     def _save_sal2npy(self, sal: Tuple, file_name: str):
         if self._sal_dim in ["spat", "spatiotemp"]:
