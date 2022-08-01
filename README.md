@@ -1,4 +1,4 @@
-# aliency-faithfulness-eval
+# Saliency-faithfulness-eval
 
 A suite of tests to assess attention faithfulness for interpretability.
 
