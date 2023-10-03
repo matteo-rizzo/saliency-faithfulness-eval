@@ -1,4 +1,4 @@
-# Saliency-faithfulness-eval
+# saliency-faithfulness-eval
 
 A suite of tests to assess attention faithfulness for explainability. This code is used in the paper [Evaluating the Faithfulness of Saliency-based Explanations for Deep Learning Models for Temporal Colour Constancy](https://arxiv.org/abs/2211.07982), published in the [proceedings](https://drive.google.com/file/d/1TULeerUPQz2bIbKiyPMPtCm02G6lnr7-/view) of the 2022 XAI workshop on XAI.
 
