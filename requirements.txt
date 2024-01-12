@@ -3,7 +3,7 @@ torch==1.13.1
 pandas==1.4.2
 torchvision==0.12.0
 pillow==10.0.1
-scipy==1.8.0
+scipy==1.11.1
 matplotlib==3.5.2
 pytorch-msssim
 opencv-python==4.5.5.64
