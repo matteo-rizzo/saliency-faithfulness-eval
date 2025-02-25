@@ -6,7 +6,7 @@ pillow==10.2.0
 scipy==1.11.1
 matplotlib==3.5.2
 pytorch-msssim
-opencv-python==4.5.5.64
+opencv-python==4.8.1.78
 seaborn~=0.11.2
 tqdm==4.64.0
 torchsummary~=1.5.1
